@@ -3,6 +3,9 @@
   "compilerOptions": {
     "outDir": "./dist",
     "baseUrl": "./",
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "strictPropertyInitialization": false,
     "paths": {
       "@rev/common": ["../../libs/common/src"],
       "@rev/common/*": ["../../libs/common/src/*"]

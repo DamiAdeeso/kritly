@@ -8,18 +8,20 @@ export class InstagramAuthService {
 
   async verifyToken(accessToken: string): Promise<ISocialProfile> {
     try {
+      // Call Instagram Graph API to verify token and get user info
       const response = await fetch(
-        `https://graph.instagram.com/me?fields=id,username,account_type&access_token=${accessToken}`
+        `https://graph.instagram.com/me?fields=id,username&access_token=${accessToken}`
       );
 
       if (!response.ok) {
         throw new UnauthorizedException('Invalid Instagram token');
       }
 
-      const data = await response.json();
+      const data = await response.json() as {
+        id: string;
+        username: string;
+      };
 
-      // Instagram Basic Display API doesn't provide email by default
-      // You would need to request additional permissions or use Instagram Graph API
       return {
         provider: AuthProvider.INSTAGRAM,
         providerId: data.id,

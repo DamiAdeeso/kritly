@@ -43,7 +43,8 @@
     "class-validator": "latest",
     "class-transformer": "latest",
     "reflect-metadata": "latest",
-    "rxjs": "latest"
+    "rxjs": "latest",
+    "google-auth-library": "latest"
   },
   "devDependencies": {
     "@nestjs/cli": "latest",

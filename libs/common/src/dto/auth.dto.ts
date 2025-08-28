@@ -1,4 +1,4 @@
-import { IsString, IsEmail, IsOptional, IsEnum } from 'class-validator';
+import { IsString, IsEmail, IsOptional, IsEnum, IsNumber } from 'class-validator';
 import { AuthProvider } from '../enums/auth.enum';
 
 export class LoginDto {
@@ -45,7 +45,7 @@ export class LogoutDto {
   refreshToken: string;
 }
 
-export class AuthResponseDto {
+export class AuthDataDto {
   @IsString()
   accessToken: string;
 
@@ -57,4 +57,14 @@ export class AuthResponseDto {
 
   @IsString()
   email: string;
+}
+
+export class AuthResponseDto {
+  @IsString()
+  message: string;
+
+  data: AuthDataDto;
+
+  @IsNumber()
+  statusCode: number;
 }

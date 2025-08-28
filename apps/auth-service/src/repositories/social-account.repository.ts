@@ -1,31 +1,30 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { SocialAccount, AuthProvider } from '@prisma/client';
+import { SocialAccount } from '@prisma/client';
 
 @Injectable()
 export class SocialAccountRepository {
   constructor(private readonly prisma: PrismaService) {}
 
   async create(data: {
-    provider: AuthProvider;
+    provider: string;
     providerId: string;
     userId: string;
   }): Promise<SocialAccount> {
     return this.prisma.socialAccount.create({
-      data,
+      data: {
+        provider: data.provider as any,
+        providerId: data.providerId,
+        userId: data.userId,
+      },
     });
   }
 
-  async findByProviderAndId(provider: AuthProvider, providerId: string): Promise<SocialAccount | null> {
-    return this.prisma.socialAccount.findUnique({
+  async findByProviderAndId(provider: string, providerId: string): Promise<SocialAccount | null> {
+    return this.prisma.socialAccount.findFirst({
       where: {
-        provider_providerId: {
-          provider,
-          providerId,
-        },
-      },
-      include: {
-        user: true,
+        provider: provider as any,
+        providerId,
       },
     });
   }
@@ -42,14 +41,9 @@ export class SocialAccountRepository {
     });
   }
 
-  async deleteByProviderAndId(provider: AuthProvider, providerId: string): Promise<SocialAccount> {
-    return this.prisma.socialAccount.delete({
-      where: {
-        provider_providerId: {
-          provider,
-          providerId,
-        },
-      },
+  async deleteByUserId(userId: string): Promise<void> {
+    await this.prisma.socialAccount.deleteMany({
+      where: { userId },
     });
   }
 }

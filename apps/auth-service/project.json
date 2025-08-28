@@ -14,7 +14,6 @@
         "outputPath": "dist/apps/auth-service",
         "main": "apps/auth-service/src/main.ts",
         "tsConfig": "apps/auth-service/tsconfig.json",
-        "assets": ["apps/auth-service/src/assets"],
         "isolatedConfig": true,
         "webpackConfig": "apps/auth-service/webpack.config.js"
       },
@@ -73,28 +72,28 @@
       }
     },
     "prisma:generate": {
-      "executor": "@nx/js:node",
+      "executor": "nx:run-commands",
       "options": {
         "command": "npx prisma generate",
         "cwd": "apps/auth-service"
       }
     },
     "prisma:migrate": {
-      "executor": "@nx/js:node",
+      "executor": "nx:run-commands",
       "options": {
-        "command": "npx prisma migrate dev",
+        "command": "npx prisma migrate dev --name init",
         "cwd": "apps/auth-service"
       }
     },
     "prisma:studio": {
-      "executor": "@nx/js:node",
+      "executor": "nx:run-commands",
       "options": {
         "command": "npx prisma studio",
         "cwd": "apps/auth-service"
       }
     },
     "prisma:seed": {
-      "executor": "@nx/js:node",
+      "executor": "nx:run-commands",
       "options": {
         "command": "npx ts-node prisma/seed.ts",
         "cwd": "apps/auth-service"

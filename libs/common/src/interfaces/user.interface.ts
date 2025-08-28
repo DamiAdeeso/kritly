@@ -16,25 +16,30 @@ export interface IUserCreate {
   email: string;
   firstName: string;
   lastName: string;
-  password?: string;
   avatar?: string;
+  password?: string;
   role?: UserRole;
   status?: UserStatus;
 }
 
 export interface IUserUpdate {
+  email?: string;
   firstName?: string;
   lastName?: string;
   avatar?: string;
+  password?: string;
+  role?: UserRole;
   status?: UserStatus;
 }
 
 export interface IUserFilters {
   email?: string;
+  firstName?: string;
+  lastName?: string;
   role?: UserRole;
   status?: UserStatus;
   createdAt?: {
-    gte?: Date;
-    lte?: Date;
+    start?: Date;
+    end?: Date;
   };
 }

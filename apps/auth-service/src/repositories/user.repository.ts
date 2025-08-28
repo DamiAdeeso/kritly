@@ -15,8 +15,8 @@ export class UserRepository {
         lastName: data.lastName,
         avatar: data.avatar,
         password: data.password,
-        role: data.role,
-        status: data.status,
+        role: data.role as any,
+        status: data.status as any,
       },
     });
   }
@@ -24,22 +24,16 @@ export class UserRepository {
   async findById(id: string): Promise<User | null> {
     return this.prisma.user.findUnique({
       where: { id },
-      include: {
-        socialAccounts: true,
-      },
     });
   }
 
   async findByEmail(email: string): Promise<User | null> {
     return this.prisma.user.findUnique({
       where: { email },
-      include: {
-        socialAccounts: true,
-      },
     });
   }
 
-  async findBySocialProvider(provider: string, providerId: string): Promise<User | null> {
+  async findBySocialAccount(provider: string, providerId: string): Promise<User | null> {
     return this.prisma.user.findFirst({
       where: {
         socialAccounts: {
@@ -49,16 +43,17 @@ export class UserRepository {
           },
         },
       },
-      include: {
-        socialAccounts: true,
-      },
     });
   }
 
   async update(id: string, data: IUserUpdate): Promise<User> {
     return this.prisma.user.update({
       where: { id },
-      data,
+      data: {
+        ...data,
+        role: data.role as any,
+        status: data.status as any,
+      },
     });
   }
 
@@ -75,31 +70,33 @@ export class UserRepository {
       where.email = { contains: filters.email, mode: 'insensitive' };
     }
 
+    if (filters.firstName) {
+      where.firstName = { contains: filters.firstName, mode: 'insensitive' };
+    }
+
+    if (filters.lastName) {
+      where.lastName = { contains: filters.lastName, mode: 'insensitive' };
+    }
+
     if (filters.role) {
-      where.role = filters.role;
+      where.role = filters.role as any;
     }
 
     if (filters.status) {
-      where.status = filters.status;
+      where.status = filters.status as any;
     }
 
     if (filters.createdAt) {
-      where.createdAt = {};
-      if (filters.createdAt.gte) {
-        where.createdAt.gte = filters.createdAt.gte;
-      }
-      if (filters.createdAt.lte) {
-        where.createdAt.lte = filters.createdAt.lte;
-      }
+      where.createdAt = {
+        gte: filters.createdAt.start,
+        lte: filters.createdAt.end,
+      };
     }
 
     return this.prisma.user.findMany({
       where,
       skip,
       take,
-      include: {
-        socialAccounts: true,
-      },
       orderBy: { createdAt: 'desc' },
     });
   }
@@ -111,22 +108,27 @@ export class UserRepository {
       where.email = { contains: filters.email, mode: 'insensitive' };
     }
 
+    if (filters.firstName) {
+      where.firstName = { contains: filters.firstName, mode: 'insensitive' };
+    }
+
+    if (filters.lastName) {
+      where.lastName = { contains: filters.lastName, mode: 'insensitive' };
+    }
+
     if (filters.role) {
-      where.role = filters.role;
+      where.role = filters.role as any;
     }
 
     if (filters.status) {
-      where.status = filters.status;
+      where.status = filters.status as any;
     }
 
     if (filters.createdAt) {
-      where.createdAt = {};
-      if (filters.createdAt.gte) {
-        where.createdAt.gte = filters.createdAt.gte;
-      }
-      if (filters.createdAt.lte) {
-        where.createdAt.lte = filters.createdAt.lte;
-      }
+      where.createdAt = {
+        gte: filters.createdAt.start,
+        lte: filters.createdAt.end,
+      };
     }
 
     return this.prisma.user.count({ where });

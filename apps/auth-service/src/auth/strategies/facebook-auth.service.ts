@@ -8,6 +8,7 @@ export class FacebookAuthService {
 
   async verifyToken(accessToken: string): Promise<ISocialProfile> {
     try {
+      // Call Facebook Graph API to verify token and get user info
       const response = await fetch(
         `https://graph.facebook.com/me?fields=id,email,first_name,last_name,picture&access_token=${accessToken}`
       );
@@ -16,7 +17,17 @@ export class FacebookAuthService {
         throw new UnauthorizedException('Invalid Facebook token');
       }
 
-      const data = await response.json();
+      const data = await response.json() as {
+        id: string;
+        email: string;
+        first_name: string;
+        last_name: string;
+        picture?: {
+          data?: {
+            url: string;
+          };
+        };
+      };
 
       return {
         provider: AuthProvider.FACEBOOK,

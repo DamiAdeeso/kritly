@@ -1,9 +1,37 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
+import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
+  // Create microservice
+  const microservice = await NestFactory.createMicroservice<MicroserviceOptions>(
+    AppModule,
+    {
+      transport: Transport.TCP,
+      options: {
+        host: 'localhost',
+        port: parseInt(process.env.AUTH_SERVICE_PORT || '3001'),
+      },
+    }
+  );
+
+  // Global validation pipe
+  microservice.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      transform: true,
+    })
+  );
+
+  await microservice.listen();
+  
+  const microservicePort = parseInt(process.env.AUTH_SERVICE_PORT || '3001');
+  console.log(`🚀 Auth Service (Microservice) is running on: localhost:${microservicePort}`);
+  
+  // Also create HTTP app for direct API access and documentation
   const app = await NestFactory.create(AppModule);
 
   // Enable CORS
@@ -32,11 +60,11 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api/docs', app, document);
 
-  const port = process.env.PORT || 3001;
-  await app.listen(port);
+  const httpPort = process.env.HTTP_PORT || 3002;
+  await app.listen(httpPort);
   
-  console.log(`🚀 Auth Service is running on: http://localhost:${port}`);
-  console.log(`📚 API Documentation: http://localhost:${port}/api/docs`);
+  console.log(`🚀 Auth Service (HTTP) is running on: http://localhost:${httpPort}`);
+  console.log(`📚 API Documentation: http://localhost:${httpPort}/api/docs`);
 }
 
 bootstrap();

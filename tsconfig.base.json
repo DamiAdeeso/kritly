@@ -5,7 +5,7 @@
     "lib": ["ES2020"],
     "allowJs": true,
     "skipLibCheck": true,
-    "strict": true,
+    "strict": false,
     "forceConsistentCasingInFileNames": true,
     "noEmit": true,
     "esModuleInterop": true,
@@ -15,6 +15,9 @@
     "jsx": "preserve",
     "incremental": true,
     "baseUrl": ".",
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "strictPropertyInitialization": false,
     "paths": {
       "@rev/common": ["libs/common/src"],
       "@rev/common/*": ["libs/common/src/*"]

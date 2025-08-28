@@ -1,5 +1,5 @@
 {
-  "7576067748919902413": {
+  "1490073877567100149": {
     "targets": {
       "test": {
         "command": "jest",
@@ -40,7 +40,7 @@
       }
     }
   },
-  "9864821243946313290": {
+  "7786225487560981858": {
     "targets": {
       "test": {
         "command": "jest",
@@ -81,7 +81,7 @@
       }
     }
   },
-  "16484626006578736983": {
+  "12001857138610799569": {
     "targets": {
       "test": {
         "command": "jest",
@@ -118,6 +118,88 @@
         ],
         "outputs": [
           "{workspaceRoot}\\coverage\\libs\\common"
+        ]
+      }
+    }
+  },
+  "8497512544426671284": {
+    "targets": {
+      "test": {
+        "command": "jest",
+        "options": {
+          "cwd": "apps/auth-service",
+          "env": {
+            "TS_NODE_COMPILER_OPTIONS": "{\"moduleResolution\":\"node10\",\"module\":\"commonjs\",\"customConditions\":null}"
+          }
+        },
+        "metadata": {
+          "technologies": [
+            "jest"
+          ],
+          "description": "Run Jest Tests",
+          "help": {
+            "command": "npx jest --help",
+            "example": {
+              "options": {
+                "coverage": true
+              }
+            }
+          }
+        },
+        "cache": true,
+        "inputs": [
+          "default",
+          "^default",
+          "{workspaceRoot}\\jest.preset.js",
+          {
+            "externalDependencies": [
+              "jest"
+            ]
+          }
+        ],
+        "outputs": [
+          "{workspaceRoot}\\coverage\\apps\\auth-service"
+        ]
+      }
+    }
+  },
+  "5881948088067428116": {
+    "targets": {
+      "test": {
+        "command": "jest",
+        "options": {
+          "cwd": "apps/auth-service",
+          "env": {
+            "TS_NODE_COMPILER_OPTIONS": "{\"moduleResolution\":\"node10\",\"module\":\"commonjs\",\"customConditions\":null}"
+          }
+        },
+        "metadata": {
+          "technologies": [
+            "jest"
+          ],
+          "description": "Run Jest Tests",
+          "help": {
+            "command": "npx jest --help",
+            "example": {
+              "options": {
+                "coverage": true
+              }
+            }
+          }
+        },
+        "cache": true,
+        "inputs": [
+          "default",
+          "^default",
+          "{workspaceRoot}\\jest.preset.js",
+          {
+            "externalDependencies": [
+              "jest"
+            ]
+          }
+        ],
+        "outputs": [
+          "{workspaceRoot}\\coverage\\apps\\auth-service"
         ]
       }
     }
