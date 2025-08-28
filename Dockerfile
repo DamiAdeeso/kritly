@@ -27,7 +27,7 @@ RUN npm run build --workspace=@rev/common
 RUN npm run db:generate
 
 # Build the auth service
-RUN npm run build --workspace=@rev/auth-service
+RUN cd apps/auth-service && npm run build
 
 # Production stage
 FROM node:18-alpine AS production
