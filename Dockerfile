@@ -51,9 +51,10 @@ RUN npm ci --only=production
 COPY --from=builder /app/apps/auth-service/dist ./apps/auth-service/dist
 COPY --from=builder /app/libs/common/dist ./libs/common/dist
 COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
+COPY --from=builder /app/apps/auth-service/prisma ./apps/auth-service/prisma
 
 # Expose ports (gRPC and HTTP)
 EXPOSE 3001 3002
 
 # Start the auth service
-CMD ["npm", "run", "start:prod", "--workspace=@rev/auth-service"]
+CMD ["node", "apps/auth-service/dist/main.js"]
