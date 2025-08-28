@@ -11,7 +11,7 @@
       "options": {
         "target": "node",
         "compiler": "tsc",
-        "outputPath": "dist/apps/auth-service",
+        "outputPath": "dist",
         "main": "apps/auth-service/src/main.ts",
         "tsConfig": "apps/auth-service/tsconfig.json",
         "isolatedConfig": true,
