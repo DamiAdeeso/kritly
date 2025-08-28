@@ -49,8 +49,8 @@ COPY --from=builder /app/libs/common/dist ./libs/common/dist
 COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=builder /app/apps/auth-service/prisma ./apps/auth-service/prisma
 
-# Copy .env.local for local development (not used in production)
-COPY .env.local ./
+# Environment files are handled by deployment platform secrets
+# No environment files are copied to production images
 
 # Create non-root user
 RUN addgroup -g 1001 -S nodejs

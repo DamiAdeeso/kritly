@@ -44,8 +44,8 @@ RUN npm ci --only=production
 COPY --from=builder /app/apps/gateway/dist ./apps/gateway/dist
 COPY --from=builder /app/libs/common/dist ./libs/common/dist
 
-# Copy .env.local for local development (not used in production)
-COPY .env.local ./
+# Environment files are handled by deployment platform secrets
+# No environment files are copied to production images
 
 # Create non-root user
 RUN addgroup -g 1001 -S nodejs
