@@ -36,4 +36,4 @@ primary_region = "iad"
   destination = "/data"
 
 [processes]
-  app = "npm run start:prod --workspace=@rev/auth-service"
+  app = "node apps/auth-service/dist/main.js"
