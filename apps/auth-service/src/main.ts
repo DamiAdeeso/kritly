@@ -2,17 +2,19 @@ import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+import { join } from 'path';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
-  // Create microservice
+  // Create gRPC microservice
   const microservice = await NestFactory.createMicroservice<MicroserviceOptions>(
     AppModule,
     {
-      transport: Transport.TCP,
+      transport: Transport.GRPC,
       options: {
-        host: 'localhost',
-        port: parseInt(process.env.AUTH_SERVICE_PORT || '3001'),
+        package: 'auth',
+        protoPath: join(__dirname, '../../../libs/common/src/proto/auth.proto'),
+        url: `localhost:${process.env.AUTH_SERVICE_PORT || 3001}`,
       },
     }
   );
@@ -29,7 +31,7 @@ async function bootstrap() {
   await microservice.listen();
   
   const microservicePort = parseInt(process.env.AUTH_SERVICE_PORT || '3001');
-  console.log(`🚀 Auth Service (Microservice) is running on: localhost:${microservicePort}`);
+  console.log(`🚀 Auth Service (gRPC) is running on: localhost:${microservicePort}`);
   
   // Also create HTTP app for direct API access and documentation
   const app = await NestFactory.create(AppModule);

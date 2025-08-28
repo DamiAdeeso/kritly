@@ -3,6 +3,9 @@ import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
+import { AuthGrpcService } from '../grpc/auth.grpc.service';
+import { AuthGrpcController } from '../grpc/auth.grpc.controller';
+import { HealthController } from '../health/health.controller';
 import { UserRepository, SocialAccountRepository, RefreshTokenRepository } from '../repositories';
 import { PrismaService } from '../prisma/prisma.service';
 import { GoogleAuthService } from './strategies/google-auth.service';
@@ -24,9 +27,10 @@ import { AUTH_CONSTANTS } from '@rev/common';
       inject: [ConfigService],
     }),
   ],
-  controllers: [AuthController],
+  controllers: [AuthController, AuthGrpcController, HealthController],
   providers: [
     AuthService,
+    AuthGrpcService,
     UserRepository,
     SocialAccountRepository,
     RefreshTokenRepository,

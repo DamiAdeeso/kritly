@@ -1,0 +1,26 @@
+# Development Dockerfile for both services
+FROM node:18-alpine
+
+# Set working directory
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+COPY nx.json ./
+COPY tsconfig*.json ./
+
+# Copy all workspace package.json files
+COPY apps/*/package*.json ./apps/
+COPY libs/*/package*.json ./libs/
+
+# Install all dependencies
+RUN npm ci
+
+# Copy source code
+COPY . .
+
+# Expose common ports
+EXPOSE 3000 3001 3002
+
+# Default command (can be overridden)
+CMD ["npm", "run", "dev"]

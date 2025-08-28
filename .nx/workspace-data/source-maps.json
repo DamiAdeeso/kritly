@@ -1,4 +1,570 @@
 {
+  "apps/auth-service": {
+    "root": [
+      "apps/auth-service/project.json",
+      "nx/core/project-json"
+    ],
+    "targets": [
+      "apps/auth-service/jest.config.ts",
+      "@nx/jest/plugin"
+    ],
+    "name": [
+      "apps/auth-service/project.json",
+      "nx/core/project-json"
+    ],
+    "tags": [
+      "apps/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "tags.npm:public": [
+      "apps/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.targetGroups": [
+      "apps/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.targetGroups.NPM Scripts": [
+      "apps/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.targetGroups.NPM Scripts.0": [
+      "apps/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.targetGroups.NPM Scripts.1": [
+      "apps/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.targetGroups.NPM Scripts.2": [
+      "apps/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.targetGroups.NPM Scripts.3": [
+      "apps/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.targetGroups.NPM Scripts.4": [
+      "apps/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.targetGroups.NPM Scripts.5": [
+      "apps/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.targetGroups.NPM Scripts.6": [
+      "apps/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.targetGroups.NPM Scripts.7": [
+      "apps/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.targetGroups.NPM Scripts.8": [
+      "apps/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.description": [
+      "apps/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.js": [
+      "apps/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.js.packageName": [
+      "apps/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.js.packageMain": [
+      "apps/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.js.isInPackageManagerWorkspaces": [
+      "apps/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.format": [
+      "apps/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.format.executor": [
+      "apps/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.format.options": [
+      "apps/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.format.metadata": [
+      "apps/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.format.options.script": [
+      "apps/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.format.metadata.scriptContent": [
+      "apps/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.format.metadata.runCommand": [
+      "apps/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.start": [
+      "apps/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.start.executor": [
+      "apps/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.start.options": [
+      "apps/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.start.metadata": [
+      "apps/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.start.options.script": [
+      "apps/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.start.metadata.scriptContent": [
+      "apps/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.start.metadata.runCommand": [
+      "apps/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.start:dev": [
+      "apps/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.start:dev.executor": [
+      "apps/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.start:dev.options": [
+      "apps/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.start:dev.metadata": [
+      "apps/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.start:dev.options.script": [
+      "apps/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.start:dev.metadata.scriptContent": [
+      "apps/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.start:dev.metadata.runCommand": [
+      "apps/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.start:debug": [
+      "apps/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.start:debug.executor": [
+      "apps/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.start:debug.options": [
+      "apps/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.start:debug.metadata": [
+      "apps/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.start:debug.options.script": [
+      "apps/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.start:debug.metadata.scriptContent": [
+      "apps/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.start:debug.metadata.runCommand": [
+      "apps/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.start:prod": [
+      "apps/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.start:prod.executor": [
+      "apps/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.start:prod.options": [
+      "apps/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.start:prod.metadata": [
+      "apps/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.start:prod.options.script": [
+      "apps/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.start:prod.metadata.scriptContent": [
+      "apps/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.start:prod.metadata.runCommand": [
+      "apps/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.nx-release-publish": [
+      "apps/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.nx-release-publish.executor": [
+      "apps/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.nx-release-publish.dependsOn": [
+      "apps/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "targets.nx-release-publish.options": [
+      "apps/auth-service/package.json",
+      "nx/core/package-json"
+    ],
+    "$schema": [
+      "apps/auth-service/project.json",
+      "nx/core/project-json"
+    ],
+    "sourceRoot": [
+      "apps/auth-service/project.json",
+      "nx/core/project-json"
+    ],
+    "projectType": [
+      "apps/auth-service/project.json",
+      "nx/core/project-json"
+    ],
+    "tags.scope:auth": [
+      "apps/auth-service/project.json",
+      "nx/core/project-json"
+    ],
+    "tags.type:app": [
+      "apps/auth-service/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.build": [
+      "apps/auth-service/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.build.executor": [
+      "apps/auth-service/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.build.outputs": [
+      "apps/auth-service/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.build.defaultConfiguration": [
+      "apps/auth-service/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.build.options": [
+      "apps/auth-service/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.build.configurations": [
+      "apps/auth-service/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.build.options.target": [
+      "apps/auth-service/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.build.options.compiler": [
+      "apps/auth-service/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.build.options.outputPath": [
+      "apps/auth-service/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.build.options.main": [
+      "apps/auth-service/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.build.options.tsConfig": [
+      "apps/auth-service/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.build.options.isolatedConfig": [
+      "apps/auth-service/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.build.options.webpackConfig": [
+      "apps/auth-service/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.build.configurations.development": [
+      "apps/auth-service/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.build.configurations.development.optimization": [
+      "apps/auth-service/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.build.configurations.development.extractLicenses": [
+      "apps/auth-service/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.build.configurations.development.inspect": [
+      "apps/auth-service/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.build.configurations.production": [
+      "apps/auth-service/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.build.configurations.production.optimization": [
+      "apps/auth-service/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.build.configurations.production.extractLicenses": [
+      "apps/auth-service/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.build.configurations.production.inspect": [
+      "apps/auth-service/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.build.configurations.production.fileReplacements": [
+      "apps/auth-service/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.serve": [
+      "apps/auth-service/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.serve.executor": [
+      "apps/auth-service/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.serve.defaultConfiguration": [
+      "apps/auth-service/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.serve.options": [
+      "apps/auth-service/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.serve.configurations": [
+      "apps/auth-service/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.serve.options.buildTarget": [
+      "apps/auth-service/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.serve.configurations.development": [
+      "apps/auth-service/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.serve.configurations.development.buildTarget": [
+      "apps/auth-service/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.serve.configurations.production": [
+      "apps/auth-service/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.serve.configurations.production.buildTarget": [
+      "apps/auth-service/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint": [
+      "apps/auth-service/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.executor": [
+      "apps/auth-service/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.lint.outputs": [
+      "apps/auth-service/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test": [
+      "apps/auth-service/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.executor": [
+      "apps/auth-service/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.outputs": [
+      "apps/auth-service/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.options": [
+      "apps/auth-service/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.options.jestConfig": [
+      "apps/auth-service/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.options.passWithNoTests": [
+      "apps/auth-service/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.e2e": [
+      "apps/auth-service/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.e2e.executor": [
+      "apps/auth-service/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.e2e.outputs": [
+      "apps/auth-service/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.e2e.options": [
+      "apps/auth-service/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.e2e.options.jestConfig": [
+      "apps/auth-service/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.e2e.options.passWithNoTests": [
+      "apps/auth-service/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.prisma:generate": [
+      "apps/auth-service/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.prisma:generate.executor": [
+      "apps/auth-service/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.prisma:generate.options": [
+      "apps/auth-service/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.prisma:generate.options.command": [
+      "apps/auth-service/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.prisma:generate.options.cwd": [
+      "apps/auth-service/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.prisma:migrate": [
+      "apps/auth-service/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.prisma:migrate.executor": [
+      "apps/auth-service/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.prisma:migrate.options": [
+      "apps/auth-service/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.prisma:migrate.options.command": [
+      "apps/auth-service/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.prisma:migrate.options.cwd": [
+      "apps/auth-service/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.prisma:studio": [
+      "apps/auth-service/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.prisma:studio.executor": [
+      "apps/auth-service/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.prisma:studio.options": [
+      "apps/auth-service/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.prisma:studio.options.command": [
+      "apps/auth-service/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.prisma:studio.options.cwd": [
+      "apps/auth-service/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.prisma:seed": [
+      "apps/auth-service/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.prisma:seed.executor": [
+      "apps/auth-service/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.prisma:seed.options": [
+      "apps/auth-service/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.prisma:seed.options.command": [
+      "apps/auth-service/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.prisma:seed.options.cwd": [
+      "apps/auth-service/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.inputs": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.test.parallelism": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.build.dependsOn": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.build.inputs": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.build.parallelism": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.serve.dependsOn": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.serve.parallelism": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.lint.inputs": [
+      "nx.json",
+      "nx/target-defaults"
+    ],
+    "targets.lint.parallelism": [
+      "nx.json",
+      "nx/target-defaults"
+    ]
+  },
   "apps/gateway": {
     "root": [
       "apps/gateway/project.json",
@@ -699,572 +1265,6 @@
       "nx/target-defaults"
     ]
   },
-  "apps/auth-service": {
-    "root": [
-      "apps/auth-service/project.json",
-      "nx/core/project-json"
-    ],
-    "targets": [
-      "apps/auth-service/jest.config.ts",
-      "@nx/jest/plugin"
-    ],
-    "name": [
-      "apps/auth-service/project.json",
-      "nx/core/project-json"
-    ],
-    "tags": [
-      "apps/auth-service/package.json",
-      "nx/core/package-json"
-    ],
-    "tags.npm:public": [
-      "apps/auth-service/package.json",
-      "nx/core/package-json"
-    ],
-    "metadata.targetGroups": [
-      "apps/auth-service/package.json",
-      "nx/core/package-json"
-    ],
-    "metadata.targetGroups.NPM Scripts": [
-      "apps/auth-service/package.json",
-      "nx/core/package-json"
-    ],
-    "metadata.targetGroups.NPM Scripts.0": [
-      "apps/auth-service/package.json",
-      "nx/core/package-json"
-    ],
-    "metadata.targetGroups.NPM Scripts.1": [
-      "apps/auth-service/package.json",
-      "nx/core/package-json"
-    ],
-    "metadata.targetGroups.NPM Scripts.2": [
-      "apps/auth-service/package.json",
-      "nx/core/package-json"
-    ],
-    "metadata.targetGroups.NPM Scripts.3": [
-      "apps/auth-service/package.json",
-      "nx/core/package-json"
-    ],
-    "metadata.targetGroups.NPM Scripts.4": [
-      "apps/auth-service/package.json",
-      "nx/core/package-json"
-    ],
-    "metadata.targetGroups.NPM Scripts.5": [
-      "apps/auth-service/package.json",
-      "nx/core/package-json"
-    ],
-    "metadata.targetGroups.NPM Scripts.6": [
-      "apps/auth-service/package.json",
-      "nx/core/package-json"
-    ],
-    "metadata.targetGroups.NPM Scripts.7": [
-      "apps/auth-service/package.json",
-      "nx/core/package-json"
-    ],
-    "metadata.targetGroups.NPM Scripts.8": [
-      "apps/auth-service/package.json",
-      "nx/core/package-json"
-    ],
-    "metadata.description": [
-      "apps/auth-service/package.json",
-      "nx/core/package-json"
-    ],
-    "metadata.js": [
-      "apps/auth-service/package.json",
-      "nx/core/package-json"
-    ],
-    "metadata.js.packageName": [
-      "apps/auth-service/package.json",
-      "nx/core/package-json"
-    ],
-    "metadata.js.packageMain": [
-      "apps/auth-service/package.json",
-      "nx/core/package-json"
-    ],
-    "metadata.js.isInPackageManagerWorkspaces": [
-      "apps/auth-service/package.json",
-      "nx/core/package-json"
-    ],
-    "targets.format": [
-      "apps/auth-service/package.json",
-      "nx/core/package-json"
-    ],
-    "targets.format.executor": [
-      "apps/auth-service/package.json",
-      "nx/core/package-json"
-    ],
-    "targets.format.options": [
-      "apps/auth-service/package.json",
-      "nx/core/package-json"
-    ],
-    "targets.format.metadata": [
-      "apps/auth-service/package.json",
-      "nx/core/package-json"
-    ],
-    "targets.format.options.script": [
-      "apps/auth-service/package.json",
-      "nx/core/package-json"
-    ],
-    "targets.format.metadata.scriptContent": [
-      "apps/auth-service/package.json",
-      "nx/core/package-json"
-    ],
-    "targets.format.metadata.runCommand": [
-      "apps/auth-service/package.json",
-      "nx/core/package-json"
-    ],
-    "targets.start": [
-      "apps/auth-service/package.json",
-      "nx/core/package-json"
-    ],
-    "targets.start.executor": [
-      "apps/auth-service/package.json",
-      "nx/core/package-json"
-    ],
-    "targets.start.options": [
-      "apps/auth-service/package.json",
-      "nx/core/package-json"
-    ],
-    "targets.start.metadata": [
-      "apps/auth-service/package.json",
-      "nx/core/package-json"
-    ],
-    "targets.start.options.script": [
-      "apps/auth-service/package.json",
-      "nx/core/package-json"
-    ],
-    "targets.start.metadata.scriptContent": [
-      "apps/auth-service/package.json",
-      "nx/core/package-json"
-    ],
-    "targets.start.metadata.runCommand": [
-      "apps/auth-service/package.json",
-      "nx/core/package-json"
-    ],
-    "targets.start:dev": [
-      "apps/auth-service/package.json",
-      "nx/core/package-json"
-    ],
-    "targets.start:dev.executor": [
-      "apps/auth-service/package.json",
-      "nx/core/package-json"
-    ],
-    "targets.start:dev.options": [
-      "apps/auth-service/package.json",
-      "nx/core/package-json"
-    ],
-    "targets.start:dev.metadata": [
-      "apps/auth-service/package.json",
-      "nx/core/package-json"
-    ],
-    "targets.start:dev.options.script": [
-      "apps/auth-service/package.json",
-      "nx/core/package-json"
-    ],
-    "targets.start:dev.metadata.scriptContent": [
-      "apps/auth-service/package.json",
-      "nx/core/package-json"
-    ],
-    "targets.start:dev.metadata.runCommand": [
-      "apps/auth-service/package.json",
-      "nx/core/package-json"
-    ],
-    "targets.start:debug": [
-      "apps/auth-service/package.json",
-      "nx/core/package-json"
-    ],
-    "targets.start:debug.executor": [
-      "apps/auth-service/package.json",
-      "nx/core/package-json"
-    ],
-    "targets.start:debug.options": [
-      "apps/auth-service/package.json",
-      "nx/core/package-json"
-    ],
-    "targets.start:debug.metadata": [
-      "apps/auth-service/package.json",
-      "nx/core/package-json"
-    ],
-    "targets.start:debug.options.script": [
-      "apps/auth-service/package.json",
-      "nx/core/package-json"
-    ],
-    "targets.start:debug.metadata.scriptContent": [
-      "apps/auth-service/package.json",
-      "nx/core/package-json"
-    ],
-    "targets.start:debug.metadata.runCommand": [
-      "apps/auth-service/package.json",
-      "nx/core/package-json"
-    ],
-    "targets.start:prod": [
-      "apps/auth-service/package.json",
-      "nx/core/package-json"
-    ],
-    "targets.start:prod.executor": [
-      "apps/auth-service/package.json",
-      "nx/core/package-json"
-    ],
-    "targets.start:prod.options": [
-      "apps/auth-service/package.json",
-      "nx/core/package-json"
-    ],
-    "targets.start:prod.metadata": [
-      "apps/auth-service/package.json",
-      "nx/core/package-json"
-    ],
-    "targets.start:prod.options.script": [
-      "apps/auth-service/package.json",
-      "nx/core/package-json"
-    ],
-    "targets.start:prod.metadata.scriptContent": [
-      "apps/auth-service/package.json",
-      "nx/core/package-json"
-    ],
-    "targets.start:prod.metadata.runCommand": [
-      "apps/auth-service/package.json",
-      "nx/core/package-json"
-    ],
-    "targets.nx-release-publish": [
-      "apps/auth-service/package.json",
-      "nx/core/package-json"
-    ],
-    "targets.nx-release-publish.executor": [
-      "apps/auth-service/package.json",
-      "nx/core/package-json"
-    ],
-    "targets.nx-release-publish.dependsOn": [
-      "apps/auth-service/package.json",
-      "nx/core/package-json"
-    ],
-    "targets.nx-release-publish.options": [
-      "apps/auth-service/package.json",
-      "nx/core/package-json"
-    ],
-    "$schema": [
-      "apps/auth-service/project.json",
-      "nx/core/project-json"
-    ],
-    "sourceRoot": [
-      "apps/auth-service/project.json",
-      "nx/core/project-json"
-    ],
-    "projectType": [
-      "apps/auth-service/project.json",
-      "nx/core/project-json"
-    ],
-    "tags.scope:auth": [
-      "apps/auth-service/project.json",
-      "nx/core/project-json"
-    ],
-    "tags.type:app": [
-      "apps/auth-service/project.json",
-      "nx/core/project-json"
-    ],
-    "targets.build": [
-      "apps/auth-service/project.json",
-      "nx/core/project-json"
-    ],
-    "targets.build.executor": [
-      "apps/auth-service/project.json",
-      "nx/core/project-json"
-    ],
-    "targets.build.outputs": [
-      "apps/auth-service/project.json",
-      "nx/core/project-json"
-    ],
-    "targets.build.defaultConfiguration": [
-      "apps/auth-service/project.json",
-      "nx/core/project-json"
-    ],
-    "targets.build.options": [
-      "apps/auth-service/project.json",
-      "nx/core/project-json"
-    ],
-    "targets.build.configurations": [
-      "apps/auth-service/project.json",
-      "nx/core/project-json"
-    ],
-    "targets.build.options.target": [
-      "apps/auth-service/project.json",
-      "nx/core/project-json"
-    ],
-    "targets.build.options.compiler": [
-      "apps/auth-service/project.json",
-      "nx/core/project-json"
-    ],
-    "targets.build.options.outputPath": [
-      "apps/auth-service/project.json",
-      "nx/core/project-json"
-    ],
-    "targets.build.options.main": [
-      "apps/auth-service/project.json",
-      "nx/core/project-json"
-    ],
-    "targets.build.options.tsConfig": [
-      "apps/auth-service/project.json",
-      "nx/core/project-json"
-    ],
-    "targets.build.options.isolatedConfig": [
-      "apps/auth-service/project.json",
-      "nx/core/project-json"
-    ],
-    "targets.build.options.webpackConfig": [
-      "apps/auth-service/project.json",
-      "nx/core/project-json"
-    ],
-    "targets.build.configurations.development": [
-      "apps/auth-service/project.json",
-      "nx/core/project-json"
-    ],
-    "targets.build.configurations.development.optimization": [
-      "apps/auth-service/project.json",
-      "nx/core/project-json"
-    ],
-    "targets.build.configurations.development.extractLicenses": [
-      "apps/auth-service/project.json",
-      "nx/core/project-json"
-    ],
-    "targets.build.configurations.development.inspect": [
-      "apps/auth-service/project.json",
-      "nx/core/project-json"
-    ],
-    "targets.build.configurations.production": [
-      "apps/auth-service/project.json",
-      "nx/core/project-json"
-    ],
-    "targets.build.configurations.production.optimization": [
-      "apps/auth-service/project.json",
-      "nx/core/project-json"
-    ],
-    "targets.build.configurations.production.extractLicenses": [
-      "apps/auth-service/project.json",
-      "nx/core/project-json"
-    ],
-    "targets.build.configurations.production.inspect": [
-      "apps/auth-service/project.json",
-      "nx/core/project-json"
-    ],
-    "targets.build.configurations.production.fileReplacements": [
-      "apps/auth-service/project.json",
-      "nx/core/project-json"
-    ],
-    "targets.serve": [
-      "apps/auth-service/project.json",
-      "nx/core/project-json"
-    ],
-    "targets.serve.executor": [
-      "apps/auth-service/project.json",
-      "nx/core/project-json"
-    ],
-    "targets.serve.defaultConfiguration": [
-      "apps/auth-service/project.json",
-      "nx/core/project-json"
-    ],
-    "targets.serve.options": [
-      "apps/auth-service/project.json",
-      "nx/core/project-json"
-    ],
-    "targets.serve.configurations": [
-      "apps/auth-service/project.json",
-      "nx/core/project-json"
-    ],
-    "targets.serve.options.buildTarget": [
-      "apps/auth-service/project.json",
-      "nx/core/project-json"
-    ],
-    "targets.serve.configurations.development": [
-      "apps/auth-service/project.json",
-      "nx/core/project-json"
-    ],
-    "targets.serve.configurations.development.buildTarget": [
-      "apps/auth-service/project.json",
-      "nx/core/project-json"
-    ],
-    "targets.serve.configurations.production": [
-      "apps/auth-service/project.json",
-      "nx/core/project-json"
-    ],
-    "targets.serve.configurations.production.buildTarget": [
-      "apps/auth-service/project.json",
-      "nx/core/project-json"
-    ],
-    "targets.lint": [
-      "apps/auth-service/project.json",
-      "nx/core/project-json"
-    ],
-    "targets.lint.executor": [
-      "apps/auth-service/project.json",
-      "nx/core/project-json"
-    ],
-    "targets.lint.outputs": [
-      "apps/auth-service/project.json",
-      "nx/core/project-json"
-    ],
-    "targets.test": [
-      "apps/auth-service/project.json",
-      "nx/core/project-json"
-    ],
-    "targets.test.executor": [
-      "apps/auth-service/project.json",
-      "nx/core/project-json"
-    ],
-    "targets.test.outputs": [
-      "apps/auth-service/project.json",
-      "nx/core/project-json"
-    ],
-    "targets.test.options": [
-      "apps/auth-service/project.json",
-      "nx/core/project-json"
-    ],
-    "targets.test.options.jestConfig": [
-      "apps/auth-service/project.json",
-      "nx/core/project-json"
-    ],
-    "targets.test.options.passWithNoTests": [
-      "apps/auth-service/project.json",
-      "nx/core/project-json"
-    ],
-    "targets.e2e": [
-      "apps/auth-service/project.json",
-      "nx/core/project-json"
-    ],
-    "targets.e2e.executor": [
-      "apps/auth-service/project.json",
-      "nx/core/project-json"
-    ],
-    "targets.e2e.outputs": [
-      "apps/auth-service/project.json",
-      "nx/core/project-json"
-    ],
-    "targets.e2e.options": [
-      "apps/auth-service/project.json",
-      "nx/core/project-json"
-    ],
-    "targets.e2e.options.jestConfig": [
-      "apps/auth-service/project.json",
-      "nx/core/project-json"
-    ],
-    "targets.e2e.options.passWithNoTests": [
-      "apps/auth-service/project.json",
-      "nx/core/project-json"
-    ],
-    "targets.prisma:generate": [
-      "apps/auth-service/project.json",
-      "nx/core/project-json"
-    ],
-    "targets.prisma:generate.executor": [
-      "apps/auth-service/project.json",
-      "nx/core/project-json"
-    ],
-    "targets.prisma:generate.options": [
-      "apps/auth-service/project.json",
-      "nx/core/project-json"
-    ],
-    "targets.prisma:generate.options.command": [
-      "apps/auth-service/project.json",
-      "nx/core/project-json"
-    ],
-    "targets.prisma:generate.options.cwd": [
-      "apps/auth-service/project.json",
-      "nx/core/project-json"
-    ],
-    "targets.prisma:migrate": [
-      "apps/auth-service/project.json",
-      "nx/core/project-json"
-    ],
-    "targets.prisma:migrate.executor": [
-      "apps/auth-service/project.json",
-      "nx/core/project-json"
-    ],
-    "targets.prisma:migrate.options": [
-      "apps/auth-service/project.json",
-      "nx/core/project-json"
-    ],
-    "targets.prisma:migrate.options.command": [
-      "apps/auth-service/project.json",
-      "nx/core/project-json"
-    ],
-    "targets.prisma:migrate.options.cwd": [
-      "apps/auth-service/project.json",
-      "nx/core/project-json"
-    ],
-    "targets.prisma:studio": [
-      "apps/auth-service/project.json",
-      "nx/core/project-json"
-    ],
-    "targets.prisma:studio.executor": [
-      "apps/auth-service/project.json",
-      "nx/core/project-json"
-    ],
-    "targets.prisma:studio.options": [
-      "apps/auth-service/project.json",
-      "nx/core/project-json"
-    ],
-    "targets.prisma:studio.options.command": [
-      "apps/auth-service/project.json",
-      "nx/core/project-json"
-    ],
-    "targets.prisma:studio.options.cwd": [
-      "apps/auth-service/project.json",
-      "nx/core/project-json"
-    ],
-    "targets.prisma:seed": [
-      "apps/auth-service/project.json",
-      "nx/core/project-json"
-    ],
-    "targets.prisma:seed.executor": [
-      "apps/auth-service/project.json",
-      "nx/core/project-json"
-    ],
-    "targets.prisma:seed.options": [
-      "apps/auth-service/project.json",
-      "nx/core/project-json"
-    ],
-    "targets.prisma:seed.options.command": [
-      "apps/auth-service/project.json",
-      "nx/core/project-json"
-    ],
-    "targets.prisma:seed.options.cwd": [
-      "apps/auth-service/project.json",
-      "nx/core/project-json"
-    ],
-    "targets.test.inputs": [
-      "nx.json",
-      "nx/target-defaults"
-    ],
-    "targets.test.parallelism": [
-      "nx.json",
-      "nx/target-defaults"
-    ],
-    "targets.build.dependsOn": [
-      "nx.json",
-      "nx/target-defaults"
-    ],
-    "targets.build.inputs": [
-      "nx.json",
-      "nx/target-defaults"
-    ],
-    "targets.build.parallelism": [
-      "nx.json",
-      "nx/target-defaults"
-    ],
-    "targets.serve.dependsOn": [
-      "nx.json",
-      "nx/target-defaults"
-    ],
-    "targets.serve.parallelism": [
-      "nx.json",
-      "nx/target-defaults"
-    ],
-    "targets.lint.inputs": [
-      "nx.json",
-      "nx/target-defaults"
-    ],
-    "targets.lint.parallelism": [
-      "nx.json",
-      "nx/target-defaults"
-    ]
-  },
   ".": {
     "root": [
       "project.json",
@@ -1343,6 +1343,42 @@
       "nx/core/package-json"
     ],
     "metadata.targetGroups.NPM Scripts.13": [
+      "package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.targetGroups.NPM Scripts.14": [
+      "package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.targetGroups.NPM Scripts.15": [
+      "package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.targetGroups.NPM Scripts.16": [
+      "package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.targetGroups.NPM Scripts.17": [
+      "package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.targetGroups.NPM Scripts.18": [
+      "package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.targetGroups.NPM Scripts.19": [
+      "package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.targetGroups.NPM Scripts.20": [
+      "package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.targetGroups.NPM Scripts.21": [
+      "package.json",
+      "nx/core/package-json"
+    ],
+    "metadata.targetGroups.NPM Scripts.22": [
       "package.json",
       "nx/core/package-json"
     ],
@@ -1450,6 +1486,230 @@
       "package.json",
       "nx/core/package-json"
     ],
+    "targets.docker:build": [
+      "package.json",
+      "nx/core/package-json"
+    ],
+    "targets.docker:build.executor": [
+      "package.json",
+      "nx/core/package-json"
+    ],
+    "targets.docker:build.options": [
+      "package.json",
+      "nx/core/package-json"
+    ],
+    "targets.docker:build.metadata": [
+      "package.json",
+      "nx/core/package-json"
+    ],
+    "targets.docker:build.options.script": [
+      "package.json",
+      "nx/core/package-json"
+    ],
+    "targets.docker:build.metadata.scriptContent": [
+      "package.json",
+      "nx/core/package-json"
+    ],
+    "targets.docker:build.metadata.runCommand": [
+      "package.json",
+      "nx/core/package-json"
+    ],
+    "targets.docker:up": [
+      "package.json",
+      "nx/core/package-json"
+    ],
+    "targets.docker:up.executor": [
+      "package.json",
+      "nx/core/package-json"
+    ],
+    "targets.docker:up.options": [
+      "package.json",
+      "nx/core/package-json"
+    ],
+    "targets.docker:up.metadata": [
+      "package.json",
+      "nx/core/package-json"
+    ],
+    "targets.docker:up.options.script": [
+      "package.json",
+      "nx/core/package-json"
+    ],
+    "targets.docker:up.metadata.scriptContent": [
+      "package.json",
+      "nx/core/package-json"
+    ],
+    "targets.docker:up.metadata.runCommand": [
+      "package.json",
+      "nx/core/package-json"
+    ],
+    "targets.docker:down": [
+      "package.json",
+      "nx/core/package-json"
+    ],
+    "targets.docker:down.executor": [
+      "package.json",
+      "nx/core/package-json"
+    ],
+    "targets.docker:down.options": [
+      "package.json",
+      "nx/core/package-json"
+    ],
+    "targets.docker:down.metadata": [
+      "package.json",
+      "nx/core/package-json"
+    ],
+    "targets.docker:down.options.script": [
+      "package.json",
+      "nx/core/package-json"
+    ],
+    "targets.docker:down.metadata.scriptContent": [
+      "package.json",
+      "nx/core/package-json"
+    ],
+    "targets.docker:down.metadata.runCommand": [
+      "package.json",
+      "nx/core/package-json"
+    ],
+    "targets.docker:logs": [
+      "package.json",
+      "nx/core/package-json"
+    ],
+    "targets.docker:logs.executor": [
+      "package.json",
+      "nx/core/package-json"
+    ],
+    "targets.docker:logs.options": [
+      "package.json",
+      "nx/core/package-json"
+    ],
+    "targets.docker:logs.metadata": [
+      "package.json",
+      "nx/core/package-json"
+    ],
+    "targets.docker:logs.options.script": [
+      "package.json",
+      "nx/core/package-json"
+    ],
+    "targets.docker:logs.metadata.scriptContent": [
+      "package.json",
+      "nx/core/package-json"
+    ],
+    "targets.docker:logs.metadata.runCommand": [
+      "package.json",
+      "nx/core/package-json"
+    ],
+    "targets.docker:dev": [
+      "package.json",
+      "nx/core/package-json"
+    ],
+    "targets.docker:dev.executor": [
+      "package.json",
+      "nx/core/package-json"
+    ],
+    "targets.docker:dev.options": [
+      "package.json",
+      "nx/core/package-json"
+    ],
+    "targets.docker:dev.metadata": [
+      "package.json",
+      "nx/core/package-json"
+    ],
+    "targets.docker:dev.options.script": [
+      "package.json",
+      "nx/core/package-json"
+    ],
+    "targets.docker:dev.metadata.scriptContent": [
+      "package.json",
+      "nx/core/package-json"
+    ],
+    "targets.docker:dev.metadata.runCommand": [
+      "package.json",
+      "nx/core/package-json"
+    ],
+    "targets.docker:dev:down": [
+      "package.json",
+      "nx/core/package-json"
+    ],
+    "targets.docker:dev:down.executor": [
+      "package.json",
+      "nx/core/package-json"
+    ],
+    "targets.docker:dev:down.options": [
+      "package.json",
+      "nx/core/package-json"
+    ],
+    "targets.docker:dev:down.metadata": [
+      "package.json",
+      "nx/core/package-json"
+    ],
+    "targets.docker:dev:down.options.script": [
+      "package.json",
+      "nx/core/package-json"
+    ],
+    "targets.docker:dev:down.metadata.scriptContent": [
+      "package.json",
+      "nx/core/package-json"
+    ],
+    "targets.docker:dev:down.metadata.runCommand": [
+      "package.json",
+      "nx/core/package-json"
+    ],
+    "targets.docker:dev:logs": [
+      "package.json",
+      "nx/core/package-json"
+    ],
+    "targets.docker:dev:logs.executor": [
+      "package.json",
+      "nx/core/package-json"
+    ],
+    "targets.docker:dev:logs.options": [
+      "package.json",
+      "nx/core/package-json"
+    ],
+    "targets.docker:dev:logs.metadata": [
+      "package.json",
+      "nx/core/package-json"
+    ],
+    "targets.docker:dev:logs.options.script": [
+      "package.json",
+      "nx/core/package-json"
+    ],
+    "targets.docker:dev:logs.metadata.scriptContent": [
+      "package.json",
+      "nx/core/package-json"
+    ],
+    "targets.docker:dev:logs.metadata.runCommand": [
+      "package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test:grpc": [
+      "package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test:grpc.executor": [
+      "package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test:grpc.options": [
+      "package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test:grpc.metadata": [
+      "package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test:grpc.options.script": [
+      "package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test:grpc.metadata.scriptContent": [
+      "package.json",
+      "nx/core/package-json"
+    ],
+    "targets.test:grpc.metadata.runCommand": [
+      "package.json",
+      "nx/core/package-json"
+    ],
     "targets.db:generate": [
       "package.json",
       "nx/core/package-json"
@@ -1503,6 +1763,34 @@
       "nx/core/package-json"
     ],
     "targets.db:migrate.metadata.runCommand": [
+      "package.json",
+      "nx/core/package-json"
+    ],
+    "targets.db:migrate:deploy": [
+      "package.json",
+      "nx/core/package-json"
+    ],
+    "targets.db:migrate:deploy.executor": [
+      "package.json",
+      "nx/core/package-json"
+    ],
+    "targets.db:migrate:deploy.options": [
+      "package.json",
+      "nx/core/package-json"
+    ],
+    "targets.db:migrate:deploy.metadata": [
+      "package.json",
+      "nx/core/package-json"
+    ],
+    "targets.db:migrate:deploy.options.script": [
+      "package.json",
+      "nx/core/package-json"
+    ],
+    "targets.db:migrate:deploy.metadata.scriptContent": [
+      "package.json",
+      "nx/core/package-json"
+    ],
+    "targets.db:migrate:deploy.metadata.runCommand": [
       "package.json",
       "nx/core/package-json"
     ],

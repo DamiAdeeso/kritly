@@ -16,7 +16,7 @@ import {
   ApiBearerAuth,
   ApiBody 
 } from '@nestjs/swagger';
-import { GatewayService } from './gateway.service';
+import { AuthClientService } from '../services/auth-client.service';
 import { 
   LoginDto, 
   RegisterDto, 
@@ -29,7 +29,7 @@ import {
 @ApiTags('Gateway')
 @Controller('api')
 export class GatewayController {
-  constructor(private readonly gatewayService: GatewayService) {}
+  constructor(private readonly authClientService: AuthClientService) {}
 
   @Post('auth/register')
   @ApiOperation({ summary: 'Register a new user' })
@@ -41,7 +41,7 @@ export class GatewayController {
   })
   @ApiResponse({ status: 400, description: 'Bad request' })
   async register(@Body(ValidationPipe) registerDto: RegisterDto): Promise<AuthResponseDto> {
-    return this.gatewayService.forwardToAuthService('auth.register', registerDto);
+    return this.authClientService.register(registerDto);
   }
 
   @Post('auth/login')
@@ -55,7 +55,7 @@ export class GatewayController {
   })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   async login(@Body(ValidationPipe) loginDto: LoginDto): Promise<AuthResponseDto> {
-    return this.gatewayService.forwardToAuthService('auth.login', loginDto);
+    return this.authClientService.login(loginDto);
   }
 
   @Post('auth/social-login')
@@ -69,7 +69,7 @@ export class GatewayController {
   })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   async socialLogin(@Body(ValidationPipe) socialLoginDto: SocialLoginDto): Promise<AuthResponseDto> {
-    return this.gatewayService.forwardToAuthService('auth.socialLogin', socialLoginDto);
+    return this.authClientService.socialLogin(socialLoginDto);
   }
 
   @Post('auth/refresh')
@@ -83,7 +83,7 @@ export class GatewayController {
   })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   async refreshToken(@Body(ValidationPipe) refreshTokenDto: RefreshTokenDto): Promise<AuthResponseDto> {
-    return this.gatewayService.forwardToAuthService('auth.refreshToken', refreshTokenDto);
+    return this.authClientService.refreshToken(refreshTokenDto);
   }
 
   @Post('auth/logout')
@@ -92,7 +92,7 @@ export class GatewayController {
   @ApiBody({ type: LogoutDto })
   @ApiResponse({ status: 200, description: 'Logout successful' })
   async logout(@Body(ValidationPipe) logoutDto: LogoutDto): Promise<void> {
-    return this.gatewayService.forwardToAuthService('auth.logout', logoutDto);
+    return this.authClientService.logout(logoutDto);
   }
 
   @Get('auth/validate')
@@ -105,7 +105,7 @@ export class GatewayController {
     if (!token) {
       throw new Error('No token provided');
     }
-    return this.gatewayService.forwardToAuthService('auth.validateToken', { token });
+    return this.authClientService.validateToken({ accessToken: token });
   }
 
   @Get('health')

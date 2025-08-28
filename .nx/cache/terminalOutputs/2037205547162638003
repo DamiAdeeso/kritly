@@ -1,0 +1,10 @@
+[2m> [22mnpx prisma generate
+
+[2mPrisma schema loaded from prisma\schema.prisma[22m
+
+✔ Generated [1mPrisma Client[22m (v6.15.0)[2m to .\..\..\node_modules\@prisma\client[22m in 135ms
+
+Start by importing your Prisma Client (See: https://pris.ly/d/importing-client)
+
+Tip: Need your database queries to be 1000x faster? Accelerate offers you that and more: https://pris.ly/tip-2-accelerate
+

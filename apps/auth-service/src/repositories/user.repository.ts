@@ -64,7 +64,7 @@ export class UserRepository {
   }
 
   async findMany(filters: IUserFilters, skip = 0, take = 10): Promise<User[]> {
-    const where: Prisma.UserWhereInput = {};
+    const where: any = {};
 
     if (filters.email) {
       where.email = { contains: filters.email, mode: 'insensitive' };
@@ -102,7 +102,7 @@ export class UserRepository {
   }
 
   async count(filters: IUserFilters): Promise<number> {
-    const where: Prisma.UserWhereInput = {};
+    const where: any = {};
 
     if (filters.email) {
       where.email = { contains: filters.email, mode: 'insensitive' };

@@ -1,0 +1,59 @@
+# Use the auth service Dockerfile for Fly.io deployment
+FROM node:18-alpine AS builder
+
+# Set working directory
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+COPY nx.json ./
+COPY tsconfig*.json ./
+
+# Copy workspace configuration
+COPY apps/auth-service/package*.json ./apps/auth-service/
+COPY libs/common/package*.json ./libs/common/
+
+# Install all dependencies (including dev dependencies for build)
+RUN npm ci
+
+# Copy source code
+COPY apps/auth-service ./apps/auth-service
+COPY libs/common ./libs/common
+
+# Build the common library first
+RUN npm run build --workspace=@rev/common
+
+# Generate Prisma client first
+RUN npm run db:generate
+
+# Build the auth service
+RUN npm run build --workspace=@rev/auth-service
+
+# Production stage
+FROM node:18-alpine AS production
+
+# Set working directory
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+COPY nx.json ./
+COPY tsconfig*.json ./
+
+# Copy workspace configuration
+COPY apps/auth-service/package*.json ./apps/auth-service/
+COPY libs/common/package*.json ./libs/common/
+
+# Install only production dependencies
+RUN npm ci --only=production
+
+# Copy built applications and Prisma from builder stage
+COPY --from=builder /app/apps/auth-service/dist ./apps/auth-service/dist
+COPY --from=builder /app/libs/common/dist ./libs/common/dist
+COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
+
+# Expose ports (gRPC and HTTP)
+EXPOSE 3001 3002
+
+# Start the auth service
+CMD ["npm", "run", "start:prod", "--workspace=@rev/auth-service"]

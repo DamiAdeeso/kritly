@@ -29,7 +29,9 @@
     "class-validator": "latest",
     "class-transformer": "latest",
     "reflect-metadata": "latest",
-    "rxjs": "latest"
+    "rxjs": "latest",
+    "@grpc/grpc-js": "latest",
+    "@grpc/proto-loader": "latest"
   },
   "devDependencies": {
     "@nestjs/cli": "latest",

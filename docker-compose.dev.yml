@@ -4,7 +4,7 @@ services:
   # PostgreSQL Database
   postgres:
     image: postgres:15-alpine
-    container_name: rev-postgres
+    container_name: rev-postgres-dev
     environment:
       POSTGRES_DB: rev_auth
       POSTGRES_USER: rev_user
@@ -12,21 +12,21 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres_data_dev:/var/lib/postgresql/data
     networks:
-      - rev-network
+      - rev-network-dev
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U rev_user -d rev_auth"]
       interval: 10s
       timeout: 5s
       retries: 5
 
-  # Auth Service (gRPC + HTTP)
+  # Auth Service (Development with hot reload)
   auth-service:
     build:
       context: .
-      dockerfile: Dockerfile.auth-service
-    container_name: rev-auth-service
+      dockerfile: Dockerfile.dev
+    container_name: rev-auth-service-dev
     environment:
       NODE_ENV: development
       DATABASE_URL: postgresql://rev_user:rev_password@postgres:5432/rev_auth
@@ -41,17 +41,20 @@ services:
       postgres:
         condition: service_healthy
     networks:
-      - rev-network
+      - rev-network-dev
     volumes:
-      - ./apps/auth-service/prisma:/app/apps/auth-service/prisma
+      - ./apps/auth-service:/app/apps/auth-service
+      - ./libs/common:/app/libs/common
+      - /app/node_modules
+    command: npm run dev:auth
     restart: unless-stopped
 
-  # API Gateway
+  # API Gateway (Development with hot reload)
   gateway:
     build:
       context: .
-      dockerfile: Dockerfile.gateway
-    container_name: rev-gateway
+      dockerfile: Dockerfile.dev
+    container_name: rev-gateway-dev
     environment:
       NODE_ENV: development
       PORT: 3000
@@ -63,22 +66,27 @@ services:
     depends_on:
       - auth-service
     networks:
-      - rev-network
+      - rev-network-dev
+    volumes:
+      - ./apps/gateway:/app/apps/gateway
+      - ./libs/common:/app/libs/common
+      - /app/node_modules
+    command: npm run dev:gateway
     restart: unless-stopped
 
   # Redis (for caching and session management)
   redis:
     image: redis:7-alpine
-    container_name: rev-redis
+    container_name: rev-redis-dev
     ports:
       - "6379:6379"
     networks:
-      - rev-network
+      - rev-network-dev
     restart: unless-stopped
 
 volumes:
-  postgres_data:
+  postgres_data_dev:
 
 networks:
-  rev-network:
+  rev-network-dev:
     driver: bridge

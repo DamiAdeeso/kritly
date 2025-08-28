@@ -1,0 +1,75 @@
+syntax = "proto3";
+
+package auth;
+
+// Auth Service
+service AuthService {
+  rpc Register(RegisterRequest) returns (AuthResponse);
+  rpc Login(LoginRequest) returns (AuthResponse);
+  rpc SocialLogin(SocialLoginRequest) returns (AuthResponse);
+  rpc RefreshToken(RefreshTokenRequest) returns (AuthResponse);
+  rpc Logout(LogoutRequest) returns (LogoutResponse);
+  rpc ValidateToken(ValidateTokenRequest) returns (ValidateTokenResponse);
+}
+
+// Request/Response messages
+message RegisterRequest {
+  string email = 1;
+  string password = 2;
+  string firstName = 3;
+  string lastName = 4;
+  string avatar = 5;
+}
+
+message LoginRequest {
+  string email = 1;
+  string password = 2;
+}
+
+message SocialLoginRequest {
+  string provider = 1; // google, facebook, apple, instagram
+  string accessToken = 2;
+  string email = 3;
+  string firstName = 4;
+  string lastName = 5;
+  string avatar = 6;
+}
+
+message RefreshTokenRequest {
+  string refreshToken = 1;
+}
+
+message LogoutRequest {
+  string refreshToken = 1;
+}
+
+message ValidateTokenRequest {
+  string accessToken = 1;
+}
+
+// Response messages
+message AuthResponse {
+  string message = 1;
+  AuthData data = 2;
+  int32 statusCode = 3;
+}
+
+message AuthData {
+  string accessToken = 1;
+  string refreshToken = 2;
+  string userId = 3;
+  string email = 4;
+}
+
+message LogoutResponse {
+  string message = 1;
+  int32 statusCode = 2;
+}
+
+message ValidateTokenResponse {
+  bool isValid = 1;
+  string userId = 2;
+  string email = 3;
+  string message = 4;
+  int32 statusCode = 5;
+}

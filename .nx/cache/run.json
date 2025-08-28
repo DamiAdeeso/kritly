@@ -1,0 +1,21 @@
+{
+  "run": {
+    "command": "nx run auth-service:prisma:generate",
+    "startTime": "2025-08-28T13:31:25.784Z",
+    "endTime": "2025-08-28T13:31:33.766Z",
+    "inner": false
+  },
+  "tasks": [
+    {
+      "taskId": "auth-service:prisma:generate",
+      "target": "prisma:generate",
+      "projectName": "auth-service",
+      "hash": "2037205547162638003",
+      "startTime": "2025-08-28T13:31:25.837Z",
+      "endTime": "2025-08-28T13:31:33.747Z",
+      "params": "",
+      "cacheStatus": "cache-miss",
+      "status": 0
+    }
+  ]
+}

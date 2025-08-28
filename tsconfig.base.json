@@ -20,7 +20,8 @@
     "strictPropertyInitialization": false,
     "paths": {
       "@rev/common": ["libs/common/src"],
-      "@rev/common/*": ["libs/common/src/*"]
+      "@rev/common/*": ["libs/common/src/*"],
+      "@prisma/client": ["node_modules/.prisma/client"]
     }
   },
   "exclude": ["node_modules", "dist"]

@@ -11,8 +11,11 @@
   "dependencies": {
     "@nestjs/common": "latest",
     "@nestjs/microservices": "latest",
+    "@nestjs/swagger": "latest",
     "class-validator": "latest",
-    "class-transformer": "latest"
+    "class-transformer": "latest",
+    "@grpc/grpc-js": "latest",
+    "@grpc/proto-loader": "latest"
   },
   "devDependencies": {
     "@types/node": "latest",

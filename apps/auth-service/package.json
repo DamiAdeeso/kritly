@@ -44,7 +44,9 @@
     "class-transformer": "latest",
     "reflect-metadata": "latest",
     "rxjs": "latest",
-    "google-auth-library": "latest"
+    "google-auth-library": "latest",
+    "@grpc/grpc-js": "latest",
+    "@grpc/proto-loader": "latest"
   },
   "devDependencies": {
     "@nestjs/cli": "latest",
