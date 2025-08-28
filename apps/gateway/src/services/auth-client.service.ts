@@ -17,7 +17,7 @@ export class AuthClientService implements OnModuleInit {
     transport: Transport.GRPC,
     options: {
       package: 'auth',
-      protoPath: join(__dirname, '../../../libs/common/src/proto/auth.proto'),
+      protoPath: join(process.cwd(), 'libs/common/src/proto/auth.proto'),
       url: `${process.env.AUTH_SERVICE_HOST || 'localhost'}:${process.env.AUTH_SERVICE_PORT || 3001}`,
     },
   })

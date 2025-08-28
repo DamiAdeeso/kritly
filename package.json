@@ -29,6 +29,7 @@
     "db:migrate": "nx run auth-service:prisma:migrate",
     "db:migrate:deploy": "nx run auth-service:prisma:migrate:deploy",
     "db:studio": "nx run auth-service:prisma:studio",
+    "db:seed": "nx run auth-service:prisma:seed",
     "affected:build": "nx affected:build",
     "affected:test": "nx affected:test",
     "affected:lint": "nx affected:lint",

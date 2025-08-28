@@ -2,14 +2,15 @@
 #
 # See https://fly.io/docs/reference/configuration/ for information about how to use this file.
 
-app = "kritly"
+app = "rev-auth-service"
 primary_region = "iad"
 
 [build]
-  dockerfile = "Dockerfile"
+  dockerfile = "apps/auth-service/Dockerfile"
 
 [env]
-  NODE_ENV = "development"
+  NODE_ENV = "production"
+  # Environment variables are set via Fly.io secrets
 
 [http_service]
   internal_port = 3002
@@ -36,4 +37,4 @@ primary_region = "iad"
   destination = "/data"
 
 [processes]
-  app = "node apps/auth-service/dist/main.js"
+  app = "node dist/main.js"

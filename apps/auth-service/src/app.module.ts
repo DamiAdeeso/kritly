@@ -9,7 +9,8 @@ import redisConfig from './config/redis.config';
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: [
-        `.env.${process.env.NODE_ENV || 'development'}`,
+        `.env.${process.env.NODE_ENV || 'local'}`,
+        '.env.local',
         '.env',
       ],
       load: [databaseConfig, redisConfig],

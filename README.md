@@ -319,6 +319,9 @@ npm run dev:auth         # Start auth service only
 ```bash
 npm run build            # Build all projects
 npm run affected:build   # Build only affected projects
+npx nx build auth-service  # Build auth service only
+npx nx build gateway     # Build gateway only
+npx nx build common      # Build common library only
 ```
 
 ### Database
@@ -326,19 +329,25 @@ npm run affected:build   # Build only affected projects
 npm run db:generate      # Generate Prisma client
 npm run db:migrate       # Run database migrations
 npm run db:studio        # Open Prisma Studio
+npm run db:seed          # Run database seeding
 ```
 
 ### Testing
 ```bash
 npm test                 # Run all tests
 npm run affected:test    # Run tests on affected projects
-npm run test:cov         # Run tests with coverage
+npx nx test auth-service # Test auth service only
+npx nx test gateway      # Test gateway only
+npx nx test common       # Test common library only
 ```
 
 ### Linting & Formatting
 ```bash
 npm run lint             # Run ESLint
 npm run affected:lint    # Lint affected projects
+npx nx lint auth-service # Lint auth service only
+npx nx lint gateway      # Lint gateway only
+npx nx lint common       # Lint common library only
 npm run format           # Format code with Prettier
 npm run format:check     # Check code formatting
 ```
@@ -348,6 +357,8 @@ npm run format:check     # Check code formatting
 npm run graph            # View dependency graph
 npm run clean            # Clear Nx cache
 npm run generate         # Generate new code
+npx nx show projects     # List all projects
+npx nx show project auth-service  # Show auth service details
 ```
 
 ## 🔒 Security Features

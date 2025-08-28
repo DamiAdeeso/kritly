@@ -1,92 +1,91 @@
 version: '3.8'
 
 services:
-  # PostgreSQL Database
-  postgres:
-    image: postgres:15-alpine
-    container_name: rev-postgres-dev
-    environment:
-      POSTGRES_DB: rev_auth
-      POSTGRES_USER: rev_user
-      POSTGRES_PASSWORD: rev_password
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres_data_dev:/var/lib/postgresql/data
-    networks:
-      - rev-network-dev
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U rev_user -d rev_auth"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
   # Auth Service (Development with hot reload)
   auth-service:
     build:
       context: .
-      dockerfile: Dockerfile.dev
+      dockerfile: apps/auth-service/Dockerfile
+      target: builder
     container_name: rev-auth-service-dev
-    environment:
-      NODE_ENV: development
-      DATABASE_URL: postgresql://rev_user:rev_password@postgres:5432/rev_auth
-      AUTH_SERVICE_PORT: 3001
-      HTTP_PORT: 3002
-      JWT_SECRET: your-super-secret-jwt-key-change-in-production
-      ALLOWED_ORIGINS: http://localhost:3000,http://gateway:3000
     ports:
       - "3001:3001"  # gRPC port
       - "3002:3002"  # HTTP port
-    depends_on:
-      postgres:
-        condition: service_healthy
-    networks:
-      - rev-network-dev
+    environment:
+      - NODE_ENV=local
+    env_file:
+      - .env.local
     volumes:
       - ./apps/auth-service:/app/apps/auth-service
       - ./libs/common:/app/libs/common
+      - /app/apps/auth-service/node_modules
+      - /app/libs/common/node_modules
       - /app/node_modules
-    command: npm run dev:auth
+    networks:
+      - rev-network
+    command: npx nx serve auth-service --watch
     restart: unless-stopped
 
-  # API Gateway (Development with hot reload)
+  # Gateway Service (Development with hot reload)
   gateway:
     build:
       context: .
-      dockerfile: Dockerfile.dev
+      dockerfile: apps/gateway/Dockerfile
+      target: builder
     container_name: rev-gateway-dev
-    environment:
-      NODE_ENV: development
-      PORT: 3000
-      AUTH_SERVICE_PORT: 3001
-      AUTH_SERVICE_HOST: auth-service
-      ALLOWED_ORIGINS: http://localhost:3000,http://localhost:3001,http://localhost:3002
     ports:
       - "3000:3000"
-    depends_on:
-      - auth-service
-    networks:
-      - rev-network-dev
+    environment:
+      - NODE_ENV=local
+    env_file:
+      - .env.local
     volumes:
       - ./apps/gateway:/app/apps/gateway
       - ./libs/common:/app/libs/common
+      - /app/apps/gateway/node_modules
+      - /app/libs/common/node_modules
       - /app/node_modules
-    command: npm run dev:gateway
+    depends_on:
+      - auth-service
+    networks:
+      - rev-network
+    command: npx nx serve gateway --watch
     restart: unless-stopped
 
-  # Redis (for caching and session management)
+  # PostgreSQL Database (for development)
+  postgres:
+    image: postgres:15-alpine
+    container_name: rev-postgres-dev
+    environment:
+      - POSTGRES_DB=rev_db
+      - POSTGRES_USER=rev_user
+      - POSTGRES_PASSWORD=rev_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - rev-network
+    restart: unless-stopped
+
+  # Redis (for development)
   redis:
     image: redis:7-alpine
     container_name: rev-redis-dev
     ports:
       - "6379:6379"
+    volumes:
+      - redis_data:/data
     networks:
-      - rev-network-dev
+      - rev-network
     restart: unless-stopped
 
 volumes:
-  postgres_data_dev:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
 
 networks:
-  rev-network-dev:
+  rev-network:
     driver: bridge

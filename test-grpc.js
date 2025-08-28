@@ -4,7 +4,7 @@ const protoLoader = require('@grpc/proto-loader');
 const path = require('path');
 
 // Load the proto file
-const PROTO_PATH = path.join(__dirname, 'libs/common/src/proto/auth.proto');
+const PROTO_PATH = path.join(process.cwd(), 'libs/common/src/proto/auth.proto');
 
 const packageDefinition = protoLoader.loadSync(PROTO_PATH, {
   keepCase: true,

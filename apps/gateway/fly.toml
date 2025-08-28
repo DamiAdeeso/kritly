@@ -1,0 +1,42 @@
+# Gateway Service Fly.io Configuration
+app = "rev-gateway"
+primary_region = "iad"
+
+[build]
+  dockerfile = "apps/gateway/Dockerfile"
+
+[env]
+  NODE_ENV = "production"
+  AUTH_SERVICE_HOST = "rev-auth-service.internal"
+  AUTH_SERVICE_PORT = "3001"
+  # Environment variables are set via Fly.io secrets
+
+# Public HTTP service (main API gateway)
+[[services]]
+  internal_port = 3000
+  protocol = "tcp"
+  processes = ["app"]
+
+  [[services.ports]]
+    port = 80
+    handlers = ["http"]
+    force_https = true
+
+  [[services.ports]]
+    port = 443
+    handlers = ["tls", "http"]
+
+  [[services.http_checks]]
+    grace_period = "10s"
+    interval = "30s"
+    method = "GET"
+    timeout = "5s"
+    path = "/health"
+
+[[vm]]
+  cpu_kind = "shared"
+  cpus = 1
+  memory_mb = 512
+
+[processes]
+  app = "node dist/main.js"

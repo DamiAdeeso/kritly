@@ -5,8 +5,8 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "build": "tsc",
-    "dev": "tsc --watch"
+    "build": "nx build common",
+    "dev": "nx build common --watch"
   },
   "dependencies": {
     "@nestjs/common": "latest",

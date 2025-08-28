@@ -1,0 +1,53 @@
+# Auth Service Fly.io Configuration
+app = "rev-auth-service"
+primary_region = "iad"
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  NODE_ENV = "development"
+
+# Internal gRPC service (for other Fly apps)
+[[services]]
+  internal_port = 3001
+  protocol = "tcp"
+  processes = ["app"]
+
+  [[services.ports]]
+    port = 3001
+    handlers = ["tls", "http"]
+
+# Public HTTP service (for direct API access)
+[[services]]
+  internal_port = 3002
+  protocol = "tcp"
+  processes = ["app"]
+
+  [[services.ports]]
+    port = 80
+    handlers = ["http"]
+    force_https = true
+
+  [[services.ports]]
+    port = 443
+    handlers = ["tls", "http"]
+
+  [[services.http_checks]]
+    grace_period = "10s"
+    interval = "30s"
+    method = "GET"
+    timeout = "5s"
+    path = "/health"
+
+[[vm]]
+  cpu_kind = "shared"
+  cpus = 1
+  memory_mb = 512
+
+[mounts]
+  source = "auth_data"
+  destination = "/data"
+
+[processes]
+  app = "node apps/auth-service/dist/main.js"
