@@ -1,0 +1,145 @@
+
+> @rev/common@1.0.0 build
+> tsc
+
+src/dto/auth.dto.ts(5,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/auth.dto.ts(6,3): error TS2564: Property 'email' has no initializer and is not definitely assigned in the constructor.
+src/dto/auth.dto.ts(8,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/auth.dto.ts(9,3): error TS2564: Property 'password' has no initializer and is not definitely assigned in the constructor.
+src/dto/auth.dto.ts(13,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/auth.dto.ts(14,3): error TS2564: Property 'email' has no initializer and is not definitely assigned in the constructor.
+src/dto/auth.dto.ts(16,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/auth.dto.ts(17,3): error TS2564: Property 'password' has no initializer and is not definitely assigned in the constructor.
+src/dto/auth.dto.ts(19,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/auth.dto.ts(20,3): error TS2564: Property 'firstName' has no initializer and is not definitely assigned in the constructor.
+src/dto/auth.dto.ts(22,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/auth.dto.ts(23,3): error TS2564: Property 'lastName' has no initializer and is not definitely assigned in the constructor.
+src/dto/auth.dto.ts(27,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/auth.dto.ts(28,3): error TS2564: Property 'provider' has no initializer and is not definitely assigned in the constructor.
+src/dto/auth.dto.ts(30,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/auth.dto.ts(31,3): error TS2564: Property 'accessToken' has no initializer and is not definitely assigned in the constructor.
+src/dto/auth.dto.ts(33,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/auth.dto.ts(34,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/auth.dto.ts(39,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/auth.dto.ts(40,3): error TS2564: Property 'refreshToken' has no initializer and is not definitely assigned in the constructor.
+src/dto/auth.dto.ts(44,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/auth.dto.ts(45,3): error TS2564: Property 'refreshToken' has no initializer and is not definitely assigned in the constructor.
+src/dto/auth.dto.ts(49,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/auth.dto.ts(50,3): error TS2564: Property 'accessToken' has no initializer and is not definitely assigned in the constructor.
+src/dto/auth.dto.ts(52,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/auth.dto.ts(53,3): error TS2564: Property 'refreshToken' has no initializer and is not definitely assigned in the constructor.
+src/dto/auth.dto.ts(55,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/auth.dto.ts(56,3): error TS2564: Property 'userId' has no initializer and is not definitely assigned in the constructor.
+src/dto/auth.dto.ts(58,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/auth.dto.ts(59,3): error TS2564: Property 'email' has no initializer and is not definitely assigned in the constructor.
+src/dto/common.dto.ts(4,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/common.dto.ts(5,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/common.dto.ts(8,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/common.dto.ts(9,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/common.dto.ts(14,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/common.dto.ts(15,3): error TS2564: Property 'message' has no initializer and is not definitely assigned in the constructor.
+src/dto/common.dto.ts(17,3): error TS2564: Property 'data' has no initializer and is not definitely assigned in the constructor.
+src/dto/common.dto.ts(19,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/common.dto.ts(20,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/common.dto.ts(25,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/common.dto.ts(26,3): error TS2564: Property 'message' has no initializer and is not definitely assigned in the constructor.
+src/dto/common.dto.ts(28,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/common.dto.ts(29,3): error TS2564: Property 'error' has no initializer and is not definitely assigned in the constructor.
+src/dto/common.dto.ts(31,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/common.dto.ts(32,3): error TS2564: Property 'statusCode' has no initializer and is not definitely assigned in the constructor.
+src/dto/common.dto.ts(34,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/common.dto.ts(35,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/common.dto.ts(38,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/user.dto.ts(5,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/user.dto.ts(6,3): error TS2564: Property 'id' has no initializer and is not definitely assigned in the constructor.
+src/dto/user.dto.ts(8,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/user.dto.ts(9,3): error TS2564: Property 'email' has no initializer and is not definitely assigned in the constructor.
+src/dto/user.dto.ts(11,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/user.dto.ts(12,3): error TS2564: Property 'firstName' has no initializer and is not definitely assigned in the constructor.
+src/dto/user.dto.ts(14,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/user.dto.ts(15,3): error TS2564: Property 'lastName' has no initializer and is not definitely assigned in the constructor.
+src/dto/user.dto.ts(17,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/user.dto.ts(18,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/user.dto.ts(21,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/user.dto.ts(22,3): error TS2564: Property 'role' has no initializer and is not definitely assigned in the constructor.
+src/dto/user.dto.ts(24,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/user.dto.ts(25,3): error TS2564: Property 'status' has no initializer and is not definitely assigned in the constructor.
+src/dto/user.dto.ts(27,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/user.dto.ts(28,3): error TS2564: Property 'createdAt' has no initializer and is not definitely assigned in the constructor.
+src/dto/user.dto.ts(30,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/user.dto.ts(31,3): error TS2564: Property 'updatedAt' has no initializer and is not definitely assigned in the constructor.
+src/dto/user.dto.ts(35,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/user.dto.ts(36,3): error TS2564: Property 'email' has no initializer and is not definitely assigned in the constructor.
+src/dto/user.dto.ts(38,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/user.dto.ts(39,3): error TS2564: Property 'firstName' has no initializer and is not definitely assigned in the constructor.
+src/dto/user.dto.ts(41,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/user.dto.ts(42,3): error TS2564: Property 'lastName' has no initializer and is not definitely assigned in the constructor.
+src/dto/user.dto.ts(44,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/user.dto.ts(45,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/user.dto.ts(48,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/user.dto.ts(49,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/user.dto.ts(54,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/user.dto.ts(55,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/user.dto.ts(58,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/user.dto.ts(59,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/user.dto.ts(62,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+src/dto/user.dto.ts(63,4): error TS1240: Unable to resolve signature of property decorator when called as an expression.
+  Argument of type 'undefined' is not assignable to parameter of type 'Object'.
+npm error Lifecycle script `build` failed with error:
+npm error code 2
+npm error path C:\Users\DAMILOLA\Documents\rev\libs\common
+npm error workspace @rev/common@1.0.0
+npm error location C:\Users\DAMILOLA\Documents\rev\libs\common
+npm error command failed
+npm error command C:\Windows\system32\cmd.exe /d /s /c tsc

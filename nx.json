@@ -1,0 +1,49 @@
+{
+  "extends": "nx/presets/npm.json",
+  "affected": {
+    "defaultBase": "main"
+  },
+  "tasksRunnerOptions": {
+    "default": {
+      "runner": "nx/tasks-runners/default",
+      "options": {
+        "cacheableOperations": ["build", "lint", "test", "e2e", "prisma:generate"],
+        "parallel": 3
+      }
+    }
+  },
+  "targetDefaults": {
+    "build": {
+      "dependsOn": ["^build"],
+      "inputs": ["default", "^default"],
+      "outputs": ["{projectRoot}/dist"]
+    },
+    "test": {
+      "inputs": ["default", "^default", "{workspaceRoot}/jest.preset.js"],
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"]
+    },
+    "lint": {
+      "inputs": ["default", "{workspaceRoot}/.eslintrc.json"]
+    },
+    "serve": {
+      "dependsOn": ["^build"]
+    }
+  },
+  "generators": {
+    "@nx/nest:application": {
+      "unitTestRunner": "jest",
+      "e2eTestRunner": "jest"
+    },
+    "@nx/nest:library": {
+      "unitTestRunner": "jest"
+    }
+  },
+  "plugins": [
+    {
+      "plugin": "@nx/jest/plugin",
+      "options": {
+        "testTargetName": "test"
+      }
+    }
+  ]
+}

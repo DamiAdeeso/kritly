@@ -1,0 +1,79 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: rev_postgres
+    environment:
+      POSTGRES_DB: rev_auth_db
+      POSTGRES_USER: rev_user
+      POSTGRES_PASSWORD: rev_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - rev_network
+
+  # Redis for caching (optional)
+  redis:
+    image: redis:7-alpine
+    container_name: rev_redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - rev_network
+
+  # Auth Service
+  auth-service:
+    build:
+      context: .
+      dockerfile: apps/auth-service/Dockerfile
+    container_name: rev_auth_service
+    environment:
+      - NODE_ENV=development
+      - DATABASE_URL=postgresql://rev_user:rev_password@postgres:5432/rev_auth_db
+      - JWT_SECRET=your-super-secret-jwt-key-change-this-in-production
+      - PORT=3001
+    ports:
+      - "3001:3001"
+    depends_on:
+      - postgres
+    networks:
+      - rev_network
+    volumes:
+      - ./apps/auth-service:/app
+      - /app/node_modules
+
+  # Gateway Service
+  gateway:
+    build:
+      context: .
+      dockerfile: apps/gateway/Dockerfile
+    container_name: rev_gateway
+    environment:
+      - NODE_ENV=development
+      - AUTH_SERVICE_HOST=auth-service
+      - AUTH_SERVICE_PORT=3001
+      - PORT=3000
+      - ALLOWED_ORIGINS=http://localhost:3000,http://localhost:3001
+    ports:
+      - "3000:3000"
+    depends_on:
+      - auth-service
+    networks:
+      - rev_network
+    volumes:
+      - ./apps/gateway:/app
+      - /app/node_modules
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  rev_network:
+    driver: bridge

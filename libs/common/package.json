@@ -1,0 +1,21 @@
+{
+  "name": "@rev/common",
+  "version": "1.0.0",
+  "description": "Common utilities and interfaces for Rev microservices",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch"
+  },
+  "dependencies": {
+    "@nestjs/common": "latest",
+    "@nestjs/microservices": "latest",
+    "class-validator": "latest",
+    "class-transformer": "latest"
+  },
+  "devDependencies": {
+    "@types/node": "latest",
+    "typescript": "latest"
+  }
+}

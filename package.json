@@ -1,0 +1,41 @@
+{
+  "name": "rev-microservices",
+  "version": "1.0.0",
+  "description": "NestJS Microservices with Authentication",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "libs/*"
+  ],
+  "scripts": {
+    "build": "nx build",
+    "test": "nx test",
+    "lint": "nx lint",
+    "dev": "nx run-many --target=serve --all --parallel",
+    "dev:gateway": "nx serve gateway",
+    "dev:auth": "nx serve auth-service",
+    "db:generate": "nx run auth-service:prisma:generate",
+    "db:migrate": "nx run auth-service:prisma:migrate",
+    "db:studio": "nx run auth-service:prisma:studio",
+    "affected:build": "nx affected:build",
+    "affected:test": "nx affected:test",
+    "affected:lint": "nx affected:lint",
+    "graph": "nx graph",
+    "format": "nx format:write",
+    "format:check": "nx format:check",
+    "clean": "nx reset",
+    "generate": "nx generate"
+  },
+  "devDependencies": {
+    "@nx/workspace": "latest",
+    "@nx/nest": "latest",
+    "@nx/eslint-plugin": "latest",
+    "@nx/jest": "latest",
+    "@nx/webpack": "latest",
+    "@nx/js": "latest",
+    "nx": "latest",
+    "typescript": "latest",
+    "eslint": "latest",
+    "prettier": "latest"
+  }
+}
