@@ -3,10 +3,16 @@ node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+lerna-debug.log*
+.npm/
+.yarn-integrity
 
 # Environment variables
 .env
 .env.local
+.env.development
+.env.staging
+.env.production
 .env.development.local
 .env.test.local
 .env.production.local
@@ -17,72 +23,52 @@ build/
 *.tsbuildinfo
 
 # Logs
-logs
+logs/
 *.log
 
 # Runtime data
-pids
+pids/
 *.pid
 *.seed
 *.pid.lock
 
-# Coverage directory used by tools like istanbul
+# Coverage
 coverage/
 *.lcov
+.nyc_output/
 
-# nyc test coverage
-.nyc_output
-
-# Dependency directories
-jspm_packages/
-
-# Optional npm cache directory
-.npm
-
-# Optional eslint cache
+# Cache directories
+.cache/
+.parcel-cache/
 .eslintcache
-
-# Microbundle cache
 .rpt2_cache/
 .rts2_cache_cjs/
 .rts2_cache_es/
 .rts2_cache_umd/
 
-# Optional REPL history
-.node_repl_history
+# Nx
+.nx/
+nx-cache/
+.nx-cache/
 
-# Output of 'npm pack'
-*.tgz
+# Prisma
+node_modules/.prisma/
+prisma/*.db
+prisma/*.sqlite
 
-# Yarn Integrity file
-.yarn-integrity
+# Database
+*.db
+*.sqlite
 
-# parcel-bundler cache (https://parceljs.org/)
-.cache
-.parcel-cache
+# Docker
+.dockerignore
+docker-compose.override.yml
 
-# Next.js build output
-.next
-
-# Nuxt.js build / generate output
-.nuxt
-
-# Gatsby files
-.cache/
-public
-
-# Storybook build outputs
-.out
-.storybook-out
-
-# Temporary folders
-tmp/
-temp/
-
-# Editor directories and files
+# IDE and Editor
 .vscode/
 .idea/
 *.swp
+*.swp~
 *.swo
 *~
 
@@ -95,20 +81,24 @@ temp/
 ehthumbs.db
 Thumbs.db
 
-# Prisma
-prisma/migrations/
+# Temporary folders
+tmp/
+temp/
+.tmp/
 
-# Database
-*.db
-*.sqlite
+# Optional REPL history
+.node_repl_history
 
-# Docker
-.dockerignore
-
-# Testing
-.nyc_output/
-coverage/
-
-# Misc
+# Output of 'npm pack'
 *.tgz
 *.tar.gz
+
+# Framework specific (keeping for future use)
+.next/
+.nuxt/
+public/
+.out/
+.storybook-out/
+
+# Dependency directories
+jspm_packages/
