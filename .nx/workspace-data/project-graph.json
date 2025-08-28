@@ -679,6 +679,9 @@
               "dev",
               "dev:gateway",
               "dev:auth",
+              "start:dev",
+              "start:staging",
+              "start:production",
               "docker:build",
               "docker:up",
               "docker:down",
@@ -714,7 +717,7 @@
               "script": "dev"
             },
             "metadata": {
-              "scriptContent": "nx run-many --target=serve --all --parallel",
+              "scriptContent": "cross-env NODE_ENV=local nx run-many --target=serve --all --parallel",
               "runCommand": "npm run dev"
             },
             "configurations": {},
@@ -726,7 +729,7 @@
               "script": "dev:gateway"
             },
             "metadata": {
-              "scriptContent": "nx serve gateway",
+              "scriptContent": "cross-env NODE_ENV=local nx serve gateway",
               "runCommand": "npm run dev:gateway"
             },
             "configurations": {},
@@ -738,8 +741,44 @@
               "script": "dev:auth"
             },
             "metadata": {
-              "scriptContent": "nx serve auth-service",
+              "scriptContent": "cross-env NODE_ENV=local nx serve auth-service",
               "runCommand": "npm run dev:auth"
+            },
+            "configurations": {},
+            "parallelism": true
+          },
+          "start:dev": {
+            "executor": "nx:run-script",
+            "options": {
+              "script": "start:dev"
+            },
+            "metadata": {
+              "scriptContent": "cross-env NODE_ENV=development nx run-many --target=serve --all --parallel",
+              "runCommand": "npm run start:dev"
+            },
+            "configurations": {},
+            "parallelism": true
+          },
+          "start:staging": {
+            "executor": "nx:run-script",
+            "options": {
+              "script": "start:staging"
+            },
+            "metadata": {
+              "scriptContent": "cross-env NODE_ENV=staging nx run-many --target=serve --all --parallel",
+              "runCommand": "npm run start:staging"
+            },
+            "configurations": {},
+            "parallelism": true
+          },
+          "start:production": {
+            "executor": "nx:run-script",
+            "options": {
+              "script": "start:production"
+            },
+            "metadata": {
+              "scriptContent": "cross-env NODE_ENV=production nx run-many --target=serve --all --parallel",
+              "runCommand": "npm run start:production"
             },
             "configurations": {},
             "parallelism": true
@@ -2637,6 +2676,15 @@
         "version": "1.0.4",
         "packageName": "@emnapi/wasi-threads",
         "hash": "sha512-PJR+bOmMOPH8AtcTGAyYNiuJ3/Fcoj2XN/gBEWzDIKh254XO+mM9XoXHk5GNEhodxeMznbg7BlRojVbKN+gC6g=="
+      }
+    },
+    "npm:@epic-web/invariant": {
+      "type": "npm",
+      "name": "npm:@epic-web/invariant",
+      "data": {
+        "version": "1.0.0",
+        "packageName": "@epic-web/invariant",
+        "hash": "sha512-lrTPqgvfFQtR/eY/qkIzp98OGdNJu0m5ji3q/nJI8v3SXkRKEnWiOxMmbvcSoAIzv/cGiuvRy57k4suKQSAdwA=="
       }
     },
     "npm:@eslint-community/eslint-utils": {
@@ -6804,6 +6852,15 @@
         "version": "1.1.1",
         "packageName": "create-require",
         "hash": "sha512-dcKFX3jn0MpIaXjisoRvexIJVEKzaq7z2rZKxf+MSr9TkdmHmsU4m2lcLojrj/FHl8mk5VxMmYA+ftRkP/3oKQ=="
+      }
+    },
+    "npm:cross-env": {
+      "type": "npm",
+      "name": "npm:cross-env",
+      "data": {
+        "version": "10.0.0",
+        "packageName": "cross-env",
+        "hash": "sha512-aU8qlEK/nHYtVuN4p7UQgAwVljzMg8hB4YK5ThRqD2l/ziSnryncPNn7bMLt5cFYsKVKBh8HqLqyCoTupEUu7Q=="
       }
     },
     "npm:cross-spawn": {
@@ -13146,12 +13203,12 @@
     "common": [
       {
         "source": "common",
-        "target": "npm:@nx/workspace",
+        "target": "npm:@grpc/grpc-js",
         "type": "static"
       },
       {
         "source": "common",
-        "target": "npm:@nx/nest",
+        "target": "npm:@grpc/proto-loader",
         "type": "static"
       },
       {
@@ -13166,22 +13223,27 @@
       },
       {
         "source": "common",
-        "target": "npm:@nx/webpack",
-        "type": "static"
-      },
-      {
-        "source": "common",
         "target": "npm:@nx/js",
         "type": "static"
       },
       {
         "source": "common",
-        "target": "npm:nx",
+        "target": "npm:@nx/nest",
         "type": "static"
       },
       {
         "source": "common",
-        "target": "npm:typescript",
+        "target": "npm:@nx/webpack",
+        "type": "static"
+      },
+      {
+        "source": "common",
+        "target": "npm:@nx/workspace",
+        "type": "static"
+      },
+      {
+        "source": "common",
+        "target": "npm:cross-env",
         "type": "static"
       },
       {
@@ -13191,22 +13253,22 @@
       },
       {
         "source": "common",
+        "target": "npm:grpc-tools",
+        "type": "static"
+      },
+      {
+        "source": "common",
+        "target": "npm:nx",
+        "type": "static"
+      },
+      {
+        "source": "common",
         "target": "npm:prettier",
         "type": "static"
       },
       {
         "source": "common",
-        "target": "npm:@grpc/grpc-js",
-        "type": "static"
-      },
-      {
-        "source": "common",
-        "target": "npm:@grpc/proto-loader",
-        "type": "static"
-      },
-      {
-        "source": "common",
-        "target": "npm:grpc-tools",
+        "target": "npm:typescript",
         "type": "static"
       }
     ],
@@ -21255,6 +21317,18 @@
         "type": "static"
       }
     ],
+    "npm:cross-env": [
+      {
+        "source": "npm:cross-env",
+        "target": "npm:@epic-web/invariant",
+        "type": "static"
+      },
+      {
+        "source": "npm:cross-env",
+        "target": "npm:cross-spawn",
+        "type": "static"
+      }
+    ],
     "npm:cross-spawn": [
       {
         "source": "npm:cross-spawn",
@@ -28817,5 +28891,5 @@
   },
   "version": "6.0",
   "errors": [],
-  "computedAt": 1756391052810
+  "computedAt": 1756393816048
 }

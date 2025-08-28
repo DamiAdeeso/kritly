@@ -9,7 +9,7 @@ primary_region = "iad"
   dockerfile = "Dockerfile"
 
 [env]
-  NODE_ENV = "production"
+  NODE_ENV = "development"
 
 [http_service]
   internal_port = 3002

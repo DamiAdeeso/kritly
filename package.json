@@ -11,9 +11,12 @@
     "build": "nx build",
     "test": "nx test",
     "lint": "nx lint",
-    "dev": "nx run-many --target=serve --all --parallel",
-    "dev:gateway": "nx serve gateway",
-    "dev:auth": "nx serve auth-service",
+    "dev": "cross-env NODE_ENV=local nx run-many --target=serve --all --parallel",
+    "dev:gateway": "cross-env NODE_ENV=local nx serve gateway",
+    "dev:auth": "cross-env NODE_ENV=local nx serve auth-service",
+    "start:dev": "cross-env NODE_ENV=development nx run-many --target=serve --all --parallel",
+    "start:staging": "cross-env NODE_ENV=staging nx run-many --target=serve --all --parallel",
+    "start:production": "cross-env NODE_ENV=production nx run-many --target=serve --all --parallel",
     "docker:build": "docker-compose build",
     "docker:up": "docker-compose up -d",
     "docker:down": "docker-compose down",
@@ -35,19 +38,20 @@
     "clean": "nx reset",
     "generate": "nx generate"
   },
-      "devDependencies": {
-      "@nx/workspace": "latest",
-      "@nx/nest": "latest",
-      "@nx/eslint-plugin": "latest",
-      "@nx/jest": "latest",
-      "@nx/webpack": "latest",
-      "@nx/js": "latest",
-      "nx": "latest",
-      "typescript": "latest",
-      "eslint": "latest",
-      "prettier": "latest",
-      "@grpc/grpc-js": "latest",
-      "@grpc/proto-loader": "latest",
-      "grpc-tools": "latest"
-    }
+  "devDependencies": {
+    "@grpc/grpc-js": "latest",
+    "@grpc/proto-loader": "latest",
+    "@nx/eslint-plugin": "latest",
+    "@nx/jest": "latest",
+    "@nx/js": "latest",
+    "@nx/nest": "latest",
+    "@nx/webpack": "latest",
+    "@nx/workspace": "latest",
+    "cross-env": "^10.0.0",
+    "eslint": "latest",
+    "grpc-tools": "latest",
+    "nx": "latest",
+    "prettier": "latest",
+    "typescript": "latest"
+  }
 }

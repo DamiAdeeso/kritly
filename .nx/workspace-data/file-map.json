@@ -28,75 +28,6 @@
   "fileMap": {
     "nonProjectFiles": [],
     "projectFileMap": {
-      "@rev/common": [
-        {
-          "file": "libs/common/jest.config.ts",
-          "hash": "6510185090356134336"
-        },
-        {
-          "file": "libs/common/package.json",
-          "hash": "332087830865863906",
-          "deps": [
-            "npm:@types/node",
-            "npm:typescript",
-            "npm:@nestjs/common",
-            "npm:@nestjs/microservices",
-            "npm:@nestjs/swagger",
-            "npm:class-validator",
-            "npm:class-transformer",
-            "npm:@grpc/grpc-js",
-            "npm:@grpc/proto-loader"
-          ]
-        },
-        {
-          "file": "libs/common/src/constants/auth.constants.ts",
-          "hash": "5877608948778446145"
-        },
-        {
-          "file": "libs/common/src/dto/auth.dto.ts",
-          "hash": "12320246873543262977"
-        },
-        {
-          "file": "libs/common/src/dto/common.dto.ts",
-          "hash": "9114465480381979702"
-        },
-        {
-          "file": "libs/common/src/dto/user.dto.ts",
-          "hash": "13427406868978488498"
-        },
-        {
-          "file": "libs/common/src/enums/auth.enum.ts",
-          "hash": "17623165757422793493"
-        },
-        {
-          "file": "libs/common/src/index.ts",
-          "hash": "12952603979702401944"
-        },
-        {
-          "file": "libs/common/src/interfaces/auth.interface.ts",
-          "hash": "7483212708131446397"
-        },
-        {
-          "file": "libs/common/src/interfaces/user.interface.ts",
-          "hash": "11985868060505142219"
-        },
-        {
-          "file": "libs/common/src/proto/auth.proto",
-          "hash": "979282767857463605"
-        },
-        {
-          "file": "libs/common/src/utils/validation.util.ts",
-          "hash": "16276306918258190158"
-        },
-        {
-          "file": "libs/common/tsconfig.json",
-          "hash": "2396179755924886193"
-        },
-        {
-          "file": "libs/common/tsconfig.spec.json",
-          "hash": "11310521585584423707"
-        }
-      ],
       "auth-service": [
         {
           "file": "apps/auth-service/Dockerfile",
@@ -182,7 +113,7 @@
         },
         {
           "file": "apps/auth-service/src/app.module.ts",
-          "hash": "1413288039857292184"
+          "hash": "17093546291864652368"
         },
         {
           "file": "apps/auth-service/src/auth/auth.controller.ts",
@@ -267,99 +198,6 @@
         {
           "file": "apps/auth-service/webpack.config.js",
           "hash": "5963316538992183300"
-        }
-      ],
-      "common": [
-        {
-          "file": ".eslintrc.json",
-          "hash": "9188201835120897554"
-        },
-        {
-          "file": ".gitignore",
-          "hash": "6932878666424702862"
-        },
-        {
-          "file": "DEPLOYMENT.md",
-          "hash": "13641524052384205390"
-        },
-        {
-          "file": "Dockerfile",
-          "hash": "10137067955058334596"
-        },
-        {
-          "file": "Dockerfile.auth-service",
-          "hash": "845108234356615005"
-        },
-        {
-          "file": "Dockerfile.dev",
-          "hash": "10058517386199116638"
-        },
-        {
-          "file": "Dockerfile.gateway",
-          "hash": "6877119997199831025"
-        },
-        {
-          "file": "README.md",
-          "hash": "4212013112364309744"
-        },
-        {
-          "file": "docker-compose.dev.yml",
-          "hash": "12178312159286932342"
-        },
-        {
-          "file": "docker-compose.yml",
-          "hash": "17386915191942808242"
-        },
-        {
-          "file": "env.example",
-          "hash": "13899419655935248400"
-        },
-        {
-          "file": "fly.toml",
-          "hash": "10769877695913532041"
-        },
-        {
-          "file": "jest.preset.js",
-          "hash": "7473220183190921152"
-        },
-        {
-          "file": "nx.json",
-          "hash": "15519821841737260359"
-        },
-        {
-          "file": "package-lock.json",
-          "hash": "14265956744174185050"
-        },
-        {
-          "file": "package.json",
-          "hash": "4336482944245280004",
-          "deps": [
-            "npm:@nx/workspace",
-            "npm:@nx/nest",
-            "npm:@nx/eslint-plugin",
-            "npm:@nx/jest",
-            "npm:@nx/webpack",
-            "npm:@nx/js",
-            "npm:nx",
-            "npm:typescript",
-            "npm:eslint",
-            "npm:prettier",
-            "npm:@grpc/grpc-js",
-            "npm:@grpc/proto-loader",
-            "npm:grpc-tools"
-          ]
-        },
-        {
-          "file": "project.json",
-          "hash": "16260026983800059994"
-        },
-        {
-          "file": "test-grpc.js",
-          "hash": "4505501550757333347"
-        },
-        {
-          "file": "tsconfig.base.json",
-          "hash": "12390944237752980671"
         }
       ],
       "gateway": [
@@ -453,6 +291,189 @@
         {
           "file": "apps/gateway/webpack.config.js",
           "hash": "5963316538992183300"
+        }
+      ],
+      "@rev/common": [
+        {
+          "file": "libs/common/jest.config.ts",
+          "hash": "6510185090356134336"
+        },
+        {
+          "file": "libs/common/package.json",
+          "hash": "332087830865863906",
+          "deps": [
+            "npm:@types/node",
+            "npm:typescript",
+            "npm:@nestjs/common",
+            "npm:@nestjs/microservices",
+            "npm:@nestjs/swagger",
+            "npm:class-validator",
+            "npm:class-transformer",
+            "npm:@grpc/grpc-js",
+            "npm:@grpc/proto-loader"
+          ]
+        },
+        {
+          "file": "libs/common/src/constants/auth.constants.ts",
+          "hash": "5877608948778446145"
+        },
+        {
+          "file": "libs/common/src/dto/auth.dto.ts",
+          "hash": "12320246873543262977"
+        },
+        {
+          "file": "libs/common/src/dto/common.dto.ts",
+          "hash": "9114465480381979702"
+        },
+        {
+          "file": "libs/common/src/dto/user.dto.ts",
+          "hash": "13427406868978488498"
+        },
+        {
+          "file": "libs/common/src/enums/auth.enum.ts",
+          "hash": "17623165757422793493"
+        },
+        {
+          "file": "libs/common/src/index.ts",
+          "hash": "12952603979702401944"
+        },
+        {
+          "file": "libs/common/src/interfaces/auth.interface.ts",
+          "hash": "7483212708131446397"
+        },
+        {
+          "file": "libs/common/src/interfaces/user.interface.ts",
+          "hash": "11985868060505142219"
+        },
+        {
+          "file": "libs/common/src/proto/auth.proto",
+          "hash": "979282767857463605"
+        },
+        {
+          "file": "libs/common/src/utils/validation.util.ts",
+          "hash": "16276306918258190158"
+        },
+        {
+          "file": "libs/common/tsconfig.json",
+          "hash": "2396179755924886193"
+        },
+        {
+          "file": "libs/common/tsconfig.spec.json",
+          "hash": "11310521585584423707"
+        }
+      ],
+      "common": [
+        {
+          "file": ".eslintrc.json",
+          "hash": "9188201835120897554"
+        },
+        {
+          "file": ".gitignore",
+          "hash": "6932878666424702862"
+        },
+        {
+          "file": "DEPLOYMENT.md",
+          "hash": "13641524052384205390"
+        },
+        {
+          "file": "Dockerfile",
+          "hash": "10137067955058334596"
+        },
+        {
+          "file": "Dockerfile.auth-service",
+          "hash": "845108234356615005"
+        },
+        {
+          "file": "Dockerfile.dev",
+          "hash": "10058517386199116638"
+        },
+        {
+          "file": "Dockerfile.gateway",
+          "hash": "6877119997199831025"
+        },
+        {
+          "file": "ENVIRONMENT_SETUP.md",
+          "hash": "15291976538929944555"
+        },
+        {
+          "file": "README.md",
+          "hash": "4212013112364309744"
+        },
+        {
+          "file": "docker-compose.dev.yml",
+          "hash": "12178312159286932342"
+        },
+        {
+          "file": "docker-compose.yml",
+          "hash": "17386915191942808242"
+        },
+        {
+          "file": "env.development",
+          "hash": "3745260696761381423"
+        },
+        {
+          "file": "env.example",
+          "hash": "13899419655935248400"
+        },
+        {
+          "file": "env.local",
+          "hash": "9582157931349316478"
+        },
+        {
+          "file": "env.production",
+          "hash": "13863000155155341290"
+        },
+        {
+          "file": "env.staging",
+          "hash": "10835715145637963246"
+        },
+        {
+          "file": "fly.toml",
+          "hash": "17515795332195977971"
+        },
+        {
+          "file": "jest.preset.js",
+          "hash": "7473220183190921152"
+        },
+        {
+          "file": "nx.json",
+          "hash": "15519821841737260359"
+        },
+        {
+          "file": "package-lock.json",
+          "hash": "9863819760209727448"
+        },
+        {
+          "file": "package.json",
+          "hash": "2510031703643987699",
+          "deps": [
+            "npm:@grpc/grpc-js",
+            "npm:@grpc/proto-loader",
+            "npm:@nx/eslint-plugin",
+            "npm:@nx/jest",
+            "npm:@nx/js",
+            "npm:@nx/nest",
+            "npm:@nx/webpack",
+            "npm:@nx/workspace",
+            "npm:cross-env",
+            "npm:eslint",
+            "npm:grpc-tools",
+            "npm:nx",
+            "npm:prettier",
+            "npm:typescript"
+          ]
+        },
+        {
+          "file": "project.json",
+          "hash": "16260026983800059994"
+        },
+        {
+          "file": "test-grpc.js",
+          "hash": "4505501550757333347"
+        },
+        {
+          "file": "tsconfig.base.json",
+          "hash": "12390944237752980671"
         }
       ]
     }

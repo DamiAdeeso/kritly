@@ -1593,6 +1593,15 @@
         "hash": "sha512-PJR+bOmMOPH8AtcTGAyYNiuJ3/Fcoj2XN/gBEWzDIKh254XO+mM9XoXHk5GNEhodxeMznbg7BlRojVbKN+gC6g=="
       }
     },
+    "npm:@epic-web/invariant": {
+      "type": "npm",
+      "name": "npm:@epic-web/invariant",
+      "data": {
+        "version": "1.0.0",
+        "packageName": "@epic-web/invariant",
+        "hash": "sha512-lrTPqgvfFQtR/eY/qkIzp98OGdNJu0m5ji3q/nJI8v3SXkRKEnWiOxMmbvcSoAIzv/cGiuvRy57k4suKQSAdwA=="
+      }
+    },
     "npm:@eslint-community/eslint-utils": {
       "type": "npm",
       "name": "npm:@eslint-community/eslint-utils",
@@ -5758,6 +5767,15 @@
         "version": "1.1.1",
         "packageName": "create-require",
         "hash": "sha512-dcKFX3jn0MpIaXjisoRvexIJVEKzaq7z2rZKxf+MSr9TkdmHmsU4m2lcLojrj/FHl8mk5VxMmYA+ftRkP/3oKQ=="
+      }
+    },
+    "npm:cross-env": {
+      "type": "npm",
+      "name": "npm:cross-env",
+      "data": {
+        "version": "10.0.0",
+        "packageName": "cross-env",
+        "hash": "sha512-aU8qlEK/nHYtVuN4p7UQgAwVljzMg8hB4YK5ThRqD2l/ziSnryncPNn7bMLt5cFYsKVKBh8HqLqyCoTupEUu7Q=="
       }
     },
     "npm:cross-spawn": {
@@ -19564,6 +19582,16 @@
     {
       "source": "npm:cosmiconfig",
       "target": "npm:yaml",
+      "type": "static"
+    },
+    {
+      "source": "npm:cross-env",
+      "target": "npm:@epic-web/invariant",
+      "type": "static"
+    },
+    {
+      "source": "npm:cross-env",
+      "target": "npm:cross-spawn",
       "type": "static"
     },
     {
