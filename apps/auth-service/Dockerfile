@@ -19,13 +19,13 @@ COPY apps/auth-service ./apps/auth-service
 COPY libs/common ./libs/common
 
 # Build the common library first
-RUN npx nx build common
+RUN cd libs/common && npm run build
 
 # Generate Prisma client
 RUN npx nx run auth-service:prisma:generate
 
-# Build the auth service using Nx
-RUN npx nx build auth-service
+# Build the auth service using Nx (disable daemon for Docker)
+RUN NX_DAEMON=false npx nx build auth-service
 
 # Production stage
 FROM node:18-alpine AS production
@@ -46,8 +46,15 @@ RUN npm ci
 # Copy built applications and Prisma from builder stage
 COPY --from=builder /app/apps/auth-service/dist ./apps/auth-service/dist
 COPY --from=builder /app/libs/common/dist ./libs/common/dist
+COPY --from=builder /app/libs/common/src ./libs/common/src
 COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=builder /app/apps/auth-service/prisma ./apps/auth-service/prisma
+
+# Generate Prisma client in production stage
+RUN npx prisma generate --schema=./apps/auth-service/prisma/schema.prisma
+
+# Regenerate Prisma client in production stage to ensure it's properly built
+RUN npx prisma generate --schema=apps/auth-service/prisma/schema.prisma
 
 # Environment files are handled by deployment platform secrets
 # No environment files are copied to production images
@@ -67,5 +74,5 @@ EXPOSE 3001 3002
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
   CMD node -e "require('http').get('http://localhost:3002/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })"
 
-# Start the auth service
-CMD ["node", "apps/auth-service/dist/main.js"]
+# Start the auth service with migrations
+CMD ["sh", "-c", "npx prisma migrate deploy --schema=./apps/auth-service/prisma/schema.prisma && node apps/auth-service/dist/apps/auth-service/src/main.js"]

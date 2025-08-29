@@ -19,10 +19,10 @@ COPY apps/gateway ./apps/gateway
 COPY libs/common ./libs/common
 
 # Build the common library first
-RUN npx nx build common
+RUN cd libs/common && npm run build
 
-# Build the gateway service using Nx
-RUN npx nx build gateway
+# Build the gateway service using Nx (disable daemon for Docker)
+RUN NX_DAEMON=false npx nx build gateway
 
 # Production stage
 FROM node:18-alpine AS production

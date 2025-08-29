@@ -5,35 +5,10 @@
   "projectType": "application",
   "targets": {
     "build": {
-      "executor": "@nx/webpack:webpack",
-      "outputs": ["{options.outputPath}"],
-      "defaultConfiguration": "production",
+      "executor": "nx:run-commands",
+      "outputs": ["{workspaceRoot}/apps/auth-service/dist"],
       "options": {
-        "target": "node",
-        "compiler": "tsc",
-        "outputPath": "dist",
-        "main": "apps/auth-service/src/main.ts",
-        "tsConfig": "apps/auth-service/tsconfig.json",
-        "isolatedConfig": true,
-        "webpackConfig": "apps/auth-service/webpack.config.js"
-      },
-      "configurations": {
-        "development": {
-          "optimization": false,
-          "extractLicenses": false,
-          "inspect": false
-        },
-        "production": {
-          "optimization": true,
-          "extractLicenses": true,
-          "inspect": false,
-          "fileReplacements": [
-            {
-              "replace": "apps/auth-service/src/environments/environment.ts",
-              "with": "apps/auth-service/src/environments/environment.prod.ts"
-            }
-          ]
-        }
+        "command": "tsc -p apps/auth-service/tsconfig.json"
       }
     },
     "serve": {
