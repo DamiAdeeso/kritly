@@ -6,6 +6,8 @@ services:
     region: oregon
     plan: free
     healthCheckPath: /health
+    buildCommand: npx nx build auth-service
+    startCommand: npx nx serve auth-service
     envVars:
       - key: NODE_ENV
         value: production
@@ -37,7 +39,6 @@ services:
         sync: false
       - key: INSTAGRAM_CLIENT_SECRET
         sync: false
-    buildCommand: npx nx build auth-service
 
   # Gateway Service
   - type: web
@@ -46,6 +47,8 @@ services:
     region: oregon
     plan: free
     healthCheckPath: /health
+    buildCommand: npx nx build gateway
+    startCommand: npx nx serve gateway
     envVars:
       - key: NODE_ENV
         value: production
@@ -53,4 +56,3 @@ services:
         value: rev-auth-service.onrender.com
       - key: AUTH_SERVICE_PORT
         value: 10000
-    buildCommand: npx nx build gateway
