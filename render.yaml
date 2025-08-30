@@ -6,7 +6,6 @@ services:
     region: oregon
     plan: free
     healthCheckPath: /health
-    dockerfilePath: ./apps/auth-service/Dockerfile
     buildCommand: npx nx build auth-service
     envVars:
       - key: NODE_ENV
@@ -47,7 +46,6 @@ services:
     region: oregon
     plan: free
     healthCheckPath: /health
-    dockerfilePath: ./apps/gateway/Dockerfile
     buildCommand: npx nx build gateway
     envVars:
       - key: NODE_ENV
