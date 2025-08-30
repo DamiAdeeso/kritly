@@ -38,7 +38,6 @@ services:
       - key: INSTAGRAM_CLIENT_SECRET
         sync: false
     buildCommand: npx nx build auth-service
-    startCommand: node apps/auth-service/dist/apps/auth-service/src/main.js
 
   # Gateway Service
   - type: web
@@ -55,4 +54,3 @@ services:
       - key: AUTH_SERVICE_PORT
         value: 10000
     buildCommand: npx nx build gateway
-    startCommand: node apps/gateway/dist/src/main.js
