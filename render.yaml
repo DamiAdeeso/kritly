@@ -7,7 +7,6 @@ services:
     plan: free
     healthCheckPath: /health
     dockerfilePath: apps/auth-service/Dockerfile
-    buildCommand: npx nx build auth-service
     envVars:
       - key: NODE_ENV
         value: production
@@ -48,11 +47,10 @@ services:
     plan: free
     healthCheckPath: /health
     dockerfilePath: apps/gateway/Dockerfile
-    buildCommand: npx nx build gateway
     envVars:
       - key: NODE_ENV
         value: production
       - key: AUTH_SERVICE_HOST
-        value: rev-auth-service.onrender.com
+        value: https://rev-auth-service.onrender.com
       - key: AUTH_SERVICE_PORT
-        value: 3002
+        value: 443   # if using https public domain
