@@ -14,7 +14,7 @@ async function bootstrap() {
       options: {
         package: 'auth',
         protoPath: join(process.cwd(), 'libs/common/src/proto/auth.proto'),
-        url: `localhost:${process.env.AUTH_SERVICE_PORT || 3001}`,
+        url: `0.0.0.0:${process.env.AUTH_SERVICE_PORT || 3001}`,
       },
     }
   );
@@ -31,7 +31,7 @@ async function bootstrap() {
   await microservice.listen();
   
   const microservicePort = parseInt(process.env.AUTH_SERVICE_PORT || '3001');
-  console.log(`🚀 Auth Service (gRPC) is running on: localhost:${microservicePort}`);
+  console.log(`🚀 Auth Service (gRPC) is running on: 0.0.0.0:${microservicePort}`);
   
   // Also create HTTP app for direct API access and documentation
   const app = await NestFactory.create(AppModule);
@@ -62,8 +62,8 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api/docs', app, document);
 
-  const httpPort = process.env.HTTP_PORT || 3002;
-  await app.listen(httpPort);
+  const httpPort = process.env.PORT || process.env.HTTP_PORT || 3002;
+  await app.listen(httpPort, '0.0.0.0');
   
   console.log(`🚀 Auth Service (HTTP) is running on: http://localhost:${httpPort}`);
   console.log(`📚 API Documentation: http://localhost:${httpPort}/api/docs`);

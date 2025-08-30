@@ -3,7 +3,7 @@ app = "rev-gateway"
 primary_region = "iad"
 
 [build]
-  dockerfile = "apps/gateway/Dockerfile"
+  dockerfile = "Dockerfile"
 
 [env]
   NODE_ENV = "production"
@@ -39,4 +39,4 @@ primary_region = "iad"
   memory_mb = 512
 
 [processes]
-  app = "node dist/main.js"
+  app = "node apps/gateway/dist/src/main.js"

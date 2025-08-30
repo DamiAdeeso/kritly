@@ -37,12 +37,13 @@ COPY tsconfig*.json ./
 COPY apps/gateway/package*.json ./apps/gateway/
 COPY libs/common/package*.json ./libs/common/
 
-# Install only production dependencies
-RUN npm ci --only=production
+# Install dependencies including build tools
+RUN npm ci
 
 # Copy built applications from builder stage
 COPY --from=builder /app/apps/gateway/dist ./apps/gateway/dist
 COPY --from=builder /app/libs/common/dist ./libs/common/dist
+COPY --from=builder /app/libs/common/src ./libs/common/src
 
 # Environment files are handled by deployment platform secrets
 # No environment files are copied to production images
@@ -63,4 +64,4 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
   CMD node -e "require('http').get('http://localhost:3000/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })"
 
 # Start the gateway service
-CMD ["node", "apps/gateway/dist/main.js"]
+CMD ["node", "apps/gateway/dist/apps/gateway/src/main.js"]

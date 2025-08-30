@@ -1,3 +1,4 @@
+import { ChannelCredentials } from '@grpc/grpc-js';
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { ClientGrpc, Client, Transport } from '@nestjs/microservices';
 import { join } from 'path';
@@ -19,6 +20,7 @@ export class AuthClientService implements OnModuleInit {
       package: 'auth',
       protoPath: join(process.cwd(), 'libs/common/src/proto/auth.proto'),
       url: `${process.env.AUTH_SERVICE_HOST || 'localhost'}:${process.env.AUTH_SERVICE_PORT || 3001}`,
+      credentials: ChannelCredentials.createSsl(),
     },
   })
   private client: ClientGrpc;

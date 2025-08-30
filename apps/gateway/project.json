@@ -5,45 +5,34 @@
   "projectType": "application",
   "targets": {
     "build": {
-      "executor": "@nx/js:tsc",
-      "outputs": ["{options.outputPath}"],
+      "executor": "nx:run-commands",
+      "outputs": ["{workspaceRoot}/apps/gateway/dist"],
       "defaultConfiguration": "production",
       "options": {
-        "outputPath": "apps/gateway/dist",
-        "main": "apps/gateway/src/main.ts",
-        "tsConfig": "apps/gateway/tsconfig.json"
+        "command": "tsc -p apps/gateway/tsconfig.json"
       },
       "configurations": {
         "development": {
-          "optimization": false,
-          "extractLicenses": false,
-          "inspect": false
+          "command": "tsc -p apps/gateway/tsconfig.json"
         },
         "production": {
-          "optimization": true,
-          "extractLicenses": true,
-          "inspect": false,
-          "fileReplacements": [
-            {
-              "replace": "apps/gateway/src/environments/environment.ts",
-              "with": "apps/gateway/src/environments/environment.prod.ts"
-            }
-          ]
+          "command": "tsc -p apps/gateway/tsconfig.json"
         }
       }
     },
     "serve": {
-      "executor": "@nx/js:node",
+      "executor": "nx:run-commands",
       "defaultConfiguration": "development",
       "options": {
-        "buildTarget": "gateway:build"
+        "command": "node apps/gateway/dist/src/main.js",
+        "cwd": "."
       },
       "configurations": {
         "development": {
-          "buildTarget": "gateway:build:development"
+          "command": "node apps/gateway/dist/src/main.js"
         },
         "production": {
-          "buildTarget": "gateway:build:production"
+          "command": "node apps/gateway/dist/src/main.js"
         }
       }
     },

@@ -37,4 +37,4 @@ primary_region = "iad"
   destination = "/data"
 
 [processes]
-  app = "node dist/main.js"
+  app = "sh -c \"npx prisma migrate deploy --schema=./apps/auth-service/prisma/schema.prisma && node apps/auth-service/dist/apps/auth-service/src/main.js\""

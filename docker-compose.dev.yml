@@ -14,7 +14,7 @@ services:
     environment:
       - NODE_ENV=local
     env_file:
-      - .env.local
+      - env.local
     volumes:
       - ./apps/auth-service:/app/apps/auth-service
       - ./libs/common:/app/libs/common
@@ -38,7 +38,7 @@ services:
     environment:
       - NODE_ENV=local
     env_file:
-      - .env.local
+      - env.local
     volumes:
       - ./apps/gateway:/app/apps/gateway
       - ./libs/common:/app/libs/common

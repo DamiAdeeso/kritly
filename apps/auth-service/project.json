@@ -12,17 +12,18 @@
       }
     },
     "serve": {
-      "executor": "@nx/js:node",
+      "executor": "nx:run-commands",
       "defaultConfiguration": "development",
       "options": {
-        "buildTarget": "auth-service:build"
+        "command": "node apps/auth-service/dist/apps/auth-service/src/main.js",
+        "cwd": "."
       },
       "configurations": {
         "development": {
-          "buildTarget": "auth-service:build:development"
+          "command": "node apps/auth-service/dist/apps/auth-service/src/main.js"
         },
         "production": {
-          "buildTarget": "auth-service:build:production"
+          "command": "node apps/auth-service/dist/apps/auth-service/src/main.js"
         }
       }
     },

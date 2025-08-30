@@ -1,0 +1,58 @@
+services:
+  # Auth Service
+  - type: web
+    name: rev-auth-service
+    env: docker
+    region: oregon
+    plan: free
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: DATABASE_URL
+        sync: false
+      - key: REDIS_URL
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+      - key: FACEBOOK_APP_ID
+        sync: false
+      - key: FACEBOOK_APP_SECRET
+        sync: false
+      - key: APPLE_CLIENT_ID
+        sync: false
+      - key: APPLE_TEAM_ID
+        sync: false
+      - key: APPLE_KEY_ID
+        sync: false
+      - key: APPLE_PRIVATE_KEY
+        sync: false
+      - key: INSTAGRAM_CLIENT_ID
+        sync: false
+      - key: INSTAGRAM_CLIENT_SECRET
+        sync: false
+    buildCommand: npx nx build auth-service
+    startCommand: node apps/auth-service/dist/apps/auth-service/src/main.js
+
+  # Gateway Service
+  - type: web
+    name: rev-gateway
+    env: docker
+    region: oregon
+    plan: free
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: AUTH_SERVICE_HOST
+        value: rev-auth-service.onrender.com
+      - key: AUTH_SERVICE_PORT
+        value: 10000
+    buildCommand: npx nx build gateway
+    startCommand: node apps/gateway/dist/src/main.js

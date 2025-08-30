@@ -16,7 +16,6 @@ primary_region = "iad"
 
   [[services.ports]]
     port = 3001
-    handlers = ["tls", "http"]
 
 # Public HTTP service (for direct API access)
 [[services]]
@@ -50,4 +49,4 @@ primary_region = "iad"
   destination = "/data"
 
 [processes]
-  app = "node apps/auth-service/dist/main.js"
+  app = "node apps/auth-service/dist/apps/auth-service/src/main.js"
