@@ -50,7 +50,5 @@ services:
     envVars:
       - key: NODE_ENV
         value: production
-      - key: AUTH_SERVICE_HOST
+      - key: AUTH_SERVICE_URL
         value: https://rev-auth-service.onrender.com
-      - key: AUTH_SERVICE_PORT
-        value: 443   # if using https public domain
