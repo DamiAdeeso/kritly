@@ -10,6 +10,10 @@ interface AuthService {
   refreshToken(data: any): Promise<any>;
   logout(data: any): Promise<any>;
   validateToken(data: any): Promise<any>;
+  checkUsername(data: any): Promise<any>;
+  setUsername(data: any): Promise<any>;
+  updateDisplayName(data: any): Promise<any>;
+  updateAvatar(data: any): Promise<any>;
 }
 
 @Injectable()
@@ -53,5 +57,21 @@ export class AuthClientService implements OnModuleInit {
 
   async validateToken(data: any) {
     return this.authService.validateToken(data);
+  }
+
+  async checkUsername(data: any) {
+    return this.authService.checkUsername(data);
+  }
+
+  async setUsername(data: any) {
+    return this.authService.setUsername(data);
+  }
+
+  async updateDisplayName(data: any) {
+    return this.authService.updateDisplayName(data);
+  }
+
+  async updateAvatar(data: any) {
+    return this.authService.updateAvatar(data);
   }
 }

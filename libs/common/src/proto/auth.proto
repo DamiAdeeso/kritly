@@ -10,15 +10,19 @@ service AuthService {
   rpc RefreshToken(RefreshTokenRequest) returns (AuthResponse);
   rpc Logout(LogoutRequest) returns (LogoutResponse);
   rpc ValidateToken(ValidateTokenRequest) returns (ValidateTokenResponse);
+  rpc CheckUsername(CheckUsernameRequest) returns (UsernameAvailabilityResponse);
+  rpc SetUsername(SetUsernameRequest) returns (AuthResponse);
+  rpc UpdateDisplayName(UpdateDisplayNameRequest) returns (UpdateProfileResponse);
+  rpc UpdateAvatar(UpdateAvatarRequest) returns (UpdateProfileResponse);
 }
 
 // Request/Response messages
 message RegisterRequest {
   string email = 1;
   string password = 2;
-  string firstName = 3;
-  string lastName = 4;
-  string avatar = 5;
+  string username = 3;
+  string firstName = 4;
+  string lastName = 5;
 }
 
 message LoginRequest {
@@ -47,6 +51,22 @@ message ValidateTokenRequest {
   string accessToken = 1;
 }
 
+message CheckUsernameRequest {
+  string username = 1;
+}
+
+message SetUsernameRequest {
+  string username = 1;
+}
+
+message UpdateDisplayNameRequest {
+  string displayName = 1;
+}
+
+message UpdateAvatarRequest {
+  string avatar = 1;
+}
+
 // Response messages
 message AuthResponse {
   string message = 1;
@@ -72,4 +92,15 @@ message ValidateTokenResponse {
   string email = 3;
   string message = 4;
   int32 statusCode = 5;
+}
+
+message UsernameAvailabilityResponse {
+  string message = 1;
+  bool isAvailable = 2;
+  int32 statusCode = 3;
+}
+
+message UpdateProfileResponse {
+  string message = 1;
+  int32 statusCode = 2;
 }

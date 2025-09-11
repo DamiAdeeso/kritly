@@ -7,7 +7,10 @@ import {
   SocialLoginDto,
   RefreshTokenDto,
   AuthResponseDto,
-  AuthProvider
+  AuthProvider,
+  UsernameAvailabilityResponseDto,
+  SetUsernameResponseDto,
+  UpdateProfileResponseDto
 } from '@rev/common';
 import { UserRepository, SocialAccountRepository, RefreshTokenRepository } from '../repositories';
 import { AUTH_CONSTANTS } from '@rev/common';
@@ -36,12 +39,20 @@ export class AuthService {
       throw new BadRequestException('User already exists');
     }
 
+    // Check if username is already taken
+    const existingUsername = await this.userRepository.findByUsername(registerDto.username);
+    if (existingUsername) {
+      throw new BadRequestException('Username is already taken');
+    }
+
     // Hash password
     const hashedPassword = await bcrypt.hash(registerDto.password, AUTH_CONSTANTS.SALT_ROUNDS);
 
     // Create user
     const user = await this.userRepository.create({
       email: registerDto.email,
+      username: registerDto.username,
+      displayName: registerDto.displayName,
       firstName: registerDto.firstName,
       lastName: registerDto.lastName,
       password: hashedPassword,
@@ -159,7 +170,6 @@ export class AuthService {
       email: socialProfile.email,
       firstName: socialProfile.firstName,
       lastName: socialProfile.lastName,
-      avatar: socialProfile.avatar,
     });
 
     // Create social account
@@ -229,6 +239,61 @@ export class AuthService {
     } catch (error) {
       throw new UnauthorizedException('Invalid token');
     }
+  }
+
+  async checkUsername(username: string): Promise<UsernameAvailabilityResponseDto> {
+    // Check if username is already taken
+    const existingUser = await this.userRepository.findByUsername(username);
+    const isAvailable = !existingUser;
+
+    return {
+      message: isAvailable ? 'Username is available' : 'Username is already taken',
+      isAvailable,
+      statusCode: 200,
+    };
+  }
+
+  async setUsername(username: string): Promise<SetUsernameResponseDto> {
+    // For now, we'll need to get the user from the JWT token
+    // This should be implemented with proper authentication
+    // For demo purposes, we'll assume we have a user ID
+    
+    // Check if username is available
+    const existingUser = await this.userRepository.findByUsername(username);
+    if (existingUser) {
+      throw new BadRequestException('Username is already taken');
+    }
+
+    // TODO: Get user ID from JWT token
+    // For now, we'll return a mock response
+    return {
+      message: 'Username set successfully',
+      data: {
+        accessToken: 'mock-token',
+        refreshToken: 'mock-refresh-token',
+        userId: 'mock-user-id',
+        email: 'mock@example.com',
+      },
+      statusCode: 200,
+    };
+  }
+
+  async updateDisplayName(displayName: string): Promise<UpdateProfileResponseDto> {
+    // TODO: Get user ID from JWT token
+    // For now, we'll return a mock response
+    return {
+      message: 'Display name updated successfully',
+      statusCode: 200,
+    };
+  }
+
+  async updateAvatar(avatar: string): Promise<UpdateProfileResponseDto> {
+    // TODO: Get user ID from JWT token
+    // For now, we'll return a mock response
+    return {
+      message: 'Avatar updated successfully',
+      statusCode: 200,
+    };
   }
 
   private async generateTokens(userId: string, email: string, role: string): Promise<{

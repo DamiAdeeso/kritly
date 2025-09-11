@@ -35,4 +35,24 @@ export class AuthGrpcController {
   async validateToken(data: any) {
     return this.authGrpcService.validateToken(data);
   }
+
+  @GrpcMethod('AuthService', 'CheckUsername')
+  async checkUsername(data: any) {
+    return this.authGrpcService.checkUsername(data);
+  }
+
+  @GrpcMethod('AuthService', 'SetUsername')
+  async setUsername(data: any) {
+    return this.authGrpcService.setUsername(data);
+  }
+
+  @GrpcMethod('AuthService', 'UpdateDisplayName')
+  async updateDisplayName(data: any) {
+    return this.authGrpcService.updateDisplayName(data);
+  }
+
+  @GrpcMethod('AuthService', 'UpdateAvatar')
+  async updateAvatar(data: any) {
+    return this.authGrpcService.updateAvatar(data);
+  }
 }

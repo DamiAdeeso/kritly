@@ -23,7 +23,14 @@ import {
   SocialLoginDto, 
   RefreshTokenDto, 
   LogoutDto,
-  AuthResponseDto 
+  AuthResponseDto,
+  CheckUsernameDto,
+  UsernameAvailabilityResponseDto,
+  SetUsernameDto,
+  SetUsernameResponseDto,
+  UpdateDisplayNameDto,
+  UpdateAvatarDto,
+  UpdateProfileResponseDto
 } from '@rev/common';
 
 @ApiTags('Authentication')
@@ -106,5 +113,60 @@ export class AuthController {
       throw new Error('No token provided');
     }
     return this.authService.validateToken(token);
+  }
+
+  @Post('check-username')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Check username availability' })
+  @ApiBody({ type: CheckUsernameDto })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Username availability checked',
+    type: UsernameAvailabilityResponseDto 
+  })
+  async checkUsername(@Body(ValidationPipe) checkUsernameDto: CheckUsernameDto): Promise<UsernameAvailabilityResponseDto> {
+    return this.authService.checkUsername(checkUsernameDto.username);
+  }
+
+  @Post('set-username')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Set username for user' })
+  @ApiBody({ type: SetUsernameDto })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Username set successfully',
+    type: SetUsernameResponseDto 
+  })
+  @ApiResponse({ status: 400, description: 'Username already taken' })
+  async setUsername(@Body(ValidationPipe) setUsernameDto: SetUsernameDto): Promise<SetUsernameResponseDto> {
+    return this.authService.setUsername(setUsernameDto.username);
+  }
+
+  @Post('update-display-name')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Update user display name' })
+  @ApiBody({ type: UpdateDisplayNameDto })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Display name updated successfully',
+    type: UpdateProfileResponseDto 
+  })
+  @ApiResponse({ status: 400, description: 'Bad request' })
+  async updateDisplayName(@Body(ValidationPipe) updateDisplayNameDto: UpdateDisplayNameDto): Promise<UpdateProfileResponseDto> {
+    return this.authService.updateDisplayName(updateDisplayNameDto.displayName);
+  }
+
+  @Post('update-avatar')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Update user avatar URL' })
+  @ApiBody({ type: UpdateAvatarDto })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Avatar updated successfully',
+    type: UpdateProfileResponseDto 
+  })
+  @ApiResponse({ status: 400, description: 'Bad request' })
+  async updateAvatar(@Body(ValidationPipe) updateAvatarDto: UpdateAvatarDto): Promise<UpdateProfileResponseDto> {
+    return this.authService.updateAvatar(updateAvatarDto.avatar);
   }
 }

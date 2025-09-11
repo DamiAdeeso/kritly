@@ -14,8 +14,11 @@ export interface IUserProfile {
 
 export interface IUserCreate {
   email: string;
+  username?: string;
+  displayName?: string;
   firstName: string;
   lastName: string;
+  dateOfBirth?: Date;
   avatar?: string;
   password?: string;
   role?: UserRole;

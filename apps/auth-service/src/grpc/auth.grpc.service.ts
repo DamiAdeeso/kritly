@@ -11,9 +11,10 @@ export class AuthGrpcService {
       const registerDto = new RegisterDto();
       registerDto.email = data.email;
       registerDto.password = data.password;
+      registerDto.username = data.username;
+      registerDto.displayName = data.displayName || `${data.firstName} ${data.lastName}`;
       registerDto.firstName = data.firstName;
       registerDto.lastName = data.lastName;
-      registerDto.avatar = data.avatar;
 
       const result = await this.authService.register(registerDto);
       return result;
@@ -111,6 +112,56 @@ export class AuthGrpcService {
         userId: '',
         email: '',
         message: error.message || 'Token validation failed',
+        statusCode: error.status || 500,
+      };
+    }
+  }
+
+  async checkUsername(data: any) {
+    try {
+      const result = await this.authService.checkUsername(data.username);
+      return result;
+    } catch (error) {
+      return {
+        message: error.message || 'Username check failed',
+        isAvailable: false,
+        statusCode: error.status || 500,
+      };
+    }
+  }
+
+  async setUsername(data: any) {
+    try {
+      const result = await this.authService.setUsername(data.username);
+      return result;
+    } catch (error) {
+      return {
+        message: error.message || 'Username set failed',
+        data: null,
+        statusCode: error.status || 500,
+      };
+    }
+  }
+
+  async updateDisplayName(data: any) {
+    try {
+      const result = await this.authService.updateDisplayName(data.displayName);
+      return result;
+    } catch (error) {
+      return {
+        message: error.message || 'Display name update failed',
+        statusCode: error.status || 500,
+      };
+    }
+  }
+
+  async updateAvatar(data: any) {
+    try {
+      const result = await this.authService.updateAvatar(data.avatar);
+      return result;
+    } catch (error) {
+      return {
+        message: error.message || 'Avatar update failed',
         statusCode: error.status || 500,
       };
     }

@@ -21,6 +21,14 @@ export class RegisterDto {
   @IsString()
   password: string;
 
+  @ApiProperty({ description: 'Username (must be unique)', example: 'johndoe123' })
+  @IsString()
+  username: string;
+
+  @ApiProperty({ description: 'User display name', example: 'John Doe' })
+  @IsString()
+  displayName: string;
+
   @ApiProperty({ description: 'User first name', example: 'John' })
   @IsString()
   firstName: string;
@@ -28,11 +36,6 @@ export class RegisterDto {
   @ApiProperty({ description: 'User last name', example: 'Doe' })
   @IsString()
   lastName: string;
-
-  @ApiProperty({ description: 'User avatar URL', example: 'https://example.com/avatar.jpg', required: false })
-  @IsOptional()
-  @IsString()
-  avatar?: string;
 }
 
 export class SocialLoginDto {
@@ -82,6 +85,31 @@ export class LogoutDto {
   refreshToken: string;
 }
 
+export class CheckUsernameDto {
+  @ApiProperty({ description: 'Username to check availability', example: 'johndoe123' })
+  @IsString()
+  username: string;
+}
+
+export class UsernameAvailabilityResponseDto {
+  @ApiProperty({ description: 'Response message', example: 'Username is available' })
+  @IsString()
+  message: string;
+
+  @ApiProperty({ description: 'Whether username is available', example: true })
+  isAvailable: boolean;
+
+  @ApiProperty({ description: 'HTTP status code', example: 200 })
+  @IsNumber()
+  statusCode: number;
+}
+
+export class SetUsernameDto {
+  @ApiProperty({ description: 'Username to set', example: 'johndoe123' })
+  @IsString()
+  username: string;
+}
+
 export class AuthDataDto {
   @ApiProperty({ description: 'JWT access token', example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...' })
   @IsString()
@@ -98,6 +126,41 @@ export class AuthDataDto {
   @ApiProperty({ description: 'User email', example: 'user@example.com' })
   @IsString()
   email: string;
+}
+
+export class SetUsernameResponseDto {
+  @ApiProperty({ description: 'Response message', example: 'Username set successfully' })
+  @IsString()
+  message: string;
+
+  @ApiProperty({ description: 'User data', type: AuthDataDto })
+  data: AuthDataDto;
+
+  @ApiProperty({ description: 'HTTP status code', example: 200 })
+  @IsNumber()
+  statusCode: number;
+}
+
+export class UpdateDisplayNameDto {
+  @ApiProperty({ description: 'New display name', example: 'John Doe' })
+  @IsString()
+  displayName: string;
+}
+
+export class UpdateAvatarDto {
+  @ApiProperty({ description: 'New avatar URL', example: 'https://example.com/avatar.jpg' })
+  @IsString()
+  avatar: string;
+}
+
+export class UpdateProfileResponseDto {
+  @ApiProperty({ description: 'Response message', example: 'Profile updated successfully' })
+  @IsString()
+  message: string;
+
+  @ApiProperty({ description: 'HTTP status code', example: 200 })
+  @IsNumber()
+  statusCode: number;
 }
 
 export class AuthResponseDto {

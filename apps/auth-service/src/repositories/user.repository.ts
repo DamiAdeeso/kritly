@@ -11,8 +11,11 @@ export class UserRepository {
     return this.prisma.user.create({
       data: {
         email: data.email,
+        username: data.username,
+        displayName: data.displayName,
         firstName: data.firstName,
         lastName: data.lastName,
+        dateOfBirth: data.dateOfBirth,
         avatar: data.avatar,
         password: data.password,
         role: data.role as any,
@@ -30,6 +33,12 @@ export class UserRepository {
   async findByEmail(email: string): Promise<User | null> {
     return this.prisma.user.findUnique({
       where: { email },
+    });
+  }
+
+  async findByUsername(username: string): Promise<User | null> {
+    return this.prisma.user.findUnique({
+      where: { username },
     });
   }
 
