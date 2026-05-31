@@ -3,43 +3,43 @@ import { UserRole, UserStatus } from '../enums/auth.enum';
 
 export class UserDto {
   @IsString()
-  id: string;
+  id!: string;
 
   @IsEmail()
-  email: string;
+  email!: string;
 
   @IsString()
-  firstName: string;
+  firstName!: string;
 
   @IsString()
-  lastName: string;
+  lastName!: string;
 
   @IsOptional()
   @IsString()
   avatar?: string;
 
   @IsEnum(UserRole)
-  role: UserRole;
+  role!: UserRole;
 
   @IsEnum(UserStatus)
-  status: UserStatus;
+  status!: UserStatus;
 
   @IsDate()
-  createdAt: Date;
+  createdAt!: Date;
 
   @IsDate()
-  updatedAt: Date;
+  updatedAt!: Date;
 }
 
 export class CreateUserDto {
   @IsEmail()
-  email: string;
+  email!: string;
 
   @IsString()
-  firstName: string;
+  firstName!: string;
 
   @IsString()
-  lastName: string;
+  lastName!: string;
 
   @IsOptional()
   @IsString()

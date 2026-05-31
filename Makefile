@@ -100,25 +100,3 @@ clean:
 test:
 	npx nx run-many --target=test --all
 
-# Deployment commands
-deploy:
-	./deploy.sh
-
-deploy-auth:
-	flyctl deploy --config fly.toml --app rev-auth-service
-
-deploy-gateway:
-	flyctl deploy --config apps/gateway/fly.toml --app rev-gateway
-
-deploy-secrets:
-	flyctl secrets import env.deployment --app rev-auth-service
-	flyctl secrets import env.deployment --app rev-gateway
-
-fly-status:
-	flyctl status --app rev-auth-service
-	flyctl status --app rev-gateway
-
-fly-logs:
-	flyctl logs --app rev-auth-service
-	flyctl logs --app rev-gateway
-

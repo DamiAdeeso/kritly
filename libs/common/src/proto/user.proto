@@ -1,0 +1,80 @@
+syntax = "proto3";
+
+package user;
+
+// User / profile service (hosted in auth-service for now; extractable later)
+service UserService {
+  rpc GetProfile(GetProfileRequest) returns (ProfileResponse);
+  rpc GetProfileByUsername(GetProfileByUsernameRequest) returns (ProfileResponse);
+  rpc CheckUsername(CheckUsernameRequest) returns (UsernameAvailabilityResponse);
+  rpc SetUsername(SetUsernameRequest) returns (SetUsernameResponse);
+  rpc UpdateAvatar(UpdateAvatarRequest) returns (UpdateProfileResponse);
+}
+
+message GetProfileRequest {
+  string userId = 1;
+}
+
+message GetProfileByUsernameRequest {
+  string username = 1;
+}
+
+message CheckUsernameRequest {
+  string username = 1;
+}
+
+message SetUsernameRequest {
+  string userId = 1;
+  string username = 2;
+}
+
+message UpdateAvatarRequest {
+  string userId = 1;
+  string avatar = 2;
+}
+
+message ProfileData {
+  string userId = 1;
+  optional string username = 2;
+  string firstName = 3;
+  string lastName = 4;
+  optional string avatar = 5;
+  optional string email = 6;
+}
+
+message ProfileResponse {
+  int32 statusCode = 1;
+  string message = 2;
+  ProfileData data = 3;
+}
+
+message UsernameAvailabilityData {
+  bool isAvailable = 1;
+}
+
+message UsernameAvailabilityResponse {
+  int32 statusCode = 1;
+  string message = 2;
+  UsernameAvailabilityData data = 3;
+}
+
+message SetUsernameAuthData {
+  string accessToken = 1;
+  string refreshToken = 2;
+  string userId = 3;
+  string email = 4;
+}
+
+message SetUsernameResponse {
+  int32 statusCode = 1;
+  string message = 2;
+  SetUsernameAuthData data = 3;
+}
+
+message EmptyData {}
+
+message UpdateProfileResponse {
+  int32 statusCode = 1;
+  string message = 2;
+  EmptyData data = 3;
+}

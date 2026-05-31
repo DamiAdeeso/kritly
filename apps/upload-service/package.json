@@ -1,0 +1,27 @@
+{
+  "name": "@kritly/upload-service",
+  "version": "1.0.0",
+  "description": "Upload microservice for Kritly",
+  "main": "dist/main.js",
+  "scripts": {
+    "build": "nx build upload-service",
+    "start:dev": "nx serve upload-service"
+  },
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.888.0",
+    "@aws-sdk/s3-request-presigner": "^3.888.0",
+    "@kritly/common": "workspace:*",
+    "@nestjs/common": "^11.1.6",
+    "@nestjs/config": "^4.0.2",
+    "@nestjs/core": "^11.1.6",
+    "@nestjs/microservices": "^11.1.6",
+    "dotenv": "^16.4.7",
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.19.0",
+    "ts-node": "^10.9.2",
+    "typescript": "5.9.2"
+  }
+}

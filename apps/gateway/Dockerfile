@@ -1,5 +1,5 @@
 # Gateway Service Dockerfile
-FROM node:18-alpine AS builder
+FROM node:20-alpine AS builder
 
 WORKDIR /app
 
@@ -21,7 +21,7 @@ RUN NX_DAEMON=false npx nx build gateway
 # ----------------------
 # Production image
 # ----------------------
-FROM node:18-alpine AS production
+FROM node:20-alpine AS production
 
 WORKDIR /app
 
@@ -50,4 +50,4 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
   CMD wget -qO- http://localhost:3000/health || exit 1
 
 # Start the gateway service
-CMD ["node", "apps/gateway/dist/src/main.js"]
+CMD ["node", "apps/gateway/dist/main.js"]

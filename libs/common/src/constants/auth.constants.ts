@@ -1,10 +1,9 @@
 export const AUTH_CONSTANTS = {
-  JWT_SECRET: process.env.JWT_SECRET || 'your-super-secret-jwt-key',
   JWT_EXPIRES_IN: '15m',
   REFRESH_TOKEN_EXPIRES_IN: '7d',
   SALT_ROUNDS: 10,
   MAX_LOGIN_ATTEMPTS: 5,
-  LOCKOUT_DURATION: 15 * 60 * 1000, // 15 minutes
+  LOCKOUT_DURATION: 15 * 60 * 1000,
 } as const;
 
 export const SOCIAL_PROVIDERS = {

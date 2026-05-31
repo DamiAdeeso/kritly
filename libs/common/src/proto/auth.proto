@@ -2,7 +2,14 @@ syntax = "proto3";
 
 package auth;
 
-// Auth Service
+// New endpoint checklist:
+// 1. Add rpc + messages here
+// 2. npm run proto:generate
+// 3. Implement in auth-service (auth.service.ts + auth.grpc.controller.ts)
+// 4. Add passthrough in gateway AuthClientService
+// 5. Add thin HTTP route in gateway auth.gateway.controller.ts
+
+// Auth Service — credentials, sessions, tokens
 service AuthService {
   rpc Register(RegisterRequest) returns (AuthResponse);
   rpc Login(LoginRequest) returns (AuthResponse);
@@ -10,17 +17,15 @@ service AuthService {
   rpc RefreshToken(RefreshTokenRequest) returns (AuthResponse);
   rpc Logout(LogoutRequest) returns (LogoutResponse);
   rpc ValidateToken(ValidateTokenRequest) returns (ValidateTokenResponse);
-  rpc CheckUsername(CheckUsernameRequest) returns (UsernameAvailabilityResponse);
-  rpc SetUsername(SetUsernameRequest) returns (AuthResponse);
-  rpc UpdateDisplayName(UpdateDisplayNameRequest) returns (UpdateProfileResponse);
-  rpc UpdateAvatar(UpdateAvatarRequest) returns (UpdateProfileResponse);
+  rpc ResetPassword(ResetPasswordRequest) returns (UpdateProfileResponse);
+  rpc ChangePassword(ChangePasswordRequest) returns (UpdateProfileResponse);
 }
 
 // Request/Response messages
 message RegisterRequest {
   string email = 1;
   string password = 2;
-  string username = 3;
+  optional string username = 3;
   string firstName = 4;
   string lastName = 5;
 }
@@ -32,11 +37,9 @@ message LoginRequest {
 
 message SocialLoginRequest {
   string provider = 1; // google, facebook, apple, instagram
-  string accessToken = 2;
-  string email = 3;
-  string firstName = 4;
-  string lastName = 5;
-  string avatar = 6;
+  optional string accessToken = 2; // facebook, instagram — OAuth access token
+  optional string idToken = 7; // google, apple — OpenID ID token from client SDK
+  optional string authorizationCode = 8; // apple web OAuth authorization code
 }
 
 message RefreshTokenRequest {
@@ -51,28 +54,19 @@ message ValidateTokenRequest {
   string accessToken = 1;
 }
 
-message CheckUsernameRequest {
-  string username = 1;
+message ResetPasswordRequest {
+  string email = 1;
+  string newPassword = 2;
 }
 
-message SetUsernameRequest {
-  string username = 1;
+message ChangePasswordRequest {
+  string userId = 1;
+  string currentPassword = 2;
+  string newPassword = 3;
 }
 
-message UpdateDisplayNameRequest {
-  string displayName = 1;
-}
-
-message UpdateAvatarRequest {
-  string avatar = 1;
-}
-
-// Response messages
-message AuthResponse {
-  string message = 1;
-  AuthData data = 2;
-  int32 statusCode = 3;
-}
+// Shared response envelope: statusCode, message, data
+message EmptyData {}
 
 message AuthData {
   string accessToken = 1;
@@ -81,26 +75,32 @@ message AuthData {
   string email = 4;
 }
 
-message LogoutResponse {
-  string message = 1;
-  int32 statusCode = 2;
+message AuthResponse {
+  int32 statusCode = 1;
+  string message = 2;
+  AuthData data = 3;
 }
 
-message ValidateTokenResponse {
+message LogoutResponse {
+  int32 statusCode = 1;
+  string message = 2;
+  EmptyData data = 3;
+}
+
+message ValidateTokenData {
   bool isValid = 1;
   string userId = 2;
   string email = 3;
-  string message = 4;
-  int32 statusCode = 5;
 }
 
-message UsernameAvailabilityResponse {
-  string message = 1;
-  bool isAvailable = 2;
-  int32 statusCode = 3;
+message ValidateTokenResponse {
+  int32 statusCode = 1;
+  string message = 2;
+  ValidateTokenData data = 3;
 }
 
 message UpdateProfileResponse {
-  string message = 1;
-  int32 statusCode = 2;
+  int32 statusCode = 1;
+  string message = 2;
+  EmptyData data = 3;
 }

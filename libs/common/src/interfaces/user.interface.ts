@@ -15,7 +15,6 @@ export interface IUserProfile {
 export interface IUserCreate {
   email: string;
   username?: string;
-  displayName?: string;
   firstName: string;
   lastName: string;
   dateOfBirth?: Date;
@@ -25,11 +24,17 @@ export interface IUserCreate {
   status?: UserStatus;
 }
 
-export interface IUserUpdate {
-  email?: string;
+export interface IProfileUpdate {
+  username?: string;
+  usernameChangedAt?: Date;
   firstName?: string;
   lastName?: string;
   avatar?: string;
+  dateOfBirth?: Date;
+}
+
+export interface IUserUpdate extends IProfileUpdate {
+  email?: string;
   password?: string;
   role?: UserRole;
   status?: UserStatus;

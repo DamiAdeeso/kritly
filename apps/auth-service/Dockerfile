@@ -1,50 +1,49 @@
-# ================================
-# 1. Builder Stage
-# ================================
+# Auth Service Dockerfile
 FROM node:20-alpine AS builder
 
-# Set working directory
 WORKDIR /app
 
-# Install build tools (needed for some packages)
-RUN apk add --no-cache python3 make g++
+COPY package*.json nx.json tsconfig*.json project.json ./
+COPY apps/auth-service/package*.json ./apps/auth-service/
+COPY libs/common/package*.json ./libs/common/
+COPY libs/database/package*.json ./libs/database/
 
-# Copy only package files for caching dependencies
-COPY package.json package-lock.json* pnpm-lock.yaml* yarn.lock* ./
+RUN npm ci
 
-# Install dependencies (prefer pnpm if available, else npm)
-RUN if [ -f pnpm-lock.yaml ]; then \
-      npm install -g pnpm && pnpm install --frozen-lockfile; \
-    elif [ -f yarn.lock ]; then \
-      npm install -g yarn && yarn install --frozen-lockfile; \
-    else \
-      npm ci; \
-    fi
+COPY apps/auth-service ./apps/auth-service
+COPY libs/common ./libs/common
+COPY libs/database ./libs/database
+COPY prisma ./prisma
+COPY scripts/prisma-cli.cjs ./scripts/prisma-cli.cjs
 
-# Copy the full monorepo into container
-COPY . .
+RUN NX_DAEMON=false npx nx run database:prisma:generate
+RUN NX_DAEMON=false npx nx build common
+RUN NX_DAEMON=false npx nx build auth-service
 
-# Build the target app (pass target via build arg)
-ARG APP_NAME
-RUN npx nx build $APP_NAME
-
-# ================================
-# 2. Runtime Stage
-# ================================
-FROM node:20-alpine AS runner
+FROM node:20-alpine AS production
 
 WORKDIR /app
 
-# Copy only built app and needed files from builder
-COPY --from=builder /app/dist/apps/${APP_NAME} ./dist
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/package.json ./
+COPY package*.json nx.json tsconfig*.json ./
+COPY apps/auth-service/package*.json ./apps/auth-service/
+COPY libs/common/package*.json ./libs/common/
 
-# Environment defaults
-ENV NODE_ENV=production
-ENV PORT=3000
+RUN npm ci --omit=dev
 
-EXPOSE 3000
+COPY --from=builder /app/apps/auth-service/dist ./apps/auth-service/dist
+COPY --from=builder /app/libs/common/dist ./libs/common/dist
+COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
+COPY --from=builder /app/libs/common/src/proto ./libs/common/src/proto
+COPY apps/auth-service/scripts/grpc-health-check.js ./apps/auth-service/scripts/grpc-health-check.js
 
-# Start command
-CMD ["node", "dist/main.js"]
+RUN addgroup -g 1001 -S nodejs \
+  && adduser -S nestjs -u 1001 \
+  && chown -R nestjs:nodejs /app
+USER nestjs
+
+EXPOSE 3001
+
+HEALTHCHECK --interval=30s --timeout=3s --start-period=40s --retries=3 \
+  CMD node apps/auth-service/scripts/grpc-health-check.js || exit 1
+
+CMD ["node", "apps/auth-service/dist/main.js"]

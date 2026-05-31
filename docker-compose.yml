@@ -10,17 +10,16 @@ services:
     container_name: rev-auth-service
     ports:
       - "3001:3001"  # gRPC port
-      - "3002:3002"  # HTTP port
     environment:
       - NODE_ENV=production
     env_file:
-      - env.production
+      - .env.production
     volumes:
       - auth_data:/data
     networks:
       - rev-network
     healthcheck:
-      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3002/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })"]
+      test: ["CMD", "node", "apps/auth-service/scripts/grpc-health-check.js"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -39,7 +38,7 @@ services:
     environment:
       - NODE_ENV=production
     env_file:
-      - env.production
+      - .env.production
     depends_on:
       auth-service:
         condition: service_healthy

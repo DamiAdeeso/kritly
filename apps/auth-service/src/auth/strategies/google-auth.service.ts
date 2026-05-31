@@ -1,7 +1,7 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { OAuth2Client } from 'google-auth-library';
-import { ISocialProfile, AuthProvider } from '@rev/common';
+import { ISocialProfile, AuthProvider } from '@kritly/common';
 
 @Injectable()
 export class GoogleAuthService {
@@ -9,16 +9,16 @@ export class GoogleAuthService {
 
   constructor(private readonly configService: ConfigService) {
     this.client = new OAuth2Client(
-      this.configService.get('GOOGLE_CLIENT_ID'),
-      this.configService.get('GOOGLE_CLIENT_SECRET')
+      this.configService.get<string>('GOOGLE_CLIENT_ID'),
+      this.configService.get<string>('GOOGLE_CLIENT_SECRET'),
     );
   }
 
-  async verifyToken(accessToken: string): Promise<ISocialProfile> {
+  async verifyIdToken(idToken: string): Promise<ISocialProfile> {
     try {
       const ticket = await this.client.verifyIdToken({
-        idToken: accessToken,
-        audience: this.configService.get('GOOGLE_CLIENT_ID'),
+        idToken,
+        audience: this.configService.get<string>('GOOGLE_CLIENT_ID'),
       });
 
       const payload = ticket.getPayload();
@@ -34,8 +34,8 @@ export class GoogleAuthService {
         lastName: payload.family_name || '',
         avatar: payload.picture,
       };
-    } catch (error) {
-      throw new UnauthorizedException('Failed to verify Google token');
+    } catch {
+      throw new UnauthorizedException('Failed to verify Google ID token');
     }
   }
 }

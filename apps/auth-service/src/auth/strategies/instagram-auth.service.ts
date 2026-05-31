@@ -1,23 +1,19 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import { ISocialProfile, AuthProvider } from '@rev/common';
+import { ISocialProfile, AuthProvider } from '@kritly/common';
 
 @Injectable()
 export class InstagramAuthService {
-  constructor(private readonly configService: ConfigService) {}
-
-  async verifyToken(accessToken: string): Promise<ISocialProfile> {
+  async verifyAccessToken(accessToken: string): Promise<ISocialProfile> {
     try {
-      // Call Instagram Graph API to verify token and get user info
       const response = await fetch(
-        `https://graph.instagram.com/me?fields=id,username&access_token=${accessToken}`
+        `https://graph.instagram.com/me?fields=id,username&access_token=${accessToken}`,
       );
 
       if (!response.ok) {
         throw new UnauthorizedException('Invalid Instagram token');
       }
 
-      const data = await response.json() as {
+      const data = (await response.json()) as {
         id: string;
         username: string;
       };
@@ -25,13 +21,13 @@ export class InstagramAuthService {
       return {
         provider: AuthProvider.INSTAGRAM,
         providerId: data.id,
-        email: `instagram_${data.id}@example.com`, // Placeholder email
+        email: `instagram_${data.id}@example.com`,
         firstName: data.username || '',
         lastName: '',
-        avatar: undefined, // Instagram doesn't provide avatar URLs in basic API
+        avatar: undefined,
       };
-    } catch (error) {
-      throw new UnauthorizedException('Failed to verify Instagram token');
+    } catch {
+      throw new UnauthorizedException('Failed to verify Instagram access token');
     }
   }
 }

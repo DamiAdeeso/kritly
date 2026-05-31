@@ -1,0 +1,39 @@
+{
+  "name": "database",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/database/src",
+  "projectType": "library",
+  "targets": {
+    "prisma:generate": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "node scripts/prisma-cli.cjs generate"
+      }
+    },
+    "prisma:migrate": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "node scripts/prisma-cli.cjs migrate dev"
+      }
+    },
+    "prisma:migrate:deploy": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "node scripts/prisma-cli.cjs migrate deploy"
+      }
+    },
+    "prisma:studio": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "node scripts/prisma-cli.cjs studio"
+      }
+    },
+    "prisma:seed": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "node -r ./prisma/load-env.cjs ./node_modules/ts-node/dist/bin.js --project prisma/tsconfig.seed.json prisma/seed.ts"
+      }
+    }
+  },
+  "tags": ["scope:shared", "type:lib"]
+}

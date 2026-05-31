@@ -1,29 +1,29 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { SocialAccount } from '@prisma/client';
+import { AuthProvider, SocialAccount } from '@prisma/client';
 
 @Injectable()
 export class SocialAccountRepository {
   constructor(private readonly prisma: PrismaService) {}
 
   async create(data: {
-    provider: string;
+    provider: AuthProvider;
     providerId: string;
     userId: string;
   }): Promise<SocialAccount> {
     return this.prisma.socialAccount.create({
       data: {
-        provider: data.provider as any,
+        provider: data.provider,
         providerId: data.providerId,
         userId: data.userId,
       },
     });
   }
 
-  async findByProviderAndId(provider: string, providerId: string): Promise<SocialAccount | null> {
+  async findByProviderAndId(provider: AuthProvider, providerId: string): Promise<SocialAccount | null> {
     return this.prisma.socialAccount.findFirst({
       where: {
-        provider: provider as any,
+        provider,
         providerId,
       },
     });

@@ -1,7 +1,7 @@
 {
-  "name": "@rev/common",
+  "name": "@kritly/common",
   "version": "1.0.0",
-  "description": "Common utilities and interfaces for Rev microservices",
+  "description": "Common utilities and interfaces for Kritly microservices",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
@@ -9,16 +9,17 @@
     "dev": "tsc --watch"
   },
   "dependencies": {
-    "@nestjs/common": "latest",
-    "@nestjs/microservices": "latest",
-    "@nestjs/swagger": "latest",
-    "class-validator": "latest",
-    "class-transformer": "latest",
-    "@grpc/grpc-js": "latest",
-    "@grpc/proto-loader": "latest"
+    "@grpc/grpc-js": "^1.13.4",
+    "@grpc/proto-loader": "^0.8.0",
+    "@nestjs/common": "^11.1.6",
+    "@nestjs/config": "^4.0.2",
+    "@nestjs/microservices": "^11.1.6",
+    "@nestjs/swagger": "^11.2.0",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.14.2"
   },
   "devDependencies": {
-    "@types/node": "latest",
-    "typescript": "latest"
+    "@types/node": "^20.19.0",
+    "typescript": "5.9.2"
   }
 }

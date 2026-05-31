@@ -20,7 +20,7 @@ jobs:
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
-        node-version: '18'
+        node-version: '20'
         cache: 'npm'
     
     - name: Install dependencies
@@ -28,6 +28,9 @@ jobs:
     
     - name: Build and test
       run: |
+        npx nx run auth-service:prisma:generate
+        npm run proto:generate
+        npx nx run-many --target=lint --projects=common,auth-service,gateway
         npx nx build common
         npx nx build auth-service
         npx nx build gateway
@@ -70,21 +73,3 @@ jobs:
         tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/gateway:${{ github.sha }}
         cache-from: type=gha
         cache-to: type=gha,mode=max
-
-  deploy:
-    needs: build-and-push
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
-    
-    steps:
-    - uses: actions/checkout@v4
-    
-    - name: Deploy to Render
-      run: |
-        curl -X POST "https://api.render.com/v1/services/${{ secrets.RENDER_AUTH_SERVICE_ID }}/deploys" \
-          -H "Authorization: Bearer ${{ secrets.RENDER_API_KEY }}" \
-          -H "Content-Type: application/json"
-        
-        curl -X POST "https://api.render.com/v1/services/${{ secrets.RENDER_GATEWAY_SERVICE_ID }}/deploys" \
-          -H "Authorization: Bearer ${{ secrets.RENDER_API_KEY }}" \
-          -H "Content-Type: application/json"

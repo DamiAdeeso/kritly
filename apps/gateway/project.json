@@ -5,47 +5,53 @@
   "projectType": "application",
   "targets": {
     "build": {
-      "executor": "nx:run-commands",
-      "outputs": ["{workspaceRoot}/apps/gateway/dist"],
-      "defaultConfiguration": "production",
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "dependsOn": ["^build"],
       "options": {
-        "command": "tsc -p apps/gateway/tsconfig.json"
+        "outputPath": "apps/gateway/dist",
+        "main": "apps/gateway/src/main.ts",
+        "tsConfig": "apps/gateway/tsconfig.json",
+        "assets": []
       },
       "configurations": {
-        "development": {
-          "command": "tsc -p apps/gateway/tsconfig.json"
-        },
-        "production": {
-          "command": "tsc -p apps/gateway/tsconfig.json"
-        }
+        "development": {},
+        "production": {}
       }
     },
     "serve": {
-      "executor": "nx:run-commands",
+      "continuous": true,
+      "executor": "@nx/js:node",
       "defaultConfiguration": "development",
+      "dependsOn": ["^build"],
       "options": {
-        "command": "node apps/gateway/dist/src/main.js",
-        "cwd": "."
+        "buildTarget": "gateway:build",
+        "runBuildTargetDependencies": false
       },
       "configurations": {
         "development": {
-          "command": "node apps/gateway/dist/src/main.js"
+          "buildTarget": "gateway:build:development",
+          "watch": true
         },
         "production": {
-          "command": "node apps/gateway/dist/src/main.js"
+          "buildTarget": "gateway:build:production",
+          "watch": false
         }
       }
     },
     "lint": {
       "executor": "@nx/eslint:lint",
-      "outputs": ["{options.outputFile}"]
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["apps/gateway/**/*.ts"]
+      }
     },
     "test": {
       "executor": "@nx/jest:jest",
       "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
       "options": {
         "jestConfig": "apps/gateway/jest.config.ts",
-        "passWithNoTests": true
+        "passWithNoTests": false
       }
     },
     "e2e": {

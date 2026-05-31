@@ -9,20 +9,14 @@ lerna-debug.log*
 
 # Environment variables - NONE should be in Git
 .env
-.env.local
-.env.development
-.env.staging
-.env.production
-env.deployment
-env.*
-*.env
-.env.development.local
-.env.test.local
-.env.production.local
+.env.*
+!.env.example
 
 # Build outputs
 dist/
 build/
+libs/**/src/**/*.js
+!libs/**/src/**/*.config.js
 *.tsbuildinfo
 
 # Logs
@@ -105,3 +99,6 @@ public/
 
 # Dependency directories
 jspm_packages/
+
+.claude/worktrees
+.claude/settings.local.json

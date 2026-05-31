@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+package upload;
+
+// Upload Service — presigned direct-to-storage uploads
+service UploadService {
+  rpc CreatePresignedUpload(CreatePresignedUploadRequest) returns (CreatePresignedUploadResponse);
+}
+
+message CreatePresignedUploadRequest {
+  string userId = 1;
+  string purpose = 2;
+  string contentType = 3;
+  string fileName = 4;
+}
+
+message PresignedUploadData {
+  string uploadUrl = 1;
+  string fileKey = 2;
+  string publicUrl = 3;
+  int64 expiresAt = 4;
+}
+
+message CreatePresignedUploadResponse {
+  int32 statusCode = 1;
+  string message = 2;
+  PresignedUploadData data = 3;
+}

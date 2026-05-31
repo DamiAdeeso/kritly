@@ -1,20 +1,27 @@
-import { ChannelCredentials } from '@grpc/grpc-js';
+/**
+ * Generated gRPC client wrapper for auth-service.
+ */
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { ClientGrpc, Client, Transport } from '@nestjs/microservices';
 import { join } from 'path';
-
-interface AuthService {
-  register(data: any): Promise<any>;
-  login(data: any): Promise<any>;
-  socialLogin(data: any): Promise<any>;
-  refreshToken(data: any): Promise<any>;
-  logout(data: any): Promise<any>;
-  validateToken(data: any): Promise<any>;
-  checkUsername(data: any): Promise<any>;
-  setUsername(data: any): Promise<any>;
-  updateDisplayName(data: any): Promise<any>;
-  updateAvatar(data: any): Promise<any>;
-}
+import {
+  AUTH_SERVICE_NAME,
+  AuthGrpcClient,
+  AuthResponse,
+  GrpcErrorResponse,
+  LoginRequest,
+  LogoutRequest,
+  LogoutResponse,
+  RefreshTokenRequest,
+  RegisterRequest,
+  SocialLoginRequest,
+  UpdateProfileResponse,
+  ValidateTokenRequest,
+  ValidateTokenResponse,
+  ResetPasswordRequest,
+  ChangePasswordRequest,
+} from '@kritly/common';
+import { getGrpcCredentials } from '../config/grpc.config';
 
 @Injectable()
 export class AuthClientService implements OnModuleInit {
@@ -24,54 +31,46 @@ export class AuthClientService implements OnModuleInit {
       package: 'auth',
       protoPath: join(process.cwd(), 'libs/common/src/proto/auth.proto'),
       url: `${process.env.AUTH_SERVICE_HOST || 'localhost'}:${process.env.AUTH_SERVICE_PORT || 3001}`,
-      credentials: ChannelCredentials.createSsl(),
+      credentials: getGrpcCredentials(),
     },
   })
-  private client: ClientGrpc;
+  private client!: ClientGrpc;
 
-  private authService: AuthService;
+  private authService!: AuthGrpcClient;
 
-  onModuleInit() {
-    this.authService = this.client.getService<AuthService>('AuthService');
+  onModuleInit(): void {
+    this.authService = this.client.getService<AuthGrpcClient>(AUTH_SERVICE_NAME);
   }
 
-  async register(data: any) {
+  register(data: RegisterRequest): Promise<AuthResponse | GrpcErrorResponse> {
     return this.authService.register(data);
   }
 
-  async login(data: any) {
+  login(data: LoginRequest): Promise<AuthResponse | GrpcErrorResponse> {
     return this.authService.login(data);
   }
 
-  async socialLogin(data: any) {
+  socialLogin(data: SocialLoginRequest): Promise<AuthResponse | GrpcErrorResponse> {
     return this.authService.socialLogin(data);
   }
 
-  async refreshToken(data: any) {
+  refreshToken(data: RefreshTokenRequest): Promise<AuthResponse | GrpcErrorResponse> {
     return this.authService.refreshToken(data);
   }
 
-  async logout(data: any) {
+  logout(data: LogoutRequest): Promise<LogoutResponse | GrpcErrorResponse> {
     return this.authService.logout(data);
   }
 
-  async validateToken(data: any) {
+  validateToken(data: ValidateTokenRequest): Promise<ValidateTokenResponse | GrpcErrorResponse> {
     return this.authService.validateToken(data);
   }
 
-  async checkUsername(data: any) {
-    return this.authService.checkUsername(data);
+  resetPassword(data: ResetPasswordRequest): Promise<UpdateProfileResponse | GrpcErrorResponse> {
+    return this.authService.resetPassword(data);
   }
 
-  async setUsername(data: any) {
-    return this.authService.setUsername(data);
-  }
-
-  async updateDisplayName(data: any) {
-    return this.authService.updateDisplayName(data);
-  }
-
-  async updateAvatar(data: any) {
-    return this.authService.updateAvatar(data);
+  changePassword(data: ChangePasswordRequest): Promise<UpdateProfileResponse | GrpcErrorResponse> {
+    return this.authService.changePassword(data);
   }
 }

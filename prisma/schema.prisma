@@ -1,0 +1,126 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Auth ───────────────────────────────────────────────────────────────────
+
+model User {
+  id          String   @id @default(cuid())
+  email       String   @unique
+  username          String?   @unique
+  usernameChangedAt DateTime?
+  firstName   String
+  lastName    String
+  dateOfBirth DateTime?
+  avatar      String?
+  password    String?
+  role        UserRole @default(USER)
+  status      UserStatus @default(ACTIVE)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  socialAccounts SocialAccount[]
+  refreshTokens  RefreshToken[]
+
+  @@map("users")
+}
+
+model SocialAccount {
+  id         String       @id @default(cuid())
+  provider   AuthProvider
+  providerId String
+  userId     String
+  user       User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+
+  @@unique([provider, providerId])
+  @@map("social_accounts")
+}
+
+model RefreshToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@map("refresh_tokens")
+}
+
+enum UserRole {
+  USER
+  ADMIN
+  MODERATOR
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+  PENDING
+}
+
+enum AuthProvider {
+  GOOGLE
+  FACEBOOK
+  APPLE
+  INSTAGRAM
+  EMAIL
+}
+
+// ─── Notifications ──────────────────────────────────────────────────────────
+
+model NotificationTemplate {
+  id          String              @id @default(cuid())
+  key         String
+  channel     NotificationChannel
+  subject     String?
+  bodyText    String?
+  bodyHtml    String?
+  fieldSchema Json
+  version     Int                 @default(1)
+  isActive    Boolean             @default(true)
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+
+  @@unique([key, channel])
+  @@map("notification_templates")
+}
+
+model NotificationDelivery {
+  id             String              @id @default(cuid())
+  templateKey    String
+  channel        NotificationChannel
+  recipient      String
+  status         DeliveryStatus      @default(pending)
+  payload        Json
+  error          String?
+  idempotencyKey String?             @unique
+  correlationId  String?
+  source         String?
+  sentAt         DateTime?
+  createdAt      DateTime            @default(now())
+
+  @@index([status, createdAt])
+  @@map("notification_deliveries")
+}
+
+enum NotificationChannel {
+  email
+  sms
+  push
+}
+
+enum DeliveryStatus {
+  pending
+  sent
+  failed
+  skipped
+}

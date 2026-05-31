@@ -71,8 +71,8 @@ A modern microservices architecture built with NestJS and Nx, featuring authenti
 
 3. **Set up environment variables**
    ```bash
-   cp env.example .env
-   # Edit .env with your configuration
+   cp .env.example .env.local
+   # Edit .env.local with your configuration
    ```
 
 4. **Set up the database**

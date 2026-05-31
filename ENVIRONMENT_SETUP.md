@@ -4,16 +4,16 @@
 
 This project supports multiple environments with separate configuration files:
 
-- `env.local` - Local development with watch/hot-reload
-- `env.development` - Live development environment / Fly.io deployment
-- `env.staging` - Staging environment
-- `env.production` - Production environment
+- `.env.local` - Local development with watch/hot-reload
+- `.env.development` - Live development environment
+- `.env.staging` - Staging environment
+- `.env.production` - Production environment
 
 ## How to Use Different Environments
 
 ### Local Development
 ```bash
-# Uses env.local automatically (with watch/hot-reload)
+# Uses .env.local automatically (with watch/hot-reload)
 npm run dev
 
 # Or explicitly set environment
@@ -22,7 +22,7 @@ NODE_ENV=local npm run dev
 
 ### Live Development Environment
 ```bash
-# Uses env.development
+# Uses .env.development
 npm run start:dev
 
 # Or explicitly set environment
@@ -31,7 +31,7 @@ NODE_ENV=development npm run dev
 
 ### Staging
 ```bash
-# Uses env.staging
+# Uses .env.staging
 npm run start:staging
 
 # Or explicitly set environment
@@ -40,7 +40,7 @@ NODE_ENV=staging npm run dev
 
 ### Production
 ```bash
-# Uses env.production
+# Uses .env.production
 npm run start:production
 
 # Or explicitly set environment
@@ -115,8 +115,9 @@ flyctl deploy
 
 The application loads environment variables in this order:
 1. System environment variables
-2. `.env.{NODE_ENV}` file (e.g., `.env.development`)
-3. `.env` file (fallback)
+2. `.env.{NODE_ENV}` (e.g. `.env.local`, `.env.development`)
+3. `.env.local` (fallback for any environment)
+4. `.env` (final fallback)
 
 ## Security Notes
 
@@ -126,34 +127,22 @@ The application loads environment variables in this order:
 - **Enable TLS** for Redis in production/staging
 - **Use managed databases** in production
 
-## Quick Environment Switch
+## Quick Setup
 
-### Local Development
+### First time
 ```bash
-cp env.local .env
+cp .env.example .env.local
 npm run dev
 ```
 
-### Live Development Environment
-```bash
-cp env.development .env
-npm run start:dev
-```
+### Switch environment
+Use the matching file and `NODE_ENV`:
 
-### Staging
-```bash
-cp env.staging .env
-npm run start:staging
-```
+| Command | Loads |
+|---------|--------|
+| `npm run dev` | `.env.local` (`NODE_ENV=local`) |
+| `npm run start:dev` | `.env.development` |
+| `npm run start:staging` | `.env.staging` |
+| `npm run start:production` | `.env.production` |
 
-### Production
-```bash
-cp env.production .env
-npm run start:production
-```
-
-### Fly.io
-```bash
-# Use env.development as reference, but set secrets via flyctl
-flyctl secrets import env.development
-```
+Docker Compose uses `.env.local` (dev) or `.env.production` (prod) via `env_file`.
