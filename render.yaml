@@ -1,19 +1,31 @@
-# Render Blueprint — https://render.com/docs/blueprint-spec
-# Deploy: Render Dashboard → New → Blueprint → connect this repo
+# Render Blueprint — FREE tier (Hobby)
+# https://render.com/docs/free
 #
-# After first deploy, set sync:false secrets in the dashboard:
-#   RABBITMQ_URL (CloudAMQP or similar — Render has no managed RabbitMQ)
-#   GATEWAY_PUBLIC_URL, ALLOWED_ORIGINS, NOTIFICATION_APP_URL
-#   S3_*, SMTP_*, OAuth client IDs/secrets and callback URLs
+# Render has NO free private services (pserv). This blueprint runs gateway + auth +
+# upload + notification in ONE free web instance (localhost gRPC). Postgres + Redis
+# use free instance types.
+#
+# Limits:
+#   - Web spins down after 15 min idle (cold starts)
+#   - Free web cannot use SMTP ports 25/465/587 — use an HTTP email API or external SMTP
+#   - RabbitMQ: set RABBITMQ_URL (e.g. CloudAMQP free tier) in the dashboard
+#   - ~512 MB RAM for all four Node processes — hobby / preview only
+#
+# Paid multi-service layout: see render.starter.yaml
 
 services:
   - type: web
-    name: kritly-gateway
+    name: kritly
     runtime: node
-    plan: starter
+    plan: free
     region: oregon
-    buildCommand: npm ci && npx nx build gateway --configuration=production
-    startCommand: node apps/gateway/dist/main.js
+    buildCommand: >-
+      npm ci &&
+      npx nx run-many -t build
+      --projects=gateway,auth-service,upload-service,notification-service
+      --configuration=production &&
+      npm run db:migrate:deploy
+    startCommand: sh scripts/render-start-all.sh
     healthCheckPath: /api/health
     envVars:
       - key: NODE_ENV
@@ -23,48 +35,42 @@ services:
       - key: GRPC_USE_TLS
         value: "false"
       - key: AUTH_SERVICE_HOST
-        fromService:
-          type: pserv
-          name: kritly-auth
-          property: host
+        value: 127.0.0.1
       - key: AUTH_SERVICE_PORT
-        fromService:
-          type: pserv
-          name: kritly-auth
-          property: port
+        value: "3001"
       - key: UPLOAD_SERVICE_HOST
-        fromService:
-          type: pserv
-          name: kritly-upload
-          property: host
+        value: 127.0.0.1
       - key: UPLOAD_SERVICE_PORT
-        fromService:
-          type: pserv
-          name: kritly-upload
-          property: port
+        value: "3002"
       - key: NOTIFICATION_SERVICE_HOST
-        fromService:
-          type: pserv
-          name: kritly-notification
-          property: host
+        value: 127.0.0.1
       - key: NOTIFICATION_SERVICE_GRPC_PORT
-        fromService:
-          type: pserv
-          name: kritly-notification
-          property: port
+        value: "3003"
+      - key: DATABASE_URL
+        fromDatabase:
+          name: kritly-db
+          property: connectionString
       - key: REDIS_URL
         fromService:
           type: redis
           name: kritly-redis
           property: connectionString
+      - key: RABBITMQ_URL
+        sync: false
+      - key: RABBITMQ_NOTIFICATION_QUEUE
+        value: notification-service.send
       - key: GATEWAY_PUBLIC_URL
         sync: false
       - key: ALLOWED_ORIGINS
         sync: false
       - key: OAUTH_SUCCESS_REDIRECT_URL
         sync: false
+      - key: NOTIFICATION_APP_URL
+        sync: false
       - key: OAUTH_STATE_SECRET
         generateValue: true
+      - key: JWT_EXPIRES_IN
+        value: 15m
       - key: GOOGLE_CLIENT_ID
         sync: false
       - key: GOOGLE_CLIENT_SECRET
@@ -93,62 +99,6 @@ services:
         sync: false
       - key: INSTAGRAM_CALLBACK_URL
         sync: false
-
-  - type: pserv
-    name: kritly-auth
-    runtime: node
-    plan: starter
-    region: oregon
-    buildCommand: npm ci && npx nx build auth-service --configuration=production && npm run db:migrate:deploy
-    startCommand: sh -c 'export AUTH_SERVICE_PORT=$PORT && node apps/auth-service/dist/main.js'
-    envVars:
-      - key: NODE_ENV
-        value: production
-      - key: JWT_SECRET
-        fromService:
-          type: web
-          name: kritly-gateway
-          envVarKey: JWT_SECRET
-      - key: DATABASE_URL
-        fromDatabase:
-          name: kritly-db
-          property: connectionString
-      - key: REDIS_URL
-        fromService:
-          type: redis
-          name: kritly-redis
-          property: connectionString
-      - key: RABBITMQ_URL
-        sync: false
-      - key: RABBITMQ_NOTIFICATION_QUEUE
-        value: notification-service.send
-      - key: NOTIFICATION_SERVICE_HOST
-        fromService:
-          type: pserv
-          name: kritly-notification
-          property: host
-      - key: NOTIFICATION_SERVICE_GRPC_PORT
-        fromService:
-          type: pserv
-          name: kritly-notification
-          property: port
-      - key: GRPC_USE_TLS
-        value: "false"
-      - key: JWT_EXPIRES_IN
-        value: 15m
-
-  - type: pserv
-    name: kritly-upload
-    runtime: node
-    plan: starter
-    region: oregon
-    buildCommand: npm ci && npx nx build upload-service --configuration=production
-    startCommand: sh -c 'export UPLOAD_SERVICE_PORT=$PORT && node apps/upload-service/dist/main.js'
-    envVars:
-      - key: NODE_ENV
-        value: production
-      - key: GRPC_USE_TLS
-        value: "false"
       - key: S3_BUCKET
         sync: false
       - key: S3_REGION
@@ -161,29 +111,6 @@ services:
         sync: false
       - key: S3_PUBLIC_URL_BASE
         sync: false
-      - key: UPLOAD_PRESIGNED_URL_TTL
-        value: "900"
-
-  - type: pserv
-    name: kritly-notification
-    runtime: node
-    plan: starter
-    region: oregon
-    buildCommand: npm ci && npx nx build notification-service --configuration=production
-    startCommand: sh -c 'export NOTIFICATION_SERVICE_GRPC_PORT=$PORT && node apps/notification-service/dist/main.js'
-    envVars:
-      - key: NODE_ENV
-        value: production
-      - key: DATABASE_URL
-        fromDatabase:
-          name: kritly-db
-          property: connectionString
-      - key: RABBITMQ_URL
-        sync: false
-      - key: RABBITMQ_NOTIFICATION_QUEUE
-        value: notification-service.send
-      - key: GRPC_USE_TLS
-        value: "false"
       - key: SMTP_HOST
         sync: false
       - key: SMTP_PORT
@@ -196,24 +123,23 @@ services:
         sync: false
       - key: SMTP_SECURE
         value: "false"
-      - key: NOTIFICATION_APP_URL
-        sync: false
       - key: NOTIFICATION_SUPPORT_EMAIL
         value: support@kritly.com
       - key: NOTIFICATION_TEMPLATE_CACHE_TTL
         value: "1800"
+      - key: UPLOAD_PRESIGNED_URL_TTL
+        value: "900"
 
   - type: redis
     name: kritly-redis
-    plan: starter
+    plan: free
     region: oregon
     maxmemoryPolicy: allkeys-lru
-    # Required for Key Value / redis — [] = private network only (gateway + auth)
     ipAllowList: []
 
 databases:
   - name: kritly-db
-    plan: starter
+    plan: free
     region: oregon
     databaseName: kritly
     user: kritly

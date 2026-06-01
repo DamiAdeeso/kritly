@@ -24,4 +24,7 @@ Copy `cp .env.example .env` and set secrets (JWT, SMTP, S3, OAuth).
 
 ## Render
 
-Deploy all services via Blueprint: root `render.yaml` → Render **New → Blueprint**. Set `sync: false` secrets (`RABBITMQ_URL`, `GATEWAY_PUBLIC_URL`, SMTP, S3, OAuth) after the first deploy.
+- **Free (default):** `render.yaml` — one free web service runs all four apps on localhost gRPC + free Postgres/Redis. See limits in that file (idle spin-down, no SMTP on 587, tight RAM).
+- **Paid / split services:** `render.starter.yaml` — separate gateway + 3 private gRPC services (`starter` plans).
+
+Blueprint: Render **New → Blueprint**. Set `sync: false` secrets (`RABBITMQ_URL`, `GATEWAY_PUBLIC_URL`, SMTP, S3, OAuth) after deploy.
