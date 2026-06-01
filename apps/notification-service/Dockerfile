@@ -40,4 +40,4 @@ RUN addgroup -g 1001 -S nodejs \
   && chown -R nestjs:nodejs /app
 USER nestjs
 
-CMD ["node", "apps/notification-service/dist/main.js"]
+CMD ["node", "apps/notification-service/dist/src/main.js"]

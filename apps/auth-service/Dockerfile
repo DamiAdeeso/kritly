@@ -46,4 +46,4 @@ EXPOSE 3001
 HEALTHCHECK --interval=30s --timeout=3s --start-period=40s --retries=3 \
   CMD node apps/auth-service/scripts/grpc-health-check.js || exit 1
 
-CMD ["node", "apps/auth-service/dist/main.js"]
+CMD ["node", "apps/auth-service/dist/src/main.js"]

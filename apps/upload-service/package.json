@@ -2,7 +2,7 @@
   "name": "@kritly/upload-service",
   "version": "1.0.0",
   "description": "Upload microservice for Kritly",
-  "main": "dist/main.js",
+  "main": "dist/src/main.js",
   "scripts": {
     "build": "nx build upload-service",
     "start:dev": "nx serve upload-service"

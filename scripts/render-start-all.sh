@@ -9,8 +9,8 @@ export UPLOAD_SERVICE_PORT="${UPLOAD_SERVICE_PORT:-3002}"
 export NOTIFICATION_SERVICE_HOST="${NOTIFICATION_SERVICE_HOST:-127.0.0.1}"
 export NOTIFICATION_SERVICE_GRPC_PORT="${NOTIFICATION_SERVICE_GRPC_PORT:-3003}"
 
-node apps/auth-service/dist/main.js &
-node apps/upload-service/dist/main.js &
-node apps/notification-service/dist/main.js &
+node apps/auth-service/dist/src/main.js &
+node apps/upload-service/dist/src/main.js &
+node apps/notification-service/dist/src/main.js &
 
-exec node apps/gateway/dist/main.js
+exec node apps/gateway/dist/src/main.js

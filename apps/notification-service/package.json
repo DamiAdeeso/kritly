@@ -2,7 +2,7 @@
   "name": "@kritly/notification-service",
   "version": "1.0.0",
   "description": "Notification microservice for Kritly",
-  "main": "dist/main.js",
+  "main": "dist/src/main.js",
   "scripts": {
     "build": "nx build notification-service",
     "start:dev": "nx serve notification-service"

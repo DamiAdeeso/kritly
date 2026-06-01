@@ -36,4 +36,4 @@ USER nestjs
 
 EXPOSE 3002
 
-CMD ["node", "apps/upload-service/dist/main.js"]
+CMD ["node", "apps/upload-service/dist/src/main.js"]
