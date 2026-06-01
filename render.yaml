@@ -208,6 +208,8 @@ services:
     plan: starter
     region: oregon
     maxmemoryPolicy: allkeys-lru
+    # Required for Key Value / redis — [] = private network only (gateway + auth)
+    ipAllowList: []
 
 databases:
   - name: kritly-db
