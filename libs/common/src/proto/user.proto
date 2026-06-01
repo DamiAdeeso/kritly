@@ -9,6 +9,7 @@ service UserService {
   rpc CheckUsername(CheckUsernameRequest) returns (UsernameAvailabilityResponse);
   rpc SetUsername(SetUsernameRequest) returns (SetUsernameResponse);
   rpc UpdateAvatar(UpdateAvatarRequest) returns (UpdateProfileResponse);
+  rpc UpdateProfile(UpdateProfileRequest) returns (UpdateProfileResponse);
 }
 
 message GetProfileRequest {
@@ -26,11 +27,19 @@ message CheckUsernameRequest {
 message SetUsernameRequest {
   string userId = 1;
   string username = 2;
+  string verificationToken = 3;
 }
 
 message UpdateAvatarRequest {
   string userId = 1;
   string avatar = 2;
+}
+
+message UpdateProfileRequest {
+  string userId = 1;
+  string firstName = 2;
+  string lastName = 3;
+  optional string bio = 4;
 }
 
 message ProfileData {
@@ -40,6 +49,7 @@ message ProfileData {
   string lastName = 4;
   optional string avatar = 5;
   optional string email = 6;
+  optional string bio = 7;
 }
 
 message ProfileResponse {

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { randomBytes } from 'crypto';
 import { JwtService } from '@nestjs/jwt';
 import { RefreshTokenRepository } from '../repositories/refresh-token.repository';
@@ -20,7 +20,7 @@ export class TokenService {
   }> {
     const user = await this.accountRepository.findById(userId);
     if (!user) {
-      throw new Error('User not found');
+      throw new NotFoundException('User not found');
     }
 
     const tokens = await this.generateTokens(user.id, user.email, user.role);

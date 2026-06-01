@@ -1,17 +1,15 @@
 import { Module } from '@nestjs/common';
-import { APP_GUARD } from '@nestjs/core';
+import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { ConfigModule } from '@nestjs/config';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
-import { validateEnv } from '@kritly/common';
+import { AppLoggerModule, rootEnvConfig } from '@kritly/common';
 import { GatewayModule } from './gateway/gateway.module';
+import { ServiceResponseInterceptor } from './interceptors/service-response.interceptor';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({
-      isGlobal: true,
-      validate: validateEnv,
-      envFilePath: [`.env.${process.env.NODE_ENV || 'local'}`, '.env.local', '.env'],
-    }),
+    ConfigModule.forRoot(rootEnvConfig()),
+    AppLoggerModule.register({ service: 'gateway', enableHttpLogging: true }),
     ThrottlerModule.forRoot([
       {
         ttl: 60_000,
@@ -24,6 +22,10 @@ import { GatewayModule } from './gateway/gateway.module';
     {
       provide: APP_GUARD,
       useClass: ThrottlerGuard,
+    },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: ServiceResponseInterceptor,
     },
   ],
 })

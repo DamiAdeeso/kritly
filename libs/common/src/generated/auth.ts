@@ -13,8 +13,9 @@ export interface RegisterRequest {
   email: string;
   password: string;
   username?: string | undefined;
-  firstName: string;
-  lastName: string;
+  verificationToken: string;
+  /** ISO date YYYY-MM-DD */
+  dateOfBirth: string;
 }
 
 export interface LoginRequest {
@@ -52,12 +53,28 @@ export interface ValidateTokenRequest {
 export interface ResetPasswordRequest {
   email: string;
   newPassword: string;
+  verificationToken: string;
 }
 
 export interface ChangePasswordRequest {
   userId: string;
   currentPassword: string;
   newPassword: string;
+  verificationToken: string;
+}
+
+export interface CheckEmailRequest {
+  email: string;
+}
+
+export interface EmailAvailabilityData {
+  isAvailable: boolean;
+}
+
+export interface EmailAvailabilityResponse {
+  statusCode: number;
+  message: string;
+  data?: EmailAvailabilityData | undefined;
 }
 
 /** Shared response envelope: statusCode, message, data */

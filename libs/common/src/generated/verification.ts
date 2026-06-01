@@ -46,7 +46,15 @@ export interface VerifyOtpResponse {
 export interface ValidateVerificationTokenRequest {
   verificationToken: string;
   purpose: string;
-  userId: string;
+  userId?: string | undefined;
+  email?: string | undefined;
+}
+
+export interface ConsumeVerificationTokenRequest {
+  verificationToken: string;
+  purpose: string;
+  userId?: string | undefined;
+  email?: string | undefined;
 }
 
 export interface ValidateVerificationTokenData {

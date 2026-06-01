@@ -37,4 +37,29 @@ describe('UploadService', () => {
     expect(result.statusCode).toBe(201);
     expect(result.data.publicUrl).toContain('avatar/user-1');
   });
+
+  it('propagates storage failures', async () => {
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [
+        UploadService,
+        {
+          provide: StorageService,
+          useValue: {
+            createPresignedUpload: jest.fn().mockRejectedValue(new Error('storage unavailable')),
+          },
+        },
+      ],
+    }).compile();
+
+    service = module.get<UploadService>(UploadService);
+
+    await expect(
+      service.createPresignedUpload({
+        userId: 'user-1',
+        purpose: 'avatar',
+        contentType: 'image/jpeg',
+        fileName: 'avatar.jpg',
+      }),
+    ).rejects.toThrow('storage unavailable');
+  });
 });

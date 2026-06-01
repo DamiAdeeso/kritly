@@ -1,0 +1,6 @@
+export const LOGGER_SERVICE_NAME = 'LOGGER_SERVICE_NAME';
+
+export interface AppLoggerOptions {
+  service: string;
+  enableHttpLogging?: boolean;
+}

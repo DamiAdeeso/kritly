@@ -1,26 +1,13 @@
 import { Injectable } from '@nestjs/common';
+import { Prisma, AuthProvider, User } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
-import { AuthProvider, User } from '@prisma/client';
-import { IUserCreate } from '@kritly/common';
 
 @Injectable()
 export class AccountRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  async create(data: IUserCreate): Promise<User> {
-    return this.prisma.user.create({
-      data: {
-        email: data.email,
-        username: data.username,
-        firstName: data.firstName,
-        lastName: data.lastName,
-        dateOfBirth: data.dateOfBirth,
-        avatar: data.avatar,
-        password: data.password,
-        role: data.role as unknown as User['role'],
-        status: data.status as unknown as User['status'],
-      },
-    });
+  async create(data: Prisma.UserUncheckedCreateInput): Promise<User> {
+    return this.prisma.user.create({ data });
   }
 
   async findById(id: string): Promise<User | null> {

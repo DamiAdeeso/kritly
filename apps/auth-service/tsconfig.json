@@ -8,8 +8,8 @@
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
     "paths": {
-      "@kritly/common": ["../../libs/common/src"],
-      "@kritly/common/*": ["../../libs/common/src/*"],
+      "@kritly/common": ["../../dist/libs/common/src"],
+      "@kritly/common/*": ["../../dist/libs/common/src/*"],
       "@prisma/client": ["../../node_modules/.prisma/client"]
     }
   },

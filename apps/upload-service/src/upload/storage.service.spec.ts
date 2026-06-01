@@ -61,4 +61,15 @@ describe('StorageService', () => {
     expect(result.fileKey).toContain('avatar/user-1/');
     expect(result.expiresAt).toBeGreaterThan(Math.floor(Date.now() / 1000));
   });
+
+  it('rejects invalid upload purpose', async () => {
+    await expect(
+      service.createPresignedUpload({
+        userId: 'user-1',
+        purpose: 'invalid' as 'avatar',
+        contentType: 'image/jpeg',
+        fileName: 'avatar.jpg',
+      }),
+    ).rejects.toBeInstanceOf(BadRequestException);
+  });
 });

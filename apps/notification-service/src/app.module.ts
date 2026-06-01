@@ -1,6 +1,13 @@
 import { Module } from '@nestjs/common';
+import { APP_FILTER } from '@nestjs/core';
 import { ConfigModule } from '@nestjs/config';
-import { validateEnv } from '@kritly/common';
+import {
+  EventPublisherModule,
+  GrpcServiceResponseExceptionFilter,
+  RedisModule,
+  AppLoggerModule,
+  rootEnvConfig,
+} from '@kritly/common';
 import notificationConfig from './config/notification.config';
 import rabbitmqConfig from './config/rabbitmq.config';
 import redisConfig from './config/redis.config';
@@ -8,7 +15,6 @@ import smtpConfig from './config/smtp.config';
 import verificationConfig from './config/verification.config';
 import { NotificationsModule } from './notifications/notifications.module';
 import { PrismaModule } from './prisma/prisma.module';
-import { RedisModule } from './redis/redis.module';
 import { TemplatesModule } from './templates/templates.module';
 import { VerificationModule } from './verification/verification.module';
 import { HealthGrpcController } from './health/health.grpc.controller';
@@ -16,17 +22,26 @@ import { HealthGrpcController } from './health/health.grpc.controller';
 @Module({
   imports: [
     ConfigModule.forRoot({
-      isGlobal: true,
-      validate: validateEnv,
-      envFilePath: [`.env.${process.env.NODE_ENV || 'local'}`, '.env.local', '.env'],
+      ...rootEnvConfig(),
       load: [smtpConfig, rabbitmqConfig, redisConfig, notificationConfig, verificationConfig],
     }),
+    AppLoggerModule.register({ service: 'notification-service', enableHttpLogging: false }),
+    EventPublisherModule.register({ source: 'notification-service' }),
     PrismaModule,
-    RedisModule,
+    RedisModule.register({
+      keyPrefix: 'notification:',
+      unavailableMessage: 'Template cache and OTP storage are disabled.',
+    }),
     TemplatesModule,
     NotificationsModule,
     VerificationModule,
   ],
   controllers: [HealthGrpcController],
+  providers: [
+    {
+      provide: APP_FILTER,
+      useClass: GrpcServiceResponseExceptionFilter,
+    },
+  ],
 })
 export class AppModule {}

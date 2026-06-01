@@ -6,6 +6,7 @@ import type {
   SetUsernameRequest,
   SetUsernameResponse,
   UpdateAvatarRequest,
+  UpdateProfileRequest,
   UpdateProfileResponse,
   UsernameAvailabilityResponse,
 } from '../generated/user';
@@ -22,6 +23,7 @@ export type {
   SetUsernameRequest,
   SetUsernameResponse,
   UpdateAvatarRequest,
+  UpdateProfileRequest,
   UpdateProfileResponse as UserUpdateProfileResponse,
   UsernameAvailabilityData,
   UsernameAvailabilityResponse,
@@ -37,6 +39,7 @@ export interface UserServiceClient {
   checkUsername(request: CheckUsernameRequest): Promise<UsernameAvailabilityResponse>;
   setUsername(request: SetUsernameRequest): Promise<SetUsernameResponse>;
   updateAvatar(request: UpdateAvatarRequest): Promise<UpdateProfileResponse>;
+  updateProfile(request: UpdateProfileRequest): Promise<UpdateProfileResponse>;
 }
 
 export type UserGrpcClient = UserServiceClient;
@@ -44,10 +47,11 @@ export type UserGrpcClient = UserServiceClient;
 export type ProfileServiceResponse = ServiceResponse<{
   userId: string;
   username?: string;
-  firstName: string;
-  lastName: string;
+  firstName?: string;
+  lastName?: string;
   avatar?: string;
   email?: string;
+  bio?: string;
 }>;
 
 export type SetUsernameServiceResponse = ServiceResponse<{

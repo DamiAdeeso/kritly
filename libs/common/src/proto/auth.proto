@@ -19,6 +19,7 @@ service AuthService {
   rpc ValidateToken(ValidateTokenRequest) returns (ValidateTokenResponse);
   rpc ResetPassword(ResetPasswordRequest) returns (UpdateProfileResponse);
   rpc ChangePassword(ChangePasswordRequest) returns (UpdateProfileResponse);
+  rpc CheckEmailAvailability(CheckEmailRequest) returns (EmailAvailabilityResponse);
 }
 
 // Request/Response messages
@@ -26,8 +27,8 @@ message RegisterRequest {
   string email = 1;
   string password = 2;
   optional string username = 3;
-  string firstName = 4;
-  string lastName = 5;
+  string verificationToken = 4;
+  string dateOfBirth = 5; // ISO date YYYY-MM-DD
 }
 
 message LoginRequest {
@@ -57,12 +58,28 @@ message ValidateTokenRequest {
 message ResetPasswordRequest {
   string email = 1;
   string newPassword = 2;
+  string verificationToken = 3;
 }
 
 message ChangePasswordRequest {
   string userId = 1;
   string currentPassword = 2;
   string newPassword = 3;
+  string verificationToken = 4;
+}
+
+message CheckEmailRequest {
+  string email = 1;
+}
+
+message EmailAvailabilityData {
+  bool isAvailable = 1;
+}
+
+message EmailAvailabilityResponse {
+  int32 statusCode = 1;
+  string message = 2;
+  EmailAvailabilityData data = 3;
 }
 
 // Shared response envelope: statusCode, message, data

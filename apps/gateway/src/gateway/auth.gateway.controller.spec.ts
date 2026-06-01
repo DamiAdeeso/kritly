@@ -1,9 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { UnauthorizedException } from '@nestjs/common';
 import { AuthGatewayController } from './auth.gateway.controller';
 import { AuthClientService } from '../services/auth-client.service';
 import { VerificationClientService } from '../services/verification-client.service';
-import { VerificationGuard } from '../guards/verification.guard';
-import { PasswordResetGuard } from '../guards/password-reset.guard';
 
 describe('AuthGatewayController', () => {
   let controller: AuthGatewayController;
@@ -35,14 +34,6 @@ describe('AuthGatewayController', () => {
       providers: [
         { provide: AuthClientService, useValue: authClient },
         { provide: VerificationClientService, useValue: verificationClient },
-        {
-          provide: VerificationGuard,
-          useValue: { canActivate: jest.fn().mockResolvedValue(true) },
-        },
-        {
-          provide: PasswordResetGuard,
-          useValue: { canActivate: jest.fn().mockResolvedValue(true) },
-        },
       ],
     }).compile();
 
@@ -65,8 +56,8 @@ describe('AuthGatewayController', () => {
       email: 'user@example.com',
       password: 'Password123',
       username: 'user123',
-      firstName: 'Test',
-      lastName: 'User',
+      dateOfBirth: '1990-01-15',
+      verificationToken: 'verification-token',
     };
 
     await controller.register(dto);
@@ -88,5 +79,44 @@ describe('AuthGatewayController', () => {
       purpose: 'password_reset',
       channel: 'email',
     });
+  });
+
+  it('forwards verification token when confirming password reset', async () => {
+    authClient.resetPassword.mockResolvedValue({
+      statusCode: 200,
+      message: 'Password reset successfully',
+      data: {},
+    });
+
+    await controller.confirmPasswordReset('verification-token', {
+      email: 'user@example.com',
+      newPassword: 'NewPassword123',
+    });
+
+    expect(authClient.resetPassword).toHaveBeenCalledWith({
+      email: 'user@example.com',
+      newPassword: 'NewPassword123',
+      verificationToken: 'verification-token',
+    });
+  });
+
+  it('delegates login and returns auth client response', async () => {
+    authClient.login.mockResolvedValue({
+      statusCode: 401,
+      message: 'Invalid credentials',
+      data: null,
+    });
+
+    const result = await controller.login({
+      email: 'user@example.com',
+      password: 'wrong',
+    });
+
+    expect(result.statusCode).toBe(401);
+    expect(authClient.login).toHaveBeenCalled();
+  });
+
+  it('rejects validateToken when authorization header is missing', async () => {
+    await expect(controller.validateToken(undefined)).rejects.toThrow(UnauthorizedException);
   });
 });

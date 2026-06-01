@@ -6,8 +6,8 @@ describe('AuthRequestMapper', () => {
     const dto = AuthRequestMapper.toRegisterDto({
       email: 'user@example.com',
       password: 'Password123',
-      firstName: 'Test',
-      lastName: 'User',
+      dateOfBirth: '1990-01-15',
+      verificationToken: 'verification-token',
     });
 
     expect(dto.email).toBe('user@example.com');
@@ -19,8 +19,8 @@ describe('AuthRequestMapper', () => {
       email: 'user@example.com',
       password: 'Password123',
       username: 'customname',
-      firstName: 'Test',
-      lastName: 'User',
+      dateOfBirth: '1990-01-15',
+      verificationToken: 'verification-token',
     });
 
     expect(dto.username).toBe('customname');
@@ -34,5 +34,15 @@ describe('AuthRequestMapper', () => {
 
     expect(dto.provider).toBe(AuthProvider.GOOGLE);
     expect(dto.idToken).toBe('google-id-token');
+  });
+
+  it('preserves optional social login credential fields', () => {
+    const dto = AuthRequestMapper.toSocialLoginDto({
+      provider: 'apple',
+      authorizationCode: 'apple-code',
+    });
+
+    expect(dto.provider).toBe(AuthProvider.APPLE);
+    expect(dto.authorizationCode).toBe('apple-code');
   });
 });

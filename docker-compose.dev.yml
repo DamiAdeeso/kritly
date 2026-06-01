@@ -20,7 +20,7 @@ services:
       - AUTH_SERVICE_HOST=auth-service
       - RABBITMQ_URL=amqp://kritly:kritly@rabbitmq:5672
     env_file:
-      - .env.local
+      - .env
     volumes:
       - ./apps/auth-service:/app/apps/auth-service
       - ./libs/common:/app/libs/common
@@ -58,7 +58,7 @@ services:
       - NOTIFICATION_SERVICE_HOST=notification-service
       - NOTIFICATION_SERVICE_GRPC_PORT=3003
     env_file:
-      - .env.local
+      - .env
     volumes:
       - ./apps/gateway:/app/apps/gateway
       - ./libs/common:/app/libs/common
@@ -141,7 +141,7 @@ services:
       - REDIS_PORT=6379
       - REDIS_URL=redis://redis:6379
     env_file:
-      - .env.local
+      - .env
     volumes:
       - ./apps/notification-service:/app/apps/notification-service
       - ./libs/common:/app/libs/common
@@ -175,7 +175,7 @@ services:
       - S3_BUCKET=kritly-uploads
       - S3_REGION=auto
     env_file:
-      - .env.local
+      - .env
     volumes:
       - ./apps/upload-service:/app/apps/upload-service
       - ./libs/common:/app/libs/common

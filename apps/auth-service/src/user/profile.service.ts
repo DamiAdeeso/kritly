@@ -3,6 +3,7 @@ import {
   PROFILE_CONSTANTS,
   ProfileServiceResponse,
   SetUsernameServiceResponse,
+  UpdateProfileDto,
   UsernameAvailabilityServiceResponse,
   UpdateProfileServiceResponse,
   ok,
@@ -27,8 +28,9 @@ export class ProfileService {
     return ok('Profile retrieved successfully', {
       userId: profile.userId,
       username: profile.username ?? undefined,
-      firstName: profile.firstName,
-      lastName: profile.lastName,
+      firstName: profile.firstName ?? undefined,
+      lastName: profile.lastName ?? undefined,
+      bio: profile.bio ?? undefined,
       avatar: profile.avatar ?? undefined,
       email: profile.email,
     });
@@ -44,10 +46,37 @@ export class ProfileService {
     return ok('Profile retrieved successfully', {
       userId: profile.userId,
       username: profile.username ?? undefined,
-      firstName: profile.firstName,
-      lastName: profile.lastName,
+      firstName: profile.firstName ?? undefined,
+      lastName: profile.lastName ?? undefined,
+      bio: profile.bio ?? undefined,
       avatar: profile.avatar ?? undefined,
     });
+  }
+
+  async updateProfile(userId: string, dto: UpdateProfileDto): Promise<UpdateProfileServiceResponse> {
+    const firstName = dto.firstName.trim();
+    const lastName = dto.lastName.trim();
+
+    if (!firstName || !lastName) {
+      throw new BadRequestException('First name and last name are required');
+    }
+
+    const profile = await this.profileRepository.findProfileById(userId);
+    if (!profile) {
+      throw new BadRequestException('User not found');
+    }
+
+    const update: { firstName: string; lastName: string; bio?: string | null } = {
+      firstName,
+      lastName,
+    };
+    if (dto.bio !== undefined) {
+      update.bio = dto.bio.trim() || null;
+    }
+
+    await this.profileRepository.updateProfile(userId, update);
+
+    return okEmpty('Profile updated successfully');
   }
 
   async checkUsername(username: string): Promise<UsernameAvailabilityServiceResponse> {

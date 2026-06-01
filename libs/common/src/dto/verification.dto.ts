@@ -13,7 +13,7 @@ export class SendOtpDto {
   channel!: OtpChannel;
 
   @ApiPropertyOptional({
-    description: 'Recipient email for unauthenticated flows (e.g. password reset)',
+    description: 'Recipient email for unauthenticated flows (password reset, signup email verify)',
     example: 'user@example.com',
   })
   @IsOptional()

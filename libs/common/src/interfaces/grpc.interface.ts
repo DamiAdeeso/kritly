@@ -1,6 +1,8 @@
 import type {
   AuthResponse,
   ChangePasswordRequest,
+  CheckEmailRequest,
+  EmailAvailabilityResponse,
   LoginRequest,
   LogoutRequest,
   LogoutResponse,
@@ -18,6 +20,9 @@ export type {
   AuthData,
   AuthResponse,
   ChangePasswordRequest,
+  CheckEmailRequest,
+  EmailAvailabilityData,
+  EmailAvailabilityResponse,
   EmptyData,
   LoginRequest,
   LogoutRequest,
@@ -47,6 +52,9 @@ export interface AuthServiceClient {
   validateToken(request: ValidateTokenRequest): Promise<ValidateTokenResponse>;
   resetPassword(request: ResetPasswordRequest): Promise<UpdateProfileResponse>;
   changePassword(request: ChangePasswordRequest): Promise<UpdateProfileResponse>;
+  checkEmailAvailability(request: CheckEmailRequest): Promise<EmailAvailabilityResponse>;
 }
 
 export type AuthGrpcClient = AuthServiceClient;
+
+export type EmailAvailabilityServiceResponse = ServiceResponse<{ isAvailable: boolean }>;

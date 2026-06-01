@@ -23,11 +23,19 @@ export interface CheckUsernameRequest {
 export interface SetUsernameRequest {
   userId: string;
   username: string;
+  verificationToken: string;
 }
 
 export interface UpdateAvatarRequest {
   userId: string;
   avatar: string;
+}
+
+export interface UpdateProfileRequest {
+  userId: string;
+  firstName: string;
+  lastName: string;
+  bio?: string | undefined;
 }
 
 export interface ProfileData {
@@ -37,6 +45,7 @@ export interface ProfileData {
   lastName: string;
   avatar?: string | undefined;
   email?: string | undefined;
+  bio?: string | undefined;
 }
 
 export interface ProfileResponse {

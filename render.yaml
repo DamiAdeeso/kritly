@@ -1,0 +1,217 @@
+# Render Blueprint — https://render.com/docs/blueprint-spec
+# Deploy: Render Dashboard → New → Blueprint → connect this repo
+#
+# After first deploy, set sync:false secrets in the dashboard:
+#   RABBITMQ_URL (CloudAMQP or similar — Render has no managed RabbitMQ)
+#   GATEWAY_PUBLIC_URL, ALLOWED_ORIGINS, NOTIFICATION_APP_URL
+#   S3_*, SMTP_*, OAuth client IDs/secrets and callback URLs
+
+services:
+  - type: web
+    name: kritly-gateway
+    runtime: node
+    plan: starter
+    region: oregon
+    buildCommand: npm ci && npx nx build gateway --configuration=production
+    startCommand: node apps/gateway/dist/main.js
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: JWT_SECRET
+        generateValue: true
+      - key: GRPC_USE_TLS
+        value: "false"
+      - key: AUTH_SERVICE_HOST
+        fromService:
+          type: pserv
+          name: kritly-auth
+          property: host
+      - key: AUTH_SERVICE_PORT
+        fromService:
+          type: pserv
+          name: kritly-auth
+          property: port
+      - key: UPLOAD_SERVICE_HOST
+        fromService:
+          type: pserv
+          name: kritly-upload
+          property: host
+      - key: UPLOAD_SERVICE_PORT
+        fromService:
+          type: pserv
+          name: kritly-upload
+          property: port
+      - key: NOTIFICATION_SERVICE_HOST
+        fromService:
+          type: pserv
+          name: kritly-notification
+          property: host
+      - key: NOTIFICATION_SERVICE_GRPC_PORT
+        fromService:
+          type: pserv
+          name: kritly-notification
+          property: port
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: kritly-redis
+          property: connectionString
+      - key: GATEWAY_PUBLIC_URL
+        sync: false
+      - key: ALLOWED_ORIGINS
+        sync: false
+      - key: OAUTH_SUCCESS_REDIRECT_URL
+        sync: false
+      - key: OAUTH_STATE_SECRET
+        generateValue: true
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+      - key: GOOGLE_CALLBACK_URL
+        sync: false
+      - key: FACEBOOK_CLIENT_ID
+        sync: false
+      - key: FACEBOOK_CLIENT_SECRET
+        sync: false
+      - key: FACEBOOK_CALLBACK_URL
+        sync: false
+      - key: APPLE_CLIENT_ID
+        sync: false
+      - key: APPLE_TEAM_ID
+        sync: false
+      - key: APPLE_PRIVATE_KEY
+        sync: false
+      - key: APPLE_CLIENT_SECRET
+        sync: false
+      - key: APPLE_CALLBACK_URL
+        sync: false
+      - key: INSTAGRAM_CLIENT_ID
+        sync: false
+      - key: INSTAGRAM_CLIENT_SECRET
+        sync: false
+      - key: INSTAGRAM_CALLBACK_URL
+        sync: false
+
+  - type: pserv
+    name: kritly-auth
+    runtime: node
+    plan: starter
+    region: oregon
+    buildCommand: npm ci && npx nx build auth-service --configuration=production && npm run db:migrate:deploy
+    startCommand: sh -c 'export AUTH_SERVICE_PORT=$PORT && node apps/auth-service/dist/main.js'
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: JWT_SECRET
+        fromService:
+          type: web
+          name: kritly-gateway
+          envVarKey: JWT_SECRET
+      - key: DATABASE_URL
+        fromDatabase:
+          name: kritly-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: kritly-redis
+          property: connectionString
+      - key: RABBITMQ_URL
+        sync: false
+      - key: RABBITMQ_NOTIFICATION_QUEUE
+        value: notification-service.send
+      - key: NOTIFICATION_SERVICE_HOST
+        fromService:
+          type: pserv
+          name: kritly-notification
+          property: host
+      - key: NOTIFICATION_SERVICE_GRPC_PORT
+        fromService:
+          type: pserv
+          name: kritly-notification
+          property: port
+      - key: GRPC_USE_TLS
+        value: "false"
+      - key: JWT_EXPIRES_IN
+        value: 15m
+
+  - type: pserv
+    name: kritly-upload
+    runtime: node
+    plan: starter
+    region: oregon
+    buildCommand: npm ci && npx nx build upload-service --configuration=production
+    startCommand: sh -c 'export UPLOAD_SERVICE_PORT=$PORT && node apps/upload-service/dist/main.js'
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: GRPC_USE_TLS
+        value: "false"
+      - key: S3_BUCKET
+        sync: false
+      - key: S3_REGION
+        sync: false
+      - key: S3_ENDPOINT
+        sync: false
+      - key: S3_ACCESS_KEY_ID
+        sync: false
+      - key: S3_SECRET_ACCESS_KEY
+        sync: false
+      - key: S3_PUBLIC_URL_BASE
+        sync: false
+      - key: UPLOAD_PRESIGNED_URL_TTL
+        value: "900"
+
+  - type: pserv
+    name: kritly-notification
+    runtime: node
+    plan: starter
+    region: oregon
+    buildCommand: npm ci && npx nx build notification-service --configuration=production
+    startCommand: sh -c 'export NOTIFICATION_SERVICE_GRPC_PORT=$PORT && node apps/notification-service/dist/main.js'
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: kritly-db
+          property: connectionString
+      - key: RABBITMQ_URL
+        sync: false
+      - key: RABBITMQ_NOTIFICATION_QUEUE
+        value: notification-service.send
+      - key: GRPC_USE_TLS
+        value: "false"
+      - key: SMTP_HOST
+        sync: false
+      - key: SMTP_PORT
+        value: "587"
+      - key: SMTP_USER
+        sync: false
+      - key: SMTP_PASS
+        sync: false
+      - key: SMTP_FROM
+        sync: false
+      - key: SMTP_SECURE
+        value: "false"
+      - key: NOTIFICATION_APP_URL
+        sync: false
+      - key: NOTIFICATION_SUPPORT_EMAIL
+        value: support@kritly.com
+      - key: NOTIFICATION_TEMPLATE_CACHE_TTL
+        value: "1800"
+
+  - type: redis
+    name: kritly-redis
+    plan: starter
+    region: oregon
+    maxmemoryPolicy: allkeys-lru
+
+databases:
+  - name: kritly-db
+    plan: starter
+    region: oregon
+    databaseName: kritly
+    user: kritly

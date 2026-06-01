@@ -10,8 +10,6 @@ import { UserClientService } from '../services/user-client.service';
 import { UploadClientService } from '../services/upload-client.service';
 import { OAuthService } from '../services/oauth.service';
 import { VerificationClientService } from '../services/verification-client.service';
-import { VerificationGuard } from '../guards/verification.guard';
-import { PasswordResetGuard } from '../guards/password-reset.guard';
 import { HealthController } from '../health/health.controller';
 
 @Module({
@@ -30,16 +28,12 @@ import { HealthController } from '../health/health.controller';
     OAuthService,
     UploadClientService,
     VerificationClientService,
-    VerificationGuard,
-    PasswordResetGuard,
   ],
   exports: [
     AuthClientService,
     UserClientService,
     UploadClientService,
     VerificationClientService,
-    VerificationGuard,
-    PasswordResetGuard,
   ],
 })
 export class GatewayModule {}

@@ -16,8 +16,6 @@ import {
   HttpStatus,
   Get,
   Headers,
-  Req,
-  UseGuards,
   ValidationPipe,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -32,8 +30,6 @@ import {
 import { Throttle } from '@nestjs/throttler';
 import { AuthClientService } from '../services/auth-client.service';
 import { VerificationClientService } from '../services/verification-client.service';
-import { VerificationGuard } from '../guards/verification.guard';
-import { PasswordResetGuard } from '../guards/password-reset.guard';
 import {
   LoginDto,
   RegisterDto,
@@ -50,17 +46,11 @@ import {
   LogoutResponse,
   UpdateProfileResponse,
   ValidateTokenResponse,
-  RequiresVerification,
   OtpPurpose,
   OtpChannel,
   SendOtpResponse,
   VerificationGrpcErrorResponse,
 } from '@kritly/common';
-
-interface VerifiedRequest {
-  verifiedUser?: { userId: string; email: string };
-  passwordResetEmail?: string;
-}
 
 @ApiTags('Auth')
 @Controller('api/auth')
@@ -72,10 +62,15 @@ export class AuthGatewayController {
 
   @Throttle({ default: { limit: 5, ttl: 60_000 } })
   @Post('register')
-  @ApiOperation({ summary: 'Register a new user' })
+  @ApiOperation({
+    summary: 'Register a new user',
+    description:
+      'Requires a verification token from POST /api/verification/verify with email_verify purpose.',
+  })
   @ApiBody({ type: RegisterDto })
   @ApiResponse({ status: 201, description: 'User registered successfully', type: AuthResponseDto })
   @ApiResponse({ status: 400, description: 'Bad request' })
+  @ApiResponse({ status: 403, description: 'Invalid or missing verification token' })
   async register(@Body(ValidationPipe) dto: RegisterDto): Promise<AuthResponse | GrpcErrorResponse> {
     return this.authClient.register(dto);
   }
@@ -160,29 +155,25 @@ export class AuthGatewayController {
   @Throttle({ default: { limit: 5, ttl: 60_000 } })
   @Post('password-reset/confirm')
   @HttpCode(HttpStatus.OK)
-  @UseGuards(PasswordResetGuard)
   @ApiOperation({ summary: 'Confirm password reset with OTP verification token' })
   @ApiHeader({ name: 'x-verification-token', required: true, description: 'Short-lived token from POST /api/verification/verify' })
   @ApiBody({ type: ResetPasswordConfirmDto })
   @ApiResponse({ status: 200, description: 'Password reset successfully', type: UpdateProfileResponseDto })
   @ApiResponse({ status: 403, description: 'Verification token required or invalid' })
   async confirmPasswordReset(
-    @Req() request: VerifiedRequest,
+    @Headers('x-verification-token') verificationToken: string | undefined,
     @Body(ValidationPipe) dto: ResetPasswordConfirmDto,
   ): Promise<UpdateProfileResponse | GrpcErrorResponse> {
-    const email = request.passwordResetEmail ?? dto.email.trim().toLowerCase();
-
     return this.authClient.resetPassword({
-      email,
+      email: dto.email.trim().toLowerCase(),
       newPassword: dto.newPassword,
+      verificationToken: verificationToken ?? '',
     });
   }
 
   @Throttle({ default: { limit: 5, ttl: 60_000 } })
   @Post('change-password')
   @HttpCode(HttpStatus.OK)
-  @UseGuards(VerificationGuard)
-  @RequiresVerification(OtpPurpose.SENSITIVE_ACTION)
   @ApiOperation({ summary: 'Change password (requires OTP verification and current password)' })
   @ApiBearerAuth()
   @ApiHeader({ name: 'x-verification-token', required: true, description: 'Short-lived token from POST /api/verification/verify' })
@@ -191,17 +182,31 @@ export class AuthGatewayController {
   @ApiResponse({ status: 401, description: 'Current password is incorrect' })
   @ApiResponse({ status: 403, description: 'Verification token required or invalid' })
   async changePassword(
-    @Req() request: VerifiedRequest,
+    @Headers('authorization') authHeader: string | undefined,
+    @Headers('x-verification-token') verificationToken: string | undefined,
     @Body(ValidationPipe) dto: ChangePasswordDto,
   ): Promise<UpdateProfileResponse | GrpcErrorResponse> {
-    if (!request.verifiedUser?.userId) {
+    const userId = await this.requireUserId(authHeader);
+
+    return this.authClient.changePassword({
+      userId,
+      currentPassword: dto.currentPassword,
+      newPassword: dto.newPassword,
+      verificationToken: verificationToken ?? '',
+    });
+  }
+
+  private async requireUserId(authHeader: string | undefined): Promise<string> {
+    const token = authHeader?.replace('Bearer ', '');
+    if (!token) {
+      throw new UnauthorizedException('No token provided');
+    }
+
+    const validation = await this.authClient.validateToken({ accessToken: token });
+    if (validation.statusCode !== 200 || !validation.data?.isValid || !validation.data.userId) {
       throw new UnauthorizedException('Invalid token');
     }
 
-    return this.authClient.changePassword({
-      userId: request.verifiedUser.userId,
-      currentPassword: dto.currentPassword,
-      newPassword: dto.newPassword,
-    });
+    return validation.data.userId;
   }
 }

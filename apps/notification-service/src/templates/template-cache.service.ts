@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NotificationChannel, NotificationTemplate } from '@prisma/client';
-import { RedisService } from '../redis/redis.service';
+import { RedisService } from '@kritly/common';
 import { TemplateRepository } from './template.repository';
 
 @Injectable()

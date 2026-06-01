@@ -1,13 +1,12 @@
 import {
   Controller,
   Post,
+  Patch,
   Body,
   HttpCode,
   HttpStatus,
   Get,
   Headers,
-  Req,
-  UseGuards,
   ValidationPipe,
   UnauthorizedException,
   Param,
@@ -24,27 +23,21 @@ import {
 import { Throttle } from '@nestjs/throttler';
 import { AuthClientService } from '../services/auth-client.service';
 import { UserClientService } from '../services/user-client.service';
-import { VerificationGuard } from '../guards/verification.guard';
 import {
   CheckUsernameDto,
   UsernameAvailabilityResponseDto,
   SetUsernameDto,
   SetUsernameResponseDto,
   UpdateAvatarDto,
+  UpdateProfileDto,
   UpdateProfileResponseDto,
   GrpcErrorResponse,
   UpdateProfileResponse,
   UsernameAvailabilityResponse,
   ProfileResponse,
-  RequiresVerification,
-  OtpPurpose,
   SetUsernameResponse,
   UserGrpcErrorResponse,
 } from '@kritly/common';
-
-interface VerifiedRequest {
-  verifiedUser?: { userId: string; email: string };
-}
 
 @ApiTags('Users')
 @Controller('api/users')
@@ -89,8 +82,6 @@ export class UserGatewayController {
   @Throttle({ default: { limit: 5, ttl: 60_000 } })
   @Post('username')
   @HttpCode(HttpStatus.OK)
-  @UseGuards(VerificationGuard)
-  @RequiresVerification(OtpPurpose.SENSITIVE_ACTION)
   @ApiOperation({ summary: 'Set or change username (requires OTP verification)' })
   @ApiBearerAuth()
   @ApiHeader({
@@ -100,17 +91,18 @@ export class UserGatewayController {
   })
   @ApiBody({ type: SetUsernameDto })
   @ApiResponse({ status: 200, description: 'Username set successfully', type: SetUsernameResponseDto })
+  @ApiResponse({ status: 403, description: 'Verification token required or invalid' })
   async setUsername(
-    @Req() request: VerifiedRequest,
+    @Headers('authorization') authHeader: string | undefined,
+    @Headers('x-verification-token') verificationToken: string | undefined,
     @Body(ValidationPipe) dto: SetUsernameDto,
   ): Promise<SetUsernameResponse | UserGrpcErrorResponse | GrpcErrorResponse> {
-    if (!request.verifiedUser?.userId) {
-      throw new UnauthorizedException('Invalid token');
-    }
+    const userId = await this.requireUserId(authHeader);
 
     return this.userClient.setUsername({
-      userId: request.verifiedUser.userId,
+      userId,
       username: dto.username,
+      verificationToken: verificationToken ?? '',
     });
   }
 
@@ -128,6 +120,25 @@ export class UserGatewayController {
     return this.userClient.updateAvatar({
       userId,
       avatar: dto.avatar,
+    });
+  }
+
+  @Patch('profile')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Update profile (first name, last name, bio)' })
+  @ApiBearerAuth()
+  @ApiBody({ type: UpdateProfileDto })
+  @ApiResponse({ status: 200, description: 'Profile updated successfully', type: UpdateProfileResponseDto })
+  async updateProfile(
+    @Headers('authorization') authHeader: string | undefined,
+    @Body(ValidationPipe) dto: UpdateProfileDto,
+  ): Promise<UpdateProfileResponse | UserGrpcErrorResponse | GrpcErrorResponse> {
+    const userId = await this.requireUserId(authHeader);
+    return this.userClient.updateProfile({
+      userId,
+      firstName: dto.firstName,
+      lastName: dto.lastName,
+      bio: dto.bio,
     });
   }
 

@@ -1,4 +1,4 @@
-import { IsString, IsEmail, IsOptional, IsEnum, IsNumber, MinLength } from 'class-validator';
+import { IsString, IsEmail, IsOptional, IsEnum, IsNumber, MinLength, IsDateString } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { AuthProvider } from '../enums/auth.enum';
 import {
@@ -32,6 +32,19 @@ export class RegisterDto {
   @IsString()
   username!: string;
 
+  @ApiProperty({
+    description: 'Short-lived token from POST /api/verification/verify (email_verify purpose)',
+    example: 'f47ac10b-58cc-4372-a567-0e02b2c3d479',
+  })
+  @IsString()
+  verificationToken!: string;
+
+  @ApiProperty({ description: 'Date of birth (ISO date YYYY-MM-DD)', example: '1990-05-15' })
+  @IsDateString()
+  dateOfBirth!: string;
+}
+
+export class UpdateProfileDto {
   @ApiProperty({ description: 'User first name', example: 'John' })
   @IsString()
   firstName!: string;
@@ -39,6 +52,11 @@ export class RegisterDto {
   @ApiProperty({ description: 'User last name', example: 'Doe' })
   @IsString()
   lastName!: string;
+
+  @ApiProperty({ description: 'Profile bio', example: 'Building cool things.', required: false })
+  @IsOptional()
+  @IsString()
+  bio?: string;
 }
 
 export class SocialLoginDto {

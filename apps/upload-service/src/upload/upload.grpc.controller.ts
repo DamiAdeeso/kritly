@@ -1,14 +1,14 @@
 import { Controller } from '@nestjs/common';
 import { GrpcMethod } from '@nestjs/microservices';
 import { CreatePresignedUploadRequest } from '@kritly/common';
-import { UploadGrpcService } from './upload.grpc.service';
+import { UploadService } from './upload.service';
 
 @Controller()
 export class UploadGrpcController {
-  constructor(private readonly uploadGrpcService: UploadGrpcService) {}
+  constructor(private readonly uploadService: UploadService) {}
 
   @GrpcMethod('UploadService', 'CreatePresignedUpload')
   createPresignedUpload(data: CreatePresignedUploadRequest) {
-    return this.uploadGrpcService.createPresignedUpload(data);
+    return this.uploadService.createPresignedUpload(data);
   }
 }

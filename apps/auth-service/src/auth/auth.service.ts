@@ -1,4 +1,5 @@
-import { Injectable, UnauthorizedException, BadRequestException } from '@nestjs/common';
+import { Injectable, UnauthorizedException, BadRequestException, HttpException, HttpStatus } from '@nestjs/common';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import { AuthProvider as PrismaAuthProvider } from '@prisma/client';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcryptjs';
@@ -12,26 +13,29 @@ import {
   LogoutServiceResponse,
   ValidateTokenServiceResponse,
   UpdateProfileServiceResponse,
+  EmailAvailabilityServiceResponse,
   ISocialProfile,
   AUTH_CONSTANTS,
   DOMAIN_EVENTS,
   EventPublisher,
   ok,
   okEmpty,
+  RedisService,
 } from '@kritly/common';
 import { AccountRepository } from '../repositories/account.repository';
 import { ProfileRepository } from '../repositories/profile.repository';
 import { SocialAccountRepository, RefreshTokenRepository } from '../repositories';
 import { TokenService } from '../shared/token.service';
-import { LoginLockoutService } from '../redis/login-lockout.service';
 import { GoogleAuthService } from './strategies/google-auth.service';
 import { FacebookAuthService } from './strategies/facebook-auth.service';
 import { AppleAuthService } from './strategies/apple-auth.service';
 import { InstagramAuthService } from './strategies/instagram-auth.service';
+import { toPrismaCreateUserInput } from '../mappers/user-prisma.mapper';
 
 @Injectable()
 export class AuthService {
   constructor(
+    @InjectPinoLogger(AuthService.name) private readonly logger: PinoLogger,
     private readonly accountRepository: AccountRepository,
     private readonly profileRepository: ProfileRepository,
     private readonly socialAccountRepository: SocialAccountRepository,
@@ -42,12 +46,31 @@ export class AuthService {
     private readonly facebookAuthService: FacebookAuthService,
     private readonly appleAuthService: AppleAuthService,
     private readonly instagramAuthService: InstagramAuthService,
-    private readonly loginLockoutService: LoginLockoutService,
+    private readonly redisService: RedisService,
     private readonly eventPublisher: EventPublisher,
   ) {}
 
+  async checkEmailAvailability(email: string): Promise<EmailAvailabilityServiceResponse> {
+    const normalizedEmail = email.trim().toLowerCase();
+    const existingUser = await this.accountRepository.findByEmail(normalizedEmail);
+    const isAvailable = !existingUser;
+
+    this.logger.info(
+      {
+        email: normalizedEmail,
+        isAvailable,
+        existingUserId: existingUser?.id ?? null,
+      },
+      'checkEmailAvailability',
+    );
+
+    return ok(isAvailable ? 'Email is available' : 'Email is already registered', { isAvailable });
+  }
+
   async register(registerDto: RegisterDto): Promise<AuthServiceResponse> {
-    const existingUser = await this.accountRepository.findByEmail(registerDto.email);
+    const normalizedEmail = registerDto.email.trim().toLowerCase();
+
+    const existingUser = await this.accountRepository.findByEmail(normalizedEmail);
     if (existingUser) {
       throw new BadRequestException('User already exists');
     }
@@ -58,14 +81,16 @@ export class AuthService {
     }
 
     const hashedPassword = await bcrypt.hash(registerDto.password, AUTH_CONSTANTS.SALT_ROUNDS);
+    const dateOfBirth = this.parseDateOfBirth(registerDto.dateOfBirth);
 
-    const user = await this.accountRepository.create({
-      email: registerDto.email,
-      username: registerDto.username,
-      firstName: registerDto.firstName,
-      lastName: registerDto.lastName,
-      password: hashedPassword,
-    });
+    const user = await this.accountRepository.create(
+      toPrismaCreateUserInput({
+        email: normalizedEmail,
+        username: registerDto.username,
+        dateOfBirth,
+        password: hashedPassword,
+      }),
+    );
 
     const tokens = await this.tokenService.generateTokens(user.id, user.email, user.role);
 
@@ -75,7 +100,7 @@ export class AuthService {
         {
           userId: user.id,
           email: user.email,
-          firstName: user.firstName,
+          firstName: user.username ?? user.email.split('@')[0],
         },
         { idempotencyKey: `register:${user.id}` },
       );
@@ -96,21 +121,21 @@ export class AuthService {
   }
 
   async login(loginDto: LoginDto): Promise<AuthServiceResponse> {
-    await this.loginLockoutService.assertNotLocked(loginDto.email);
+    await this.assertLoginNotLocked(loginDto.email);
 
     const user = await this.accountRepository.findByEmail(loginDto.email);
     if (!user) {
-      await this.loginLockoutService.recordFailedAttempt(loginDto.email);
+      await this.recordLoginFailedAttempt(loginDto.email);
       throw new UnauthorizedException('Invalid credentials');
     }
 
     const isPasswordValid = await bcrypt.compare(loginDto.password, user.password || '');
     if (!isPasswordValid) {
-      await this.loginLockoutService.recordFailedAttempt(loginDto.email);
+      await this.recordLoginFailedAttempt(loginDto.email);
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    await this.loginLockoutService.clearAttempts(loginDto.email);
+    await this.clearLoginAttempts(loginDto.email);
 
     const tokens = await this.tokenService.generateTokens(user.id, user.email, user.role);
 
@@ -157,12 +182,14 @@ export class AuthService {
       });
     }
 
-    user = await this.accountRepository.create({
-      email: socialProfile.email,
-      firstName: socialProfile.firstName,
-      lastName: socialProfile.lastName,
-      avatar: socialProfile.avatar,
-    });
+    user = await this.accountRepository.create(
+      toPrismaCreateUserInput({
+        email: socialProfile.email,
+        firstName: socialProfile.firstName,
+        lastName: socialProfile.lastName,
+        avatar: socialProfile.avatar,
+      }),
+    );
 
     await this.socialAccountRepository.create({
       provider: socialLoginDto.provider as unknown as PrismaAuthProvider,
@@ -231,6 +258,7 @@ export class AuthService {
 
   async resetPassword(email: string, newPassword: string): Promise<UpdateProfileServiceResponse> {
     const normalizedEmail = email.trim().toLowerCase();
+
     const user = await this.accountRepository.findByEmail(normalizedEmail);
     if (!user) {
       throw new BadRequestException('Unable to reset password for this account');
@@ -312,5 +340,38 @@ export class AuthService {
       default:
         throw new BadRequestException('Unsupported social provider');
     }
+  }
+
+  private getLoginAttemptsKey(email: string): string {
+    return `login:attempts:${email.toLowerCase()}`;
+  }
+
+  private async assertLoginNotLocked(email: string): Promise<void> {
+    const attempts = await this.redisService.get(this.getLoginAttemptsKey(email));
+    if (attempts && Number.parseInt(attempts, 10) >= AUTH_CONSTANTS.MAX_LOGIN_ATTEMPTS) {
+      throw new HttpException(
+        'Too many login attempts. Please try again later.',
+        HttpStatus.TOO_MANY_REQUESTS,
+      );
+    }
+  }
+
+  private async recordLoginFailedAttempt(email: string): Promise<void> {
+    await this.redisService.increment(
+      this.getLoginAttemptsKey(email),
+      AUTH_CONSTANTS.LOCKOUT_DURATION / 1000,
+    );
+  }
+
+  private async clearLoginAttempts(email: string): Promise<void> {
+    await this.redisService.delete(this.getLoginAttemptsKey(email));
+  }
+
+  private parseDateOfBirth(value: string): Date {
+    const date = new Date(`${value}T00:00:00.000Z`);
+    if (Number.isNaN(date.getTime())) {
+      throw new BadRequestException('Invalid date of birth');
+    }
+    return date;
   }
 }

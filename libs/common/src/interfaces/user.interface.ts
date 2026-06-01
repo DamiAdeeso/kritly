@@ -3,8 +3,8 @@ import { UserRole, UserStatus } from '../enums/auth.enum';
 export interface IUserProfile {
   id: string;
   email: string;
-  firstName: string;
-  lastName: string;
+  firstName?: string;
+  lastName?: string;
   avatar?: string;
   role: UserRole;
   status: UserStatus;
@@ -15,8 +15,8 @@ export interface IUserProfile {
 export interface IUserCreate {
   email: string;
   username?: string;
-  firstName: string;
-  lastName: string;
+  firstName?: string;
+  lastName?: string;
   dateOfBirth?: Date;
   avatar?: string;
   password?: string;
@@ -29,8 +29,8 @@ export interface IProfileUpdate {
   usernameChangedAt?: Date;
   firstName?: string;
   lastName?: string;
+  bio?: string | null;
   avatar?: string;
-  dateOfBirth?: Date;
 }
 
 export interface IUserUpdate extends IProfileUpdate {

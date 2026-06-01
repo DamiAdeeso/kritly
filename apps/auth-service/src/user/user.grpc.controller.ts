@@ -1,14 +1,17 @@
-import { Controller } from '@nestjs/common';
+import { Controller, UseGuards } from '@nestjs/common';
 import { GrpcMethod } from '@nestjs/microservices';
 import {
   CheckUsernameRequest,
   GetProfileByUsernameRequest,
   GetProfileRequest,
+  OtpPurpose,
+  RequiresVerification,
   SetUsernameRequest,
   UpdateAvatarRequest,
+  UpdateProfileRequest,
 } from '@kritly/common';
+import { GrpcVerificationGuard } from '../guards/grpc-verification.guard';
 import { ProfileService } from './profile.service';
-import { toGrpcResponse } from '../shared/grpc-error.util';
 
 @Controller()
 export class UserGrpcController {
@@ -16,41 +19,37 @@ export class UserGrpcController {
 
   @GrpcMethod('UserService', 'GetProfile')
   getProfile(data: GetProfileRequest) {
-    return toGrpcResponse(
-      () => this.profileService.getProfile(data.userId),
-      'Profile retrieval failed',
-    );
+    return this.profileService.getProfile(data.userId);
   }
 
   @GrpcMethod('UserService', 'GetProfileByUsername')
   getProfileByUsername(data: GetProfileByUsernameRequest) {
-    return toGrpcResponse(
-      () => this.profileService.getProfileByUsername(data.username),
-      'Profile retrieval failed',
-    );
+    return this.profileService.getProfileByUsername(data.username);
   }
 
   @GrpcMethod('UserService', 'CheckUsername')
   checkUsername(data: CheckUsernameRequest) {
-    return toGrpcResponse(
-      () => this.profileService.checkUsername(data.username),
-      'Username check failed',
-    );
+    return this.profileService.checkUsername(data.username);
   }
 
   @GrpcMethod('UserService', 'SetUsername')
+  @UseGuards(GrpcVerificationGuard)
+  @RequiresVerification(OtpPurpose.SENSITIVE_ACTION)
   setUsername(data: SetUsernameRequest) {
-    return toGrpcResponse(
-      () => this.profileService.setUsername(data.userId, data.username),
-      'Username set failed',
-    );
+    return this.profileService.setUsername(data.userId, data.username);
   }
 
   @GrpcMethod('UserService', 'UpdateAvatar')
   updateAvatar(data: UpdateAvatarRequest) {
-    return toGrpcResponse(
-      () => this.profileService.updateAvatar(data.userId, data.avatar),
-      'Avatar update failed',
-    );
+    return this.profileService.updateAvatar(data.userId, data.avatar);
+  }
+
+  @GrpcMethod('UserService', 'UpdateProfile')
+  updateProfile(data: UpdateProfileRequest) {
+    return this.profileService.updateProfile(data.userId, {
+      firstName: data.firstName,
+      lastName: data.lastName,
+      bio: data.bio,
+    });
   }
 }

@@ -7,6 +7,9 @@ import { AccountRepository } from '../repositories/account.repository';
 import { ProfileRepository } from '../repositories/profile.repository';
 import { RefreshTokenRepository } from '../repositories/refresh-token.repository';
 import { TokenService } from './token.service';
+import { VerificationClientService } from './verification-client.service';
+import { VerificationEnforcementService } from './verification-enforcement.service';
+import { GrpcVerificationGuard } from '../guards/grpc-verification.guard';
 
 @Module({
   imports: [
@@ -30,6 +33,9 @@ import { TokenService } from './token.service';
     ProfileRepository,
     RefreshTokenRepository,
     TokenService,
+    VerificationClientService,
+    VerificationEnforcementService,
+    GrpcVerificationGuard,
   ],
   exports: [
     PrismaService,
@@ -37,6 +43,8 @@ import { TokenService } from './token.service';
     ProfileRepository,
     RefreshTokenRepository,
     TokenService,
+    VerificationEnforcementService,
+    GrpcVerificationGuard,
     JwtModule,
   ],
 })

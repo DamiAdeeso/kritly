@@ -6,6 +6,7 @@ service VerificationService {
   rpc SendOtp(SendOtpRequest) returns (SendOtpResponse);
   rpc VerifyOtp(VerifyOtpRequest) returns (VerifyOtpResponse);
   rpc ValidateVerificationToken(ValidateVerificationTokenRequest) returns (ValidateVerificationTokenResponse);
+  rpc ConsumeVerificationToken(ConsumeVerificationTokenRequest) returns (ValidateVerificationTokenResponse);
 }
 
 message SendOtpRequest {
@@ -46,7 +47,15 @@ message VerifyOtpResponse {
 message ValidateVerificationTokenRequest {
   string verificationToken = 1;
   string purpose = 2;
-  string userId = 3;
+  optional string userId = 3;
+  optional string email = 4;
+}
+
+message ConsumeVerificationTokenRequest {
+  string verificationToken = 1;
+  string purpose = 2;
+  optional string userId = 3;
+  optional string email = 4;
 }
 
 message ValidateVerificationTokenData {

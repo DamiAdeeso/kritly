@@ -14,9 +14,10 @@ model User {
   email       String   @unique
   username          String?   @unique
   usernameChangedAt DateTime?
-  firstName   String
-  lastName    String
+  firstName   String?
+  lastName    String?
   dateOfBirth DateTime?
+  bio         String?
   avatar      String?
   password    String?
   role        UserRole @default(USER)

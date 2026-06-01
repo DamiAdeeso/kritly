@@ -2,11 +2,11 @@
   "name": "@kritly/common",
   "version": "1.0.0",
   "description": "Common utilities and interfaces for Kritly microservices",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "main": "src/index.js",
+  "types": "src/index.d.ts",
   "scripts": {
-    "build": "tsc",
-    "dev": "tsc --watch"
+    "build": "nx build common",
+    "dev": "nx build common --watch"
   },
   "dependencies": {
     "@grpc/grpc-js": "^1.13.4",
@@ -16,7 +16,12 @@
     "@nestjs/microservices": "^11.1.6",
     "@nestjs/swagger": "^11.2.0",
     "class-transformer": "^0.5.1",
-    "class-validator": "^0.14.2"
+    "class-validator": "^0.14.2",
+    "nestjs-pino": "^4.4.0",
+    "ioredis": "^5.7.0",
+    "pino": "^9.9.0",
+    "pino-http": "^10.5.0",
+    "pino-pretty": "^13.1.1"
   },
   "devDependencies": {
     "@types/node": "^20.19.0",

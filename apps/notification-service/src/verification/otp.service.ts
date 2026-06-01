@@ -12,8 +12,8 @@ import {
   OTP_SEND_RATE_WINDOW_SECONDS,
   OtpPurpose,
   VERIFICATION_TOKEN_TTL_SECONDS,
+  RedisService,
 } from '@kritly/common';
-import { RedisService } from '../redis/redis.service';
 
 interface StoredOtp {
   hash: string;
@@ -144,17 +144,35 @@ export class OtpService {
   async validateVerificationToken(input: {
     verificationToken: string;
     purpose: string;
-    userId: string;
+    userId?: string;
+    email?: string;
   }): Promise<boolean> {
     this.assertRedisAvailable();
 
-    const raw = await this.redisService.get(this.verificationTokenKey(input.verificationToken));
-    if (!raw) {
+    const stored = await this.readVerificationToken(input.verificationToken);
+    if (!stored) {
       return false;
     }
 
-    const stored = JSON.parse(raw) as StoredVerificationToken;
-    return stored.userId === input.userId && stored.purpose === input.purpose;
+    return this.matchesVerificationToken(stored, input);
+  }
+
+  async consumeVerificationToken(input: {
+    verificationToken: string;
+    purpose: string;
+    userId?: string;
+    email?: string;
+  }): Promise<boolean> {
+    this.assertRedisAvailable();
+
+    const key = this.verificationTokenKey(input.verificationToken);
+    const stored = await this.readVerificationToken(input.verificationToken);
+    if (!stored || !this.matchesVerificationToken(stored, input)) {
+      return false;
+    }
+
+    await this.redisService.delete(key);
+    return true;
   }
 
   formatExpiresIn(seconds: number): string {
@@ -194,5 +212,36 @@ export class OtpService {
 
   private verificationTokenKey(token: string): string {
     return `verification:token:${token}`;
+  }
+
+  private async readVerificationToken(
+    verificationToken: string,
+  ): Promise<StoredVerificationToken | null> {
+    const raw = await this.redisService.get(this.verificationTokenKey(verificationToken));
+    if (!raw) {
+      return null;
+    }
+
+    return JSON.parse(raw) as StoredVerificationToken;
+  }
+
+  private matchesVerificationToken(
+    stored: StoredVerificationToken,
+    input: { purpose: string; userId?: string; email?: string },
+  ): boolean {
+    if (stored.purpose !== input.purpose) {
+      return false;
+    }
+
+    const normalizedEmail = input.email?.trim().toLowerCase();
+    if (normalizedEmail) {
+      return stored.subject === normalizedEmail && stored.userId === normalizedEmail;
+    }
+
+    if (input.userId) {
+      return stored.userId === input.userId;
+    }
+
+    return false;
   }
 }

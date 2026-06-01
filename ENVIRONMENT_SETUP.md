@@ -1,148 +1,27 @@
-# Environment Configuration Guide
+# Environment
 
-## Environment Files
+## `.env` only
 
-This project supports multiple environments with separate configuration files:
+Copy `cp .env.example .env` and set secrets (JWT, SMTP, S3, OAuth).
 
-- `.env.local` - Local development with watch/hot-reload
-- `.env.development` - Live development environment
-- `.env.staging` - Staging environment
-- `.env.production` - Production environment
+## Nest services
 
-## How to Use Different Environments
+`ConfigModule.forRoot(rootEnvConfig())` from `@kritly/common`:
 
-### Local Development
-```bash
-# Uses .env.local automatically (with watch/hot-reload)
-npm run dev
+- Loads repo-root `.env` (finds monorepo root via `nx.json`)
+- When `NODE_ENV=local`, fills unset keys from `config/local-env.defaults.json`
 
-# Or explicitly set environment
-NODE_ENV=local npm run dev
-```
+## Prisma CLI
 
-### Live Development Environment
-```bash
-# Uses .env.development
-npm run start:dev
+`prisma/load-env.cjs` → `config/load-root-env.cjs` (same defaults file).
 
-# Or explicitly set environment
-NODE_ENV=development npm run dev
-```
+## Commands
 
-### Staging
-```bash
-# Uses .env.staging
-npm run start:staging
+| Command | `NODE_ENV` |
+|---------|------------|
+| `pnpm dev` | `local` (defaults apply) |
+| `pnpm start:dev` / staging / production | set in `.env` or host secrets |
 
-# Or explicitly set environment
-NODE_ENV=staging npm run dev
-```
+## Render
 
-### Production
-```bash
-# Uses .env.production
-npm run start:production
-
-# Or explicitly set environment
-NODE_ENV=production npm run dev
-```
-
-## Environment Variables by Environment
-
-### Local (Local Development with Watch)
-- **Database**: Local PostgreSQL container
-- **Redis**: Local Redis container
-- **JWT**: Local secret
-- **Callbacks**: localhost URLs
-
-### Development (Live Dev Environment / Fly.io)
-- **Database**: Live dev PostgreSQL instance / Fly.io managed PostgreSQL
-- **Redis**: Live dev Redis instance / Fly.io managed Redis
-- **JWT**: Dev secret
-- **Callbacks**: kritly.fly.dev URLs
-
-### Staging
-- **Database**: Staging PostgreSQL instance
-- **Redis**: Staging Redis instance
-- **JWT**: Staging secret (different from prod)
-- **Callbacks**: staging.your-domain.com URLs
-
-### Production
-- **Database**: Production PostgreSQL instance
-- **Redis**: Production Redis instance
-- **JWT**: Production secret
-- **Callbacks**: your-domain.com URLs
-
-
-
-## Setting Up Fly.io Environment
-
-### 1. Create PostgreSQL Database
-```bash
-flyctl postgres create --name kritly-postgres --region iad
-```
-
-### 2. Create Redis Instance
-```bash
-flyctl redis create --name kritly-redis --region iad
-```
-
-### 3. Attach Databases to App
-```bash
-flyctl postgres attach --postgres-app kritly-postgres --app kritly
-flyctl redis attach --redis-app kritly-redis --app kritly
-```
-
-### 4. Set Environment Variables
-```bash
-# Essential variables
-flyctl secrets set JWT_SECRET="your-dev-jwt-secret-key"
-flyctl secrets set NODE_ENV="development"
-
-# Social auth (optional)
-flyctl secrets set GOOGLE_CLIENT_ID="your-google-client-id"
-flyctl secrets set GOOGLE_CLIENT_SECRET="your-google-client-secret"
-flyctl secrets set FACEBOOK_CLIENT_ID="your-facebook-client-id"
-flyctl secrets set FACEBOOK_CLIENT_SECRET="your-facebook-client-secret"
-```
-
-### 5. Deploy
-```bash
-flyctl deploy
-```
-
-## Environment Variable Priority
-
-The application loads environment variables in this order:
-1. System environment variables
-2. `.env.{NODE_ENV}` (e.g. `.env.local`, `.env.development`)
-3. `.env.local` (fallback for any environment)
-4. `.env` (final fallback)
-
-## Security Notes
-
-- **Never commit real secrets** to version control
-- **Use different secrets** for each environment
-- **Use strong JWT secrets** in production
-- **Enable TLS** for Redis in production/staging
-- **Use managed databases** in production
-
-## Quick Setup
-
-### First time
-```bash
-cp .env.example .env.local
-npm run dev
-```
-
-### Switch environment
-Use the matching file and `NODE_ENV`:
-
-| Command | Loads |
-|---------|--------|
-| `npm run dev` | `.env.local` (`NODE_ENV=local`) |
-| `npm run start:dev` | `.env.development` |
-| `npm run start:staging` | `.env.staging` |
-| `npm run start:production` | `.env.production` |
-
-Docker Compose uses `.env.local` (dev) or `.env.production` (prod) via `env_file`.
+Deploy all services via Blueprint: root `render.yaml` → Render **New → Blueprint**. Set `sync: false` secrets (`RABBITMQ_URL`, `GATEWAY_PUBLIC_URL`, SMTP, S3, OAuth) after the first deploy.

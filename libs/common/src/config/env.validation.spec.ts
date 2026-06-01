@@ -14,6 +14,8 @@ describe('env.validation', () => {
   });
 
   it('requires JWT_SECRET outside local environment', () => {
+    delete process.env.JWT_SECRET;
+
     expect(() => resolveJwtSecret({ NODE_ENV: 'production' }, 'production')).toThrow(
       'JWT_SECRET is required when NODE_ENV is not local',
     );

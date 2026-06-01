@@ -38,7 +38,6 @@
     "class-validator": "^0.14.2",
     "dotenv": "^16.4.7",
     "google-auth-library": "^10.3.0",
-    "ioredis": "^5.7.0",
     "amqp-connection-manager": "^4.1.14",
     "amqplib": "^0.10.8",
     "passport": "^0.7.0",

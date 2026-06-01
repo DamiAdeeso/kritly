@@ -13,8 +13,9 @@ export type ProfileUsernameContext = {
 export type PublicProfileRecord = {
   userId: string;
   username: string | null;
-  firstName: string;
-  lastName: string;
+  firstName: string | null;
+  lastName: string | null;
+  bio: string | null;
   avatar: string | null;
   email?: string;
 };
@@ -47,6 +48,7 @@ export class ProfileRepository {
         username: true,
         firstName: true,
         lastName: true,
+        bio: true,
         avatar: true,
         ...(includeEmail ? { email: true } : {}),
       },
@@ -61,6 +63,7 @@ export class ProfileRepository {
       username: user.username,
       firstName: user.firstName,
       lastName: user.lastName,
+      bio: user.bio,
       avatar: user.avatar,
       ...(includeEmail ? { email: user.email } : {}),
     };
@@ -74,6 +77,7 @@ export class ProfileRepository {
         username: true,
         firstName: true,
         lastName: true,
+        bio: true,
         avatar: true,
       },
     });
@@ -87,6 +91,7 @@ export class ProfileRepository {
       username: user.username,
       firstName: user.firstName,
       lastName: user.lastName,
+      bio: user.bio,
       avatar: user.avatar,
     };
   }
@@ -99,8 +104,8 @@ export class ProfileRepository {
         usernameChangedAt: data.usernameChangedAt,
         firstName: data.firstName,
         lastName: data.lastName,
+        bio: data.bio,
         avatar: data.avatar,
-        dateOfBirth: data.dateOfBirth,
       },
     });
   }

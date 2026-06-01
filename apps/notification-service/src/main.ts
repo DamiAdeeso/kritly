@@ -1,8 +1,8 @@
-import './load-env';
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { join } from 'path';
+import { GRPC_PROTO_LOADER_OPTIONS, useAppLogger } from '@kritly/common';
 import { AppModule } from './app.module';
 
 async function bootstrap(): Promise<void> {
@@ -10,7 +10,8 @@ async function bootstrap(): Promise<void> {
   const queue = process.env.RABBITMQ_NOTIFICATION_QUEUE || 'notification-service.send';
   const grpcPort = process.env.NOTIFICATION_SERVICE_GRPC_PORT || '3003';
 
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, { bufferLogs: true });
+  const logger = useAppLogger(app);
 
   app.useGlobalPipes(
     new ValidationPipe({
@@ -40,14 +41,17 @@ async function bootstrap(): Promise<void> {
         join(process.cwd(), 'libs/common/src/proto/health.proto'),
       ],
       url: `0.0.0.0:${grpcPort}`,
+      loader: GRPC_PROTO_LOADER_OPTIONS,
     },
   });
+
+  app.flushLogs();
 
   await app.init();
   await app.startAllMicroservices();
 
-  console.log(`Notification Service (RMQ) listening on queue "${queue}"`);
-  console.log(`Verification Service (gRPC) listening on 0.0.0.0:${grpcPort}`);
+  logger.log(`Notification service (RMQ) listening on queue "${queue}"`);
+  logger.log(`Verification service (gRPC) listening on 0.0.0.0:${grpcPort}`);
 }
 
 bootstrap();

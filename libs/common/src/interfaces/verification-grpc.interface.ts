@@ -1,4 +1,5 @@
 import type {
+  ConsumeVerificationTokenRequest,
   SendOtpRequest,
   SendOtpResponse,
   ValidateVerificationTokenRequest,
@@ -9,6 +10,7 @@ import type {
 import type { ServiceResponse } from '../dto/common.dto';
 
 export type {
+  ConsumeVerificationTokenRequest,
   SendOtpData,
   SendOtpRequest,
   SendOtpResponse,
@@ -29,6 +31,9 @@ export interface VerificationServiceClient {
   verifyOtp(request: VerifyOtpRequest): Promise<VerifyOtpResponse>;
   validateVerificationToken(
     request: ValidateVerificationTokenRequest,
+  ): Promise<ValidateVerificationTokenResponse>;
+  consumeVerificationToken(
+    request: ConsumeVerificationTokenRequest,
   ): Promise<ValidateVerificationTokenResponse>;
 }
 

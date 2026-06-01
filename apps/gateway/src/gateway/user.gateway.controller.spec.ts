@@ -1,15 +1,13 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { UnauthorizedException } from '@nestjs/common';
 import { UserGatewayController } from './user.gateway.controller';
 import { AuthClientService } from '../services/auth-client.service';
 import { UserClientService } from '../services/user-client.service';
-import { VerificationClientService } from '../services/verification-client.service';
-import { VerificationGuard } from '../guards/verification.guard';
 
 describe('UserGatewayController', () => {
   let controller: UserGatewayController;
   let authClient: jest.Mocked<AuthClientService>;
   let userClient: jest.Mocked<UserClientService>;
-  let verificationClient: jest.Mocked<VerificationClientService>;
 
   beforeEach(async () => {
     authClient = {
@@ -26,23 +24,11 @@ describe('UserGatewayController', () => {
       onModuleInit: jest.fn(),
     } as unknown as jest.Mocked<UserClientService>;
 
-    verificationClient = {
-      sendOtp: jest.fn(),
-      verifyOtp: jest.fn(),
-      validateVerificationToken: jest.fn(),
-      onModuleInit: jest.fn(),
-    } as unknown as jest.Mocked<VerificationClientService>;
-
     const module: TestingModule = await Test.createTestingModule({
       controllers: [UserGatewayController],
       providers: [
         { provide: AuthClientService, useValue: authClient },
         { provide: UserClientService, useValue: userClient },
-        { provide: VerificationClientService, useValue: verificationClient },
-        {
-          provide: VerificationGuard,
-          useValue: { canActivate: jest.fn().mockResolvedValue(true) },
-        },
       ],
     }).compile();
 
@@ -73,6 +59,36 @@ describe('UserGatewayController', () => {
     });
   });
 
+  it('forwards verification token when setting username', async () => {
+    authClient.validateToken.mockResolvedValue({
+      statusCode: 200,
+      message: 'Token validation successful',
+      data: {
+        isValid: true,
+        userId: 'user-1',
+        email: 'user@example.com',
+      },
+    });
+    userClient.setUsername.mockResolvedValue({
+      statusCode: 200,
+      message: 'Username set successfully',
+      data: {
+        accessToken: 'access-token',
+        refreshToken: 'refresh-token',
+        userId: 'user-1',
+        email: 'user@example.com',
+      },
+    });
+
+    await controller.setUsername('Bearer access-token', 'verification-token', { username: 'newname' });
+
+    expect(userClient.setUsername).toHaveBeenCalledWith({
+      userId: 'user-1',
+      username: 'newname',
+      verificationToken: 'verification-token',
+    });
+  });
+
   it('delegates username check to user client', async () => {
     userClient.checkUsername.mockResolvedValue({
       statusCode: 200,
@@ -83,5 +99,21 @@ describe('UserGatewayController', () => {
     await controller.checkUsername({ username: 'newuser' });
 
     expect(userClient.checkUsername).toHaveBeenCalledWith({ username: 'newuser' });
+  });
+
+  it('rejects profile fetch without authorization header', async () => {
+    await expect(controller.getMyProfile(undefined)).rejects.toBeInstanceOf(UnauthorizedException);
+  });
+
+  it('rejects avatar update when token validation fails', async () => {
+    authClient.validateToken.mockResolvedValue({
+      statusCode: 401,
+      message: 'Invalid token',
+      data: { isValid: false, userId: '', email: '' },
+    });
+
+    await expect(
+      controller.updateAvatar('Bearer bad-token', { avatar: 'https://cdn.example.com/a.jpg' }),
+    ).rejects.toBeInstanceOf(UnauthorizedException);
   });
 });

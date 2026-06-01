@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { Response } from 'express';
+import { FastifyReply } from 'fastify';
 import { OAuthGatewayController } from './oauth.gateway.controller';
 import { OAuthService } from '../services/oauth.service';
 import { AuthClientService } from '../services/auth-client.service';
@@ -42,7 +42,7 @@ describe('OAuthGatewayController', () => {
     oauthService.createState.mockReturnValue('signed-state');
     oauthService.getAuthorizationUrl.mockReturnValue('https://accounts.google.com/o/oauth2/v2/auth?state=signed-state');
 
-    const response = { redirect: jest.fn() } as unknown as Response;
+    const response = { redirect: jest.fn() } as unknown as FastifyReply;
 
     controller.startOAuth('google', response);
 
@@ -70,7 +70,7 @@ describe('OAuthGatewayController', () => {
     });
     oauthService.buildSuccessRedirect.mockReturnValue('http://localhost:3000/auth/callback#accessToken=access-token');
 
-    const response = { redirect: jest.fn() } as unknown as Response;
+    const response = { redirect: jest.fn() } as unknown as FastifyReply;
 
     await controller.oauthCallbackGet('google', 'auth-code', 'signed-state', response);
 
@@ -80,5 +80,40 @@ describe('OAuthGatewayController', () => {
       idToken: 'google-id-token',
     });
     expect(response.redirect).toHaveBeenCalledWith('http://localhost:3000/auth/callback#accessToken=access-token');
+  });
+
+  it('redirects to failure url when callback params are missing', async () => {
+    oauthService.parseProvider.mockReturnValue(AuthProvider.GOOGLE);
+    oauthService.buildFailureRedirect.mockReturnValue('http://localhost:3000/auth/callback?error=Missing%20OAuth%20code%20or%20state');
+
+    const response = { redirect: jest.fn() } as unknown as FastifyReply;
+
+    await controller.oauthCallbackGet('google', undefined, 'signed-state', response);
+
+    expect(response.redirect).toHaveBeenCalledWith(
+      'http://localhost:3000/auth/callback?error=Missing%20OAuth%20code%20or%20state',
+    );
+  });
+
+  it('redirects to failure url when social login returns error envelope', async () => {
+    oauthService.parseProvider.mockReturnValue(AuthProvider.GOOGLE);
+    oauthService.buildSocialLoginRequest.mockResolvedValue({
+      provider: AuthProvider.GOOGLE,
+      idToken: 'google-id-token',
+    });
+    authClient.socialLogin.mockResolvedValue({
+      statusCode: 401,
+      message: 'Social login failed',
+      data: null,
+    });
+    oauthService.buildFailureRedirect.mockReturnValue('http://localhost:3000/auth/callback?error=Social%20login%20failed');
+
+    const response = { redirect: jest.fn() } as unknown as FastifyReply;
+
+    await controller.oauthCallbackGet('google', 'auth-code', 'signed-state', response);
+
+    expect(response.redirect).toHaveBeenCalledWith(
+      'http://localhost:3000/auth/callback?error=Social%20login%20failed',
+    );
   });
 });

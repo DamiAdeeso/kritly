@@ -9,7 +9,7 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiParam, ApiQuery } from '@nestjs/swagger';
-import { Response } from 'express';
+import { FastifyReply } from 'fastify';
 import { AuthClientService } from '../services/auth-client.service';
 import { OAuthService } from '../services/oauth.service';
 import { AuthResponse, GrpcErrorResponse } from '@kritly/common';
@@ -25,7 +25,7 @@ export class OAuthGatewayController {
   @Get(':provider')
   @ApiOperation({ summary: 'Start web OAuth login (redirects to provider)' })
   @ApiParam({ name: 'provider', example: 'google' })
-  startOAuth(@Param('provider') provider: string, @Res() response: Response): void {
+  startOAuth(@Param('provider') provider: string, @Res() response: FastifyReply): void {
     const normalizedProvider = this.oauthService.parseProvider(provider);
     const state = this.oauthService.createState(normalizedProvider);
     const authorizationUrl = this.oauthService.getAuthorizationUrl(normalizedProvider, state);
@@ -41,7 +41,7 @@ export class OAuthGatewayController {
     @Param('provider') provider: string,
     @Query('code') code: string | undefined,
     @Query('state') state: string | undefined,
-    @Res() response: Response,
+    @Res() response: FastifyReply,
   ): Promise<void> {
     await this.completeOAuth(provider, code, state, response);
   }
@@ -53,7 +53,7 @@ export class OAuthGatewayController {
     @Param('provider') provider: string,
     @Body('code') code: string | undefined,
     @Body('state') state: string | undefined,
-    @Res() response: Response,
+    @Res() response: FastifyReply,
   ): Promise<void> {
     await this.completeOAuth(provider, code, state, response);
   }
@@ -62,7 +62,7 @@ export class OAuthGatewayController {
     provider: string,
     code: string | undefined,
     state: string | undefined,
-    response: Response,
+    response: FastifyReply,
   ): Promise<void> {
     try {
       const normalizedProvider = this.oauthService.parseProvider(provider);
