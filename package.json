@@ -1,10 +1,12 @@
 {
   "name": "kritly",
   "version": "1.0.0",
-  "description": "Kritly microservices platform",  "private": true,
+  "description": "Kritly microservices platform",
+  "private": true,
+  "packageManager": "pnpm@10.30.3",
   "engines": {
     "node": ">=20.11.0",
-    "npm": ">=10.0.0"
+    "pnpm": ">=10.0.0"
   },
   "workspaces": [
     "apps/*",

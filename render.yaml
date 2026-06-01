@@ -3,7 +3,7 @@
 #
 # Render has NO free private services (pserv). This blueprint runs gateway + auth +
 # upload + notification in ONE free web instance (localhost gRPC). Postgres + Redis
-# use free instance types.
+# use free instance types. Builds use pnpm (see packageManager in package.json).
 #
 # Limits:
 #   - Web spins down after 15 min idle (cold starts)
@@ -20,11 +20,12 @@ services:
     plan: free
     region: oregon
     buildCommand: >-
-      npm ci &&
-      npx nx run-many -t build
+      corepack enable &&
+      pnpm install --frozen-lockfile &&
+      pnpm exec nx run-many -t build
       --projects=gateway,auth-service,upload-service,notification-service
       --configuration=production &&
-      npm run db:migrate:deploy
+      pnpm run db:migrate:deploy
     startCommand: sh scripts/render-start-all.sh
     healthCheckPath: /api/health
     envVars:

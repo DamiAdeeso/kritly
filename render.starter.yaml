@@ -8,7 +8,7 @@ services:
     runtime: node
     plan: starter
     region: oregon
-    buildCommand: npm ci && npx nx build gateway --configuration=production
+    buildCommand: corepack enable && pnpm install --frozen-lockfile && pnpm exec nx build gateway --configuration=production
     startCommand: node apps/gateway/dist/main.js
     healthCheckPath: /api/health
     envVars:
@@ -95,7 +95,7 @@ services:
     runtime: node
     plan: starter
     region: oregon
-    buildCommand: npm ci && npx nx build auth-service --configuration=production && npm run db:migrate:deploy
+    buildCommand: corepack enable && pnpm install --frozen-lockfile && pnpm exec nx build auth-service --configuration=production && pnpm run db:migrate:deploy
     startCommand: sh -c 'export AUTH_SERVICE_PORT=$PORT && node apps/auth-service/dist/main.js'
     envVars:
       - key: NODE_ENV
@@ -138,7 +138,7 @@ services:
     runtime: node
     plan: starter
     region: oregon
-    buildCommand: npm ci && npx nx build upload-service --configuration=production
+    buildCommand: corepack enable && pnpm install --frozen-lockfile && pnpm exec nx build upload-service --configuration=production
     startCommand: sh -c 'export UPLOAD_SERVICE_PORT=$PORT && node apps/upload-service/dist/main.js'
     envVars:
       - key: NODE_ENV
@@ -165,7 +165,7 @@ services:
     runtime: node
     plan: starter
     region: oregon
-    buildCommand: npm ci && npx nx build notification-service --configuration=production
+    buildCommand: corepack enable && pnpm install --frozen-lockfile && pnpm exec nx build notification-service --configuration=production
     startCommand: sh -c 'export NOTIFICATION_SERVICE_GRPC_PORT=$PORT && node apps/notification-service/dist/main.js'
     envVars:
       - key: NODE_ENV

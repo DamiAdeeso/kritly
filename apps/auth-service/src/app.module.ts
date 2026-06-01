@@ -13,6 +13,7 @@ import { UserModule } from './user/user.module';
 import { GrpcLoggingInterceptor } from './interceptors/grpc-logging.interceptor';
 import databaseConfig from './config/database.config';
 import redisConfig from './config/redis.config';
+import { PrismaModule } from './prisma/prisma.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import redisConfig from './config/redis.config';
       load: [databaseConfig, redisConfig],
     }),
     AppLoggerModule.register({ service: 'auth-service', enableHttpLogging: false }),
+    PrismaModule,
     EventPublisherModule.register({ source: 'auth-service' }),
     RedisModule.register({ unavailableMessage: 'Login lockout is disabled.' }),
     AuthModule,

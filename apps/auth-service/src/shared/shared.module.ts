@@ -2,7 +2,6 @@ import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AUTH_CONSTANTS, resolveJwtSecret } from '@kritly/common';
-import { PrismaService } from '../prisma/prisma.service';
 import { AccountRepository } from '../repositories/account.repository';
 import { ProfileRepository } from '../repositories/profile.repository';
 import { RefreshTokenRepository } from '../repositories/refresh-token.repository';
@@ -28,7 +27,6 @@ import { GrpcVerificationGuard } from '../guards/grpc-verification.guard';
     }),
   ],
   providers: [
-    PrismaService,
     AccountRepository,
     ProfileRepository,
     RefreshTokenRepository,
@@ -38,7 +36,6 @@ import { GrpcVerificationGuard } from '../guards/grpc-verification.guard';
     GrpcVerificationGuard,
   ],
   exports: [
-    PrismaService,
     AccountRepository,
     ProfileRepository,
     RefreshTokenRepository,
