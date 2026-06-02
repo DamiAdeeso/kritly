@@ -4,7 +4,7 @@ module.exports = {
   ...nxPreset,
   moduleNameMapper: {
     ...(nxPreset.moduleNameMapper ?? {}),
-    '^@kritly/common$': '<rootDir>/../../dist/libs/common/src',
-    '^@kritly/common/(.*)$': '<rootDir>/../../dist/libs/common/src/$1',
+    '^@kritly/common$': '<rootDir>/../../libs/common/dist/src',
+    '^@kritly/common/(.*)$': '<rootDir>/../../libs/common/dist/src/$1',
   },
 };

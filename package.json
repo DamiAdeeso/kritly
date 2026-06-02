@@ -24,6 +24,8 @@
     "start:dev": "cross-env NODE_ENV=development nx run-many --target=serve --projects=gateway,auth-service --parallel",
     "start:staging": "cross-env NODE_ENV=staging nx run-many --target=serve --projects=gateway,auth-service --parallel",
     "start:production": "cross-env NODE_ENV=production nx run-many --target=serve --projects=gateway,auth-service --parallel",
+    "build:render": "nx run-many -t build --projects=gateway,auth-service,upload-service,notification-service --configuration=production",
+    "start:gateway:prod": "cross-env NODE_ENV=production node apps/gateway/dist/src/main.js",
     "docker:build": "docker-compose build",
     "docker:up": "docker-compose up -d",
     "docker:down": "docker-compose down",

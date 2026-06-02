@@ -8,8 +8,8 @@
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
     "paths": {
-      "@kritly/common": ["../../dist/libs/common/src"],
-      "@kritly/common/*": ["../../dist/libs/common/src/*"]
+      "@kritly/common": ["../../libs/common/dist/src"],
+      "@kritly/common/*": ["../../libs/common/dist/src/*"]
     }
   },
   "include": ["src/**/*"],

@@ -27,7 +27,7 @@ services:
       --configuration=production &&
       pnpm run db:migrate:deploy
     startCommand: sh scripts/render-start-all.sh
-    healthCheckPath: /api/health
+    healthCheckPath: /health
     envVars:
       - key: NODE_ENV
         value: production

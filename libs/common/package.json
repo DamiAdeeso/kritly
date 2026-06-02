@@ -2,8 +2,8 @@
   "name": "@kritly/common",
   "version": "1.0.0",
   "description": "Common utilities and interfaces for Kritly microservices",
-  "main": "src/index.js",
-  "types": "src/index.d.ts",
+  "main": "dist/src/index.js",
+  "types": "dist/src/index.d.ts",
   "scripts": {
     "build": "nx build common",
     "dev": "nx build common --watch"
