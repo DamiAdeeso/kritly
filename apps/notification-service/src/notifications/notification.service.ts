@@ -1,5 +1,6 @@
-import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
-import { NotificationSendEvent } from '@kritly/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
+import { NotificationSendEvent, hashSubject } from '@kritly/common';
 import { Prisma } from '@prisma/client';
 import { ChannelRegistry } from '../channels/channel.registry';
 import { TemplateCacheService } from '../templates/template-cache.service';
@@ -22,9 +23,8 @@ export class RetryableNotificationError extends Error {
 
 @Injectable()
 export class NotificationService {
-  private readonly logger = new Logger(NotificationService.name);
-
   constructor(
+    @InjectPinoLogger(NotificationService.name) private readonly logger: PinoLogger,
     private readonly deliveryRepository: DeliveryRepository,
     private readonly templateCacheService: TemplateCacheService,
     private readonly templateEngineService: TemplateEngineService,
@@ -37,7 +37,14 @@ export class NotificationService {
     if (event.idempotencyKey) {
       const existing = await this.deliveryRepository.findByIdempotencyKey(event.idempotencyKey);
       if (existing && (existing.status === 'sent' || existing.status === 'skipped')) {
-        this.logger.debug(`Skipping duplicate notification: ${event.idempotencyKey}`);
+        this.logger.debug(
+          {
+            idempotencyKey: event.idempotencyKey,
+            deliveryId: existing.id,
+            status: existing.status,
+          },
+          'skipping duplicate notification',
+        );
         return;
       }
       if (existing) {
@@ -48,6 +55,18 @@ export class NotificationService {
     const delivery = deliveryId
       ? { id: deliveryId }
       : await this.deliveryRepository.createPending(event);
+
+    this.logger.info(
+      {
+        deliveryId: delivery.id,
+        templateKey: event.templateKey,
+        channel: event.channel,
+        recipientHash: hashSubject(event.recipient),
+        idempotencyKey: event.idempotencyKey ?? null,
+        source: event.source ?? null,
+      },
+      'processing notification',
+    );
 
     try {
       const template = await this.templateCacheService.getTemplate(event.templateKey, event.channel);
@@ -74,12 +93,31 @@ export class NotificationService {
         providerMessageId: result.providerMessageId,
       } as unknown as Prisma.InputJsonValue);
 
-      this.logger.log(
-        `Notification sent (${event.templateKey} → ${event.recipient}) deliveryId=${delivery.id}`,
+      this.logger.info(
+        {
+          deliveryId: delivery.id,
+          templateKey: event.templateKey,
+          channel: event.channel,
+          recipientHash: hashSubject(event.recipient),
+          providerMessageId: result.providerMessageId ?? null,
+        },
+        'notification sent',
       );
     } catch (error) {
       const message = error instanceof Error ? error.message : 'unknown error';
       await this.deliveryRepository.markFailed(delivery.id, message);
+
+      this.logger.warn(
+        {
+          deliveryId: delivery.id,
+          templateKey: event.templateKey,
+          channel: event.channel,
+          recipientHash: hashSubject(event.recipient),
+          error: message,
+          retryable: !(error instanceof NonRetryableNotificationError),
+        },
+        'notification delivery failed',
+      );
 
       if (
         error instanceof NonRetryableNotificationError ||

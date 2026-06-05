@@ -8,6 +8,13 @@ import {
 import { NotificationController } from './notification.controller';
 import { NotificationRouter } from './notification-router.service';
 
+const mockLogger = {
+  info: jest.fn(),
+  warn: jest.fn(),
+  debug: jest.fn(),
+  error: jest.fn(),
+};
+
 describe('NotificationController', () => {
   let controller: NotificationController;
   let notificationRouter: jest.Mocked<Pick<NotificationRouter, 'resolve'>>;
@@ -45,6 +52,7 @@ describe('NotificationController', () => {
     } as unknown as RmqContext;
 
     controller = new NotificationController(
+      mockLogger as never,
       notificationRouter as unknown as NotificationRouter,
       notificationService as unknown as NotificationService,
     );

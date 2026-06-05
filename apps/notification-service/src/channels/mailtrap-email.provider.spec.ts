@@ -1,6 +1,13 @@
 import { ConfigService } from '@nestjs/config';
 import { MailtrapEmailProvider } from './mailtrap-email.provider';
 
+const mockLogger = {
+  info: jest.fn(),
+  warn: jest.fn(),
+  debug: jest.fn(),
+  error: jest.fn(),
+};
+
 describe('MailtrapEmailProvider', () => {
   const fetchMock = jest.fn();
 
@@ -20,7 +27,7 @@ describe('MailtrapEmailProvider', () => {
       }),
     } as unknown as ConfigService;
 
-    return new MailtrapEmailProvider(configService);
+    return new MailtrapEmailProvider(configService, mockLogger as never);
   }
 
   it('sends email through Mailtrap API', async () => {

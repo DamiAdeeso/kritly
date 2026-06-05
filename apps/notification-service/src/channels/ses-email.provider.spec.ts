@@ -8,6 +8,13 @@ jest.mock('@aws-sdk/client-ses', () => ({
 import { ConfigService } from '@nestjs/config';
 import { SesEmailProvider } from './ses-email.provider';
 
+const mockLogger = {
+  info: jest.fn(),
+  warn: jest.fn(),
+  debug: jest.fn(),
+  error: jest.fn(),
+};
+
 describe('SesEmailProvider', () => {
   let provider: SesEmailProvider;
 
@@ -25,7 +32,7 @@ describe('SesEmailProvider', () => {
       }),
     } as unknown as ConfigService;
 
-    provider = new SesEmailProvider(configService);
+    provider = new SesEmailProvider(configService, mockLogger as never);
   });
 
   it('sends email through SES and returns message id', async () => {

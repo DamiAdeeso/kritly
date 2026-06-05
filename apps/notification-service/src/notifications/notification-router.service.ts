@@ -1,4 +1,5 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import {
   DOMAIN_EVENTS,
   IntegrationEvent,
@@ -6,6 +7,7 @@ import {
   NotificationSendEvent,
   UserRegisteredPayload,
   VerificationOtpRequestedPayload,
+  hashSubject,
 } from '@kritly/common';
 
 interface NotificationRoute<TPayload> {
@@ -17,7 +19,7 @@ interface NotificationRoute<TPayload> {
 
 @Injectable()
 export class NotificationRouter {
-  private readonly logger = new Logger(NotificationRouter.name);
+  constructor(@InjectPinoLogger(NotificationRouter.name) private readonly logger: PinoLogger) {}
 
   private readonly userRegisteredRoute: NotificationRoute<UserRegisteredPayload> = {
     channel: 'email',
@@ -55,7 +57,7 @@ export class NotificationRouter {
           event.payload as unknown as VerificationOtpRequestedPayload,
         );
       default:
-        this.logger.debug(`No notification route configured for event type: ${event.type}`);
+        this.logger.debug({ eventType: event.type }, 'no notification route configured');
         return null;
     }
   }
@@ -65,7 +67,7 @@ export class NotificationRouter {
     route: NotificationRoute<TPayload>,
     payload: TPayload,
   ): NotificationSendEvent {
-    return {
+    const notification = {
       templateKey: route.templateKey,
       channel: route.channel,
       recipient: route.recipient(payload),
@@ -75,5 +77,17 @@ export class NotificationRouter {
       source: event.source,
       createdAt: event.occurredAt,
     };
+
+    this.logger.debug(
+      {
+        eventType: event.type,
+        templateKey: notification.templateKey,
+        channel: notification.channel,
+        recipientHash: hashSubject(notification.recipient),
+      },
+      'notification route resolved',
+    );
+
+    return notification;
   }
 }

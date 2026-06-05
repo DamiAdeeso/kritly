@@ -1,5 +1,7 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
+import { hashSubject } from '@kritly/common';
 import { EmailDeliveryProvider } from './email-provider.interface';
 import { DeliveryResult, RenderedNotification } from './notification-channel.interface';
 import { parseFromAddress } from './parse-from.util';
@@ -13,13 +15,16 @@ type MailtrapSendResponse = {
 @Injectable()
 export class MailtrapEmailProvider implements EmailDeliveryProvider {
   readonly name = 'mailtrap' as const;
-  private readonly logger = new Logger(MailtrapEmailProvider.name);
 
-  constructor(private readonly configService: ConfigService) {}
+  constructor(
+    private readonly configService: ConfigService,
+    @InjectPinoLogger(MailtrapEmailProvider.name) private readonly logger: PinoLogger,
+  ) {}
 
   async send(rendered: RenderedNotification, from: string): Promise<DeliveryResult> {
     const apiToken = this.configService.get<string>('email.mailtrap.apiToken');
     if (!apiToken) {
+      this.logger.warn({ provider: this.name }, 'MAILTRAP_API_TOKEN is missing');
       return {
         success: false,
         error: 'MAILTRAP_API_TOKEN is required when EMAIL_PROVIDER=mailtrap',
@@ -53,21 +58,44 @@ export class MailtrapEmailProvider implements EmailDeliveryProvider {
         const message =
           body.errors?.join(', ') ||
           `Mailtrap API responded with status ${response.status}`;
-        this.logger.warn(`Mailtrap send failed: ${message}`);
+        this.logger.warn(
+          {
+            provider: this.name,
+            recipientHash: hashSubject(rendered.to),
+            status: response.status,
+            error: message,
+          },
+          'email send failed',
+        );
         return { success: false, error: message };
       }
+
+      this.logger.info(
+        {
+          provider: this.name,
+          recipientHash: hashSubject(rendered.to),
+          providerMessageId: body.message_ids?.[0] ?? null,
+        },
+        'email sent',
+      );
 
       return {
         success: true,
         providerMessageId: body.message_ids?.[0],
       };
     } catch (error) {
+      const message = error instanceof Error ? error.message : 'unknown error';
       this.logger.warn(
-        `Mailtrap send failed: ${error instanceof Error ? error.message : 'unknown error'}`,
+        {
+          provider: this.name,
+          recipientHash: hashSubject(rendered.to),
+          error: message,
+        },
+        'email send failed',
       );
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'unknown error',
+        error: message,
       };
     }
   }

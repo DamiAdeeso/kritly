@@ -17,6 +17,7 @@ import {
   DOMAIN_EVENTS,
   EventPublisher,
   RedisService,
+  hashSubject,
 } from '@kritly/common';
 import { AccountRepository } from '../repositories/account.repository';
 import { ProfileRepository } from '../repositories/profile.repository';
@@ -84,6 +85,11 @@ export class AuthService {
 
     const tokens = await this.tokenService.generateTokens(user.id, user.email, user.role);
 
+    this.logger.info(
+      { userId: user.id, emailHash: hashSubject(user.email), username },
+      'user registered',
+    );
+
     try {
       this.eventPublisher.publish(
         DOMAIN_EVENTS.USER_REGISTERED,
@@ -110,6 +116,8 @@ export class AuthService {
     const user = await this.authenticateForLogin(request.email, request.password);
     const tokens = await this.tokenService.generateTokens(user.id, user.email, user.role);
 
+    this.logger.info({ userId: user.id, emailHash: hashSubject(user.email) }, 'login successful');
+
     return {
       accessToken: tokens.accessToken,
       refreshToken: tokens.refreshToken,
@@ -121,6 +129,15 @@ export class AuthService {
   async loginSession(request: LoginRequest): Promise<LoginSessionData> {
     const user = await this.authenticateForLogin(request.email, request.password);
     const tokens = await this.tokenService.generateTokens(user.id, user.email, user.role);
+
+    this.logger.info(
+      {
+        userId: user.id,
+        emailHash: hashSubject(user.email),
+        hasUsername: Boolean(user.username),
+      },
+      'login session successful',
+    );
 
     return {
       accessToken: tokens.accessToken,
@@ -267,17 +284,20 @@ export class AuthService {
   }
 
   private async authenticateForLogin(email: string, password: string) {
+    const emailHash = hashSubject(email);
     await this.assertLoginNotLocked(email);
 
     const user = await this.accountRepository.findByEmail(email);
     if (!user) {
       await this.recordLoginFailedAttempt(email);
+      this.logger.warn({ emailHash }, 'login failed: user not found');
       throw new UnauthorizedException('Invalid credentials');
     }
 
     const isPasswordValid = await bcrypt.compare(password, user.password || '');
     if (!isPasswordValid) {
       await this.recordLoginFailedAttempt(email);
+      this.logger.warn({ emailHash, userId: user.id }, 'login failed: invalid password');
       throw new UnauthorizedException('Invalid credentials');
     }
 

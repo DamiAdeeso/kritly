@@ -1,4 +1,5 @@
 import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import {
   PROFILE_CONSTANTS,
   AuthData,
@@ -13,6 +14,7 @@ import { TokenService } from '../shared/token.service';
 @Injectable()
 export class ProfileService {
   constructor(
+    @InjectPinoLogger(ProfileService.name) private readonly logger: PinoLogger,
     private readonly profileRepository: ProfileRepository,
     private readonly tokenService: TokenService,
   ) {}
@@ -68,6 +70,8 @@ export class ProfileService {
 
     await this.profileRepository.updateProfile(userId, update);
 
+    this.logger.info({ userId }, 'profile updated');
+
     return {};
   }
 
@@ -105,6 +109,8 @@ export class ProfileService {
       username: normalizedUsername,
       usernameChangedAt: new Date(),
     });
+
+    this.logger.info({ userId, username: normalizedUsername }, 'username updated');
 
     const tokens = await this.tokenService.issueTokensForUser(userId);
 

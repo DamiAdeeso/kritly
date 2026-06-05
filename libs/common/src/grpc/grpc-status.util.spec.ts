@@ -1,6 +1,8 @@
 import { HttpException, HttpStatus, UnauthorizedException } from '@nestjs/common';
 import { ClientError, ServerError, Status } from 'nice-grpc';
+import * as grpcClientErrorLogger from '../logging/grpc-client-error.logger';
 import {
+  callGrpc,
   clientErrorToHttpEnvelope,
   getClientFacingGrpcErrorMessage,
   grpcStatusToHttpStatus,
@@ -72,6 +74,23 @@ describe('grpc-status.util', () => {
     expect(
       getClientFacingGrpcErrorMessage(new ClientError('/auth.AuthService/Login', Status.NOT_FOUND, '   ')),
     ).toBe('Request failed');
+  });
+
+  it('logs gRPC client errors when callGrpc maps them to envelopes', async () => {
+    const logSpy = jest.spyOn(grpcClientErrorLogger, 'logGrpcClientError').mockImplementation(() => undefined);
+
+    await expect(
+      callGrpc(async () => {
+        throw new ClientError('/auth.AuthService/Login', Status.UNAVAILABLE, 'ECONNREFUSED');
+      }),
+    ).resolves.toEqual({
+      statusCode: 503,
+      message: 'Service temporarily unavailable',
+      data: null,
+    });
+
+    expect(logSpy).toHaveBeenCalledTimes(1);
+    logSpy.mockRestore();
   });
 });
 

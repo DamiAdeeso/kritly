@@ -1,5 +1,6 @@
 import { ClientError, ServerError, Status } from 'nice-grpc';
 import { fail, ServiceResponse } from '../dto/common.dto';
+import { logGrpcClientError } from '../logging/grpc-client-error.logger';
 import { getErrorMessage, getErrorStatus } from '../utils/service-response.util';
 
 /** Map HTTP status codes (Nest exceptions) to gRPC status codes. */
@@ -114,6 +115,7 @@ export async function callGrpc<T>(fn: () => Promise<T>): Promise<T | ServiceResp
     return await fn();
   } catch (error) {
     if (error instanceof ClientError) {
+      logGrpcClientError(error);
       return clientErrorToHttpEnvelope(error);
     }
     throw error;

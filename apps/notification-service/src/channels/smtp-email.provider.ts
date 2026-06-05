@@ -1,16 +1,20 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import nodemailer, { Transporter } from 'nodemailer';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
+import { hashSubject } from '@kritly/common';
 import { EmailDeliveryProvider } from './email-provider.interface';
 import { DeliveryResult, RenderedNotification } from './notification-channel.interface';
+import nodemailer, { Transporter } from 'nodemailer';
 
 @Injectable()
 export class SmtpEmailProvider implements EmailDeliveryProvider {
   readonly name = 'smtp' as const;
-  private readonly logger = new Logger(SmtpEmailProvider.name);
   private transporter: Transporter | null = null;
 
-  constructor(private readonly configService: ConfigService) {}
+  constructor(
+    private readonly configService: ConfigService,
+    @InjectPinoLogger(SmtpEmailProvider.name) private readonly logger: PinoLogger,
+  ) {}
 
   private getTransporter(): Transporter {
     if (!this.transporter) {
@@ -42,15 +46,32 @@ export class SmtpEmailProvider implements EmailDeliveryProvider {
         html: rendered.bodyHtml ?? rendered.bodyText,
       });
 
+      this.logger.info(
+        {
+          provider: this.name,
+          recipientHash: hashSubject(rendered.to),
+          providerMessageId: info.messageId ?? null,
+        },
+        'email sent',
+      );
+
       return {
         success: true,
         providerMessageId: info.messageId,
       };
     } catch (error) {
-      this.logger.warn(`SMTP send failed: ${error instanceof Error ? error.message : 'unknown error'}`);
+      const message = error instanceof Error ? error.message : 'unknown error';
+      this.logger.warn(
+        {
+          provider: this.name,
+          recipientHash: hashSubject(rendered.to),
+          error: message,
+        },
+        'email send failed',
+      );
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'unknown error',
+        error: message,
       };
     }
   }

@@ -1,5 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { getLoggerToken } from 'nestjs-pino';
 import { ProfileService } from './profile.service';
 import { ProfileRepository } from '../repositories/profile.repository';
 import { TokenService } from '../shared/token.service';
@@ -32,6 +33,10 @@ describe('ProfileService', () => {
         ProfileService,
         { provide: ProfileRepository, useValue: profileRepository },
         { provide: TokenService, useValue: tokenService },
+        {
+          provide: getLoggerToken(ProfileService.name),
+          useValue: { info: jest.fn(), warn: jest.fn(), debug: jest.fn(), error: jest.fn() },
+        },
       ],
     }).compile();
 

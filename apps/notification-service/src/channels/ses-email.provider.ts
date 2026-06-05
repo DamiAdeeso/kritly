@@ -1,16 +1,20 @@
 import { SendEmailCommand, SESClient } from '@aws-sdk/client-ses';
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
+import { hashSubject } from '@kritly/common';
 import { EmailDeliveryProvider } from './email-provider.interface';
 import { DeliveryResult, RenderedNotification } from './notification-channel.interface';
 
 @Injectable()
 export class SesEmailProvider implements EmailDeliveryProvider {
   readonly name = 'ses' as const;
-  private readonly logger = new Logger(SesEmailProvider.name);
   private client: SESClient | null = null;
 
-  constructor(private readonly configService: ConfigService) {}
+  constructor(
+    private readonly configService: ConfigService,
+    @InjectPinoLogger(SesEmailProvider.name) private readonly logger: PinoLogger,
+  ) {}
 
   private getClient(): SESClient | null {
     if (this.client) {
@@ -78,15 +82,32 @@ export class SesEmailProvider implements EmailDeliveryProvider {
         }),
       );
 
+      this.logger.info(
+        {
+          provider: this.name,
+          recipientHash: hashSubject(rendered.to),
+          providerMessageId: response.MessageId ?? null,
+        },
+        'email sent',
+      );
+
       return {
         success: true,
         providerMessageId: response.MessageId,
       };
     } catch (error) {
-      this.logger.warn(`SES send failed: ${error instanceof Error ? error.message : 'unknown error'}`);
+      const message = error instanceof Error ? error.message : 'unknown error';
+      this.logger.warn(
+        {
+          provider: this.name,
+          recipientHash: hashSubject(rendered.to),
+          error: message,
+        },
+        'email send failed',
+      );
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'unknown error',
+        error: message,
       };
     }
   }

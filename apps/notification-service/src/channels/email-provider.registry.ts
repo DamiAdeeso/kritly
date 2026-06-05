@@ -1,5 +1,6 @@
-import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import { Injectable, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import { EmailProviderName } from '../config/email.constants';
 import { EmailDeliveryProvider } from './email-provider.interface';
 import { MailtrapEmailProvider } from './mailtrap-email.provider';
@@ -8,7 +9,6 @@ import { SmtpEmailProvider } from './smtp-email.provider';
 
 @Injectable()
 export class EmailProviderRegistry implements OnModuleInit {
-  private readonly logger = new Logger(EmailProviderRegistry.name);
   private activeProvider!: EmailDeliveryProvider;
 
   constructor(
@@ -16,12 +16,13 @@ export class EmailProviderRegistry implements OnModuleInit {
     private readonly smtpEmailProvider: SmtpEmailProvider,
     private readonly mailtrapEmailProvider: MailtrapEmailProvider,
     private readonly sesEmailProvider: SesEmailProvider,
+    @InjectPinoLogger(EmailProviderRegistry.name) private readonly logger: PinoLogger,
   ) {}
 
   onModuleInit(): void {
     const providerName = this.configService.get<EmailProviderName>('email.provider') ?? 'smtp';
     this.activeProvider = this.resolveProvider(providerName);
-    this.logger.log(`Email delivery provider: ${this.activeProvider.name}`);
+    this.logger.info({ provider: this.activeProvider.name }, 'email delivery provider ready');
   }
 
   getProvider(): EmailDeliveryProvider {

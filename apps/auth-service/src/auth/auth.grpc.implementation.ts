@@ -31,10 +31,12 @@ export class AuthGrpcImplementation implements AuthServiceImplementation {
   }
 
   login(request: LoginRequest) {
+    this.logger.info({ subjectHash: hashSubject(request.email) }, 'Login rpc');
     return this.authService.login(request);
   }
 
   loginSession(request: LoginRequest) {
+    this.logger.info({ subjectHash: hashSubject(request.email) }, 'LoginSession rpc');
     return this.authService.loginSession(request);
   }
 

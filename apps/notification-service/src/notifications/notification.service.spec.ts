@@ -8,6 +8,13 @@ import { TemplateCacheService } from '../templates/template-cache.service';
 import { TemplateEngineService } from '../templates/template-engine.service';
 import { ChannelRegistry } from '../channels/channel.registry';
 
+const mockLogger = {
+  info: jest.fn(),
+  warn: jest.fn(),
+  debug: jest.fn(),
+  error: jest.fn(),
+};
+
 describe('NotificationService', () => {
   let service: NotificationService;
   let deliveryRepository: jest.Mocked<
@@ -60,6 +67,7 @@ describe('NotificationService', () => {
     };
 
     service = new NotificationService(
+      mockLogger as never,
       deliveryRepository as unknown as DeliveryRepository,
       templateCacheService as unknown as TemplateCacheService,
       templateEngineService as unknown as TemplateEngineService,

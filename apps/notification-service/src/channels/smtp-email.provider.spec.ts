@@ -11,6 +11,13 @@ jest.mock('nodemailer', () => ({
 import { ConfigService } from '@nestjs/config';
 import { SmtpEmailProvider } from './smtp-email.provider';
 
+const mockLogger = {
+  info: jest.fn(),
+  warn: jest.fn(),
+  debug: jest.fn(),
+  error: jest.fn(),
+};
+
 describe('SmtpEmailProvider', () => {
   let provider: SmtpEmailProvider;
 
@@ -31,7 +38,7 @@ describe('SmtpEmailProvider', () => {
       }),
     } as unknown as ConfigService;
 
-    provider = new SmtpEmailProvider(configService);
+    provider = new SmtpEmailProvider(configService, mockLogger as never);
   });
 
   it('sends email through SMTP and returns provider message id', async () => {
