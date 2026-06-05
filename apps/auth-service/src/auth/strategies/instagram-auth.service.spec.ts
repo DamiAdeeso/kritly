@@ -27,8 +27,7 @@ describe('InstagramAuthService', () => {
       provider: AuthProvider.INSTAGRAM,
       providerId: 'ig-1',
       email: 'instagram_ig-1@example.com',
-      firstName: 'janedoe',
-      lastName: '',
+      displayName: 'janedoe',
       avatar: undefined,
     });
   });

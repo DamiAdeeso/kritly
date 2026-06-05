@@ -93,8 +93,8 @@ export const notificationTemplates: TemplateSeed[] = [
   {
     key: 'auth.welcome',
     channel: NotificationChannel.email,
-    subject: `Welcome to ${KRITLY_BRAND.name}, {{firstName}} — your account is ready`,
-    bodyText: `Hi {{firstName}},
+    subject: `Welcome to ${KRITLY_BRAND.name}, {{displayName}} — your account is ready`,
+    bodyText: `Hi {{displayName}},
 
 Welcome to ${KRITLY_BRAND.name} — ${KRITLY_BRAND.tagline}
 
@@ -113,7 +113,7 @@ Need help? Reply to {{supportEmail}} or visit ${KRITLY_BRAND.websiteUrl}
     bodyHtml: wrapEmailHtml(
       `Welcome to ${KRITLY_BRAND.name}`,
       `Your ${KRITLY_BRAND.name} account is ready. Start reviewing, connecting, and sharing Story Times.`,
-      `<p style="margin:0 0 12px;font-size:18px;line-height:1.5;">Hi <strong>{{firstName}}</strong>,</p>
+      `<p style="margin:0 0 12px;font-size:18px;line-height:1.5;">Hi <strong>{{displayName}}</strong>,</p>
 <p style="margin:0 0 16px;font-size:15px;line-height:1.7;color:${KRITLY_BRAND.muted};">
   Welcome to <strong style="color:${KRITLY_BRAND.primaryLight};">${KRITLY_BRAND.name}</strong> — the social review platform where you review places, social accounts, and Kritly profiles, take polls, and share short video <strong>Story Times</strong>.
 </p>
@@ -132,7 +132,7 @@ ${ctaButton('Open Kritly', '{{appUrl}}')}
 </p>`,
     ),
     fieldSchema: {
-      required: ['firstName', 'email'],
+      required: ['displayName', 'email'],
       optional: ['appUrl', 'supportEmail'],
     },
   },
@@ -140,7 +140,7 @@ ${ctaButton('Open Kritly', '{{appUrl}}')}
     key: 'auth.password_reset',
     channel: NotificationChannel.email,
     subject: `Reset your ${KRITLY_BRAND.name} password`,
-    bodyText: `Hi {{firstName}},
+    bodyText: `Hi {{displayName}},
 
 We received a request to reset the password for your ${KRITLY_BRAND.name} account ({{email}}).
 
@@ -156,7 +156,7 @@ Need help? Contact {{supportEmail}}
     bodyHtml: wrapEmailHtml(
       `Reset your ${KRITLY_BRAND.name} password`,
       `Password reset requested for your ${KRITLY_BRAND.name} account. Link expires in {{expiresIn}}.`,
-      `<p style="margin:0 0 12px;font-size:18px;line-height:1.5;">Hi <strong>{{firstName}}</strong>,</p>
+      `<p style="margin:0 0 12px;font-size:18px;line-height:1.5;">Hi <strong>{{displayName}}</strong>,</p>
 <p style="margin:0 0 16px;font-size:15px;line-height:1.7;color:${KRITLY_BRAND.muted};">
   We received a request to reset the password for your <strong style="color:${KRITLY_BRAND.primaryLight};">${KRITLY_BRAND.name}</strong> account (<strong>{{email}}</strong>).
 </p>
@@ -176,7 +176,7 @@ ${ctaButton('Reset password', '{{resetUrl}}')}
 </p>`,
     ),
     fieldSchema: {
-      required: ['firstName', 'email', 'resetUrl', 'expiresIn'],
+      required: ['displayName', 'email', 'resetUrl', 'expiresIn'],
       optional: ['supportEmail'],
     },
   },

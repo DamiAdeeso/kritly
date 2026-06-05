@@ -1,13 +1,13 @@
 export interface UserRegisteredPayload {
   userId: string;
   email: string;
-  firstName: string;
+  displayName: string;
 }
 
 export interface UserPasswordResetRequestedPayload {
   userId: string;
   email: string;
-  firstName: string;
+  displayName: string;
   resetUrl: string;
   expiresIn: string;
 }

@@ -1,13 +1,18 @@
-import { IsString, IsEmail, IsOptional, IsEnum, IsNumber, MinLength, IsDateString } from 'class-validator';
+import { IsString, IsEmail, IsOptional, IsEnum, MinLength, IsDateString } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
+import type { AuthData, RegisterRequest } from '../generated/auth';
 import { AuthProvider } from '../enums/auth.enum';
 import {
   ApiResponseDto,
+  EmailAvailabilityDataDto,
   EmptyDataDto,
-  ServiceResponse,
   UsernameAvailabilityDataDto,
   ValidateTokenDataDto,
 } from './common.dto';
+import { AuthDataDto } from './auth-data.dto';
+
+/** Registration payload after verification (no verificationToken on the wire to AuthService). */
+export type RegisterInput = Omit<RegisterRequest, 'verificationToken'>;
 
 export class LoginDto {
   @ApiProperty({ description: 'User email address', example: 'user@example.com' })
@@ -32,35 +37,13 @@ export class RegisterDto {
   @IsString()
   username!: string;
 
-  @ApiProperty({
-    description: 'Short-lived token from POST /api/verification/verify (email_verify purpose)',
-    example: 'f47ac10b-58cc-4372-a567-0e02b2c3d479',
-  })
-  @IsString()
-  verificationToken!: string;
-
   @ApiProperty({ description: 'Date of birth (ISO date YYYY-MM-DD)', example: '1990-05-15' })
   @IsDateString()
   dateOfBirth!: string;
 }
 
-export class UpdateProfileDto {
-  @ApiProperty({ description: 'User first name', example: 'John' })
-  @IsString()
-  firstName!: string;
-
-  @ApiProperty({ description: 'User last name', example: 'Doe' })
-  @IsString()
-  lastName!: string;
-
-  @ApiProperty({ description: 'Profile bio', example: 'Building cool things.', required: false })
-  @IsOptional()
-  @IsString()
-  bio?: string;
-}
-
 export class SocialLoginDto {
-  @ApiProperty({ description: 'Social provider', enum: AuthProvider, example: AuthProvider.GOOGLE })
+  @ApiProperty({ enum: AuthProvider, example: AuthProvider.GOOGLE })
   @IsEnum(AuthProvider)
   provider!: AuthProvider;
 
@@ -103,6 +86,12 @@ export class LogoutDto {
   refreshToken!: string;
 }
 
+export class CheckEmailDto {
+  @ApiProperty({ description: 'Email to check availability', example: 'user@example.com' })
+  @IsEmail()
+  email!: string;
+}
+
 export class CheckUsernameDto {
   @ApiProperty({ description: 'Username to check availability', example: 'johndoe123' })
   @IsString()
@@ -113,36 +102,6 @@ export class SetUsernameDto {
   @ApiProperty({ description: 'Username to set', example: 'johndoe123' })
   @IsString()
   username!: string;
-}
-
-export class AuthDataDto {
-  @ApiProperty({ description: 'JWT access token', example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...' })
-  @IsString()
-  accessToken!: string;
-
-  @ApiProperty({ description: 'JWT refresh token', example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...' })
-  @IsString()
-  refreshToken!: string;
-
-  @ApiProperty({ description: 'User ID', example: '123e4567-e89b-12d3-a456-426614174000' })
-  @IsString()
-  userId!: string;
-
-  @ApiProperty({ description: 'User email', example: 'user@example.com' })
-  @IsString()
-  email!: string;
-}
-
-export class UpdateAvatarDto {
-  @ApiProperty({ description: 'New avatar URL', example: 'https://example.com/avatar.jpg' })
-  @IsString()
-  avatar!: string;
-}
-
-export class PasswordResetRequestDto {
-  @ApiProperty({ description: 'Account email address', example: 'user@example.com' })
-  @IsEmail()
-  email!: string;
 }
 
 export class ResetPasswordConfirmDto {
@@ -167,20 +126,39 @@ export class ChangePasswordDto {
   newPassword!: string;
 }
 
-export class AuthResponseDto extends ApiResponseDto<AuthDataDto> {}
+export class AuthResponseDto extends ApiResponseDto<AuthDataDto> {
+  @ApiProperty({ type: () => AuthDataDto })
+  declare data: AuthDataDto;
+}
 
-export class LogoutResponseDto extends ApiResponseDto<EmptyDataDto | null> {}
+export class LogoutResponseDto extends ApiResponseDto<EmptyDataDto> {
+  @ApiProperty({ type: () => EmptyDataDto })
+  declare data: EmptyDataDto;
+}
 
-export class ValidateTokenResponseDto extends ApiResponseDto<ValidateTokenDataDto> {}
+/** Empty success body for logout, profile update, password change, etc. */
+export class EmptySuccessResponseDto extends ApiResponseDto<EmptyDataDto> {
+  @ApiProperty({ type: () => EmptyDataDto })
+  declare data: EmptyDataDto;
+}
 
-export class UsernameAvailabilityResponseDto extends ApiResponseDto<UsernameAvailabilityDataDto> {}
+export class ValidateTokenResponseDto extends ApiResponseDto<ValidateTokenDataDto> {
+  @ApiProperty({ type: () => ValidateTokenDataDto })
+  declare data: ValidateTokenDataDto;
+}
+
+export class EmailAvailabilityResponseDto extends ApiResponseDto<EmailAvailabilityDataDto> {
+  @ApiProperty({ type: () => EmailAvailabilityDataDto })
+  declare data: EmailAvailabilityDataDto;
+}
+
+export class UsernameAvailabilityResponseDto extends ApiResponseDto<UsernameAvailabilityDataDto> {
+  @ApiProperty({ type: () => UsernameAvailabilityDataDto })
+  declare data: UsernameAvailabilityDataDto;
+}
 
 export class SetUsernameResponseDto extends AuthResponseDto {}
 
-export class UpdateProfileResponseDto extends ApiResponseDto<EmptyDataDto | null> {}
+export class UpdateProfileResponseDto extends EmptySuccessResponseDto {}
 
-// Type aliases for service-layer use
-export type AuthServiceResponse = ServiceResponse<AuthDataDto>;
-export type LogoutServiceResponse = ServiceResponse<EmptyDataDto>;
-export type ValidateTokenServiceResponse = ServiceResponse<ValidateTokenDataDto>;
-export type UpdateProfileServiceResponse = ServiceResponse<EmptyDataDto>;
+export { AuthDataDto, UpdateAvatarDto } from './auth-data.dto';

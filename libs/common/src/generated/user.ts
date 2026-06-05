@@ -5,8 +5,11 @@
 // source: user.proto
 
 /* eslint-disable */
-
-export const protobufPackage = "user";
+import { BinaryReader, BinaryWriter } from "@bufbuild/protobuf/wire";
+import type { CallContext, CallOptions } from "nice-grpc-common";
+import { AuthData } from "./auth";
+import { Empty } from "./google/protobuf/empty";
+import { ProfileData } from "./profile";
 
 export interface GetProfileRequest {
   userId: string;
@@ -23,7 +26,6 @@ export interface CheckUsernameRequest {
 export interface SetUsernameRequest {
   userId: string;
   username: string;
-  verificationToken: string;
 }
 
 export interface UpdateAvatarRequest {
@@ -33,55 +35,495 @@ export interface UpdateAvatarRequest {
 
 export interface UpdateProfileRequest {
   userId: string;
-  firstName: string;
-  lastName: string;
+  displayName: string;
   bio?: string | undefined;
-}
-
-export interface ProfileData {
-  userId: string;
-  username?: string | undefined;
-  firstName: string;
-  lastName: string;
-  avatar?: string | undefined;
-  email?: string | undefined;
-  bio?: string | undefined;
-}
-
-export interface ProfileResponse {
-  statusCode: number;
-  message: string;
-  data?: ProfileData | undefined;
 }
 
 export interface UsernameAvailabilityData {
   isAvailable: boolean;
 }
 
-export interface UsernameAvailabilityResponse {
-  statusCode: number;
-  message: string;
-  data?: UsernameAvailabilityData | undefined;
+function createBaseGetProfileRequest(): GetProfileRequest {
+  return { userId: "" };
 }
 
-export interface SetUsernameAuthData {
-  accessToken: string;
-  refreshToken: string;
-  userId: string;
-  email: string;
+export const GetProfileRequest: MessageFns<GetProfileRequest> = {
+  encode(message: GetProfileRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.userId !== "") {
+      writer.uint32(10).string(message.userId);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): GetProfileRequest {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseGetProfileRequest();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.userId = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  create<I extends Exact<DeepPartial<GetProfileRequest>, I>>(base?: I): GetProfileRequest {
+    return GetProfileRequest.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<GetProfileRequest>, I>>(object: I): GetProfileRequest {
+    const message = createBaseGetProfileRequest();
+    message.userId = object.userId ?? "";
+    return message;
+  },
+};
+
+function createBaseGetProfileByUsernameRequest(): GetProfileByUsernameRequest {
+  return { username: "" };
 }
 
-export interface SetUsernameResponse {
-  statusCode: number;
-  message: string;
-  data?: SetUsernameAuthData | undefined;
+export const GetProfileByUsernameRequest: MessageFns<GetProfileByUsernameRequest> = {
+  encode(message: GetProfileByUsernameRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.username !== "") {
+      writer.uint32(10).string(message.username);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): GetProfileByUsernameRequest {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseGetProfileByUsernameRequest();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.username = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  create<I extends Exact<DeepPartial<GetProfileByUsernameRequest>, I>>(base?: I): GetProfileByUsernameRequest {
+    return GetProfileByUsernameRequest.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<GetProfileByUsernameRequest>, I>>(object: I): GetProfileByUsernameRequest {
+    const message = createBaseGetProfileByUsernameRequest();
+    message.username = object.username ?? "";
+    return message;
+  },
+};
+
+function createBaseCheckUsernameRequest(): CheckUsernameRequest {
+  return { username: "" };
 }
 
-export interface EmptyData {
+export const CheckUsernameRequest: MessageFns<CheckUsernameRequest> = {
+  encode(message: CheckUsernameRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.username !== "") {
+      writer.uint32(10).string(message.username);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): CheckUsernameRequest {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseCheckUsernameRequest();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.username = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  create<I extends Exact<DeepPartial<CheckUsernameRequest>, I>>(base?: I): CheckUsernameRequest {
+    return CheckUsernameRequest.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<CheckUsernameRequest>, I>>(object: I): CheckUsernameRequest {
+    const message = createBaseCheckUsernameRequest();
+    message.username = object.username ?? "";
+    return message;
+  },
+};
+
+function createBaseSetUsernameRequest(): SetUsernameRequest {
+  return { userId: "", username: "" };
 }
 
-export interface UpdateProfileResponse {
-  statusCode: number;
-  message: string;
-  data?: EmptyData | undefined;
+export const SetUsernameRequest: MessageFns<SetUsernameRequest> = {
+  encode(message: SetUsernameRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.userId !== "") {
+      writer.uint32(10).string(message.userId);
+    }
+    if (message.username !== "") {
+      writer.uint32(18).string(message.username);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): SetUsernameRequest {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseSetUsernameRequest();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.userId = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.username = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  create<I extends Exact<DeepPartial<SetUsernameRequest>, I>>(base?: I): SetUsernameRequest {
+    return SetUsernameRequest.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<SetUsernameRequest>, I>>(object: I): SetUsernameRequest {
+    const message = createBaseSetUsernameRequest();
+    message.userId = object.userId ?? "";
+    message.username = object.username ?? "";
+    return message;
+  },
+};
+
+function createBaseUpdateAvatarRequest(): UpdateAvatarRequest {
+  return { userId: "", avatar: "" };
+}
+
+export const UpdateAvatarRequest: MessageFns<UpdateAvatarRequest> = {
+  encode(message: UpdateAvatarRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.userId !== "") {
+      writer.uint32(10).string(message.userId);
+    }
+    if (message.avatar !== "") {
+      writer.uint32(18).string(message.avatar);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): UpdateAvatarRequest {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseUpdateAvatarRequest();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.userId = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.avatar = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  create<I extends Exact<DeepPartial<UpdateAvatarRequest>, I>>(base?: I): UpdateAvatarRequest {
+    return UpdateAvatarRequest.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<UpdateAvatarRequest>, I>>(object: I): UpdateAvatarRequest {
+    const message = createBaseUpdateAvatarRequest();
+    message.userId = object.userId ?? "";
+    message.avatar = object.avatar ?? "";
+    return message;
+  },
+};
+
+function createBaseUpdateProfileRequest(): UpdateProfileRequest {
+  return { userId: "", displayName: "", bio: undefined };
+}
+
+export const UpdateProfileRequest: MessageFns<UpdateProfileRequest> = {
+  encode(message: UpdateProfileRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.userId !== "") {
+      writer.uint32(10).string(message.userId);
+    }
+    if (message.displayName !== "") {
+      writer.uint32(18).string(message.displayName);
+    }
+    if (message.bio !== undefined) {
+      writer.uint32(26).string(message.bio);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): UpdateProfileRequest {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseUpdateProfileRequest();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.userId = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.displayName = reader.string();
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.bio = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  create<I extends Exact<DeepPartial<UpdateProfileRequest>, I>>(base?: I): UpdateProfileRequest {
+    return UpdateProfileRequest.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<UpdateProfileRequest>, I>>(object: I): UpdateProfileRequest {
+    const message = createBaseUpdateProfileRequest();
+    message.userId = object.userId ?? "";
+    message.displayName = object.displayName ?? "";
+    message.bio = object.bio ?? undefined;
+    return message;
+  },
+};
+
+function createBaseUsernameAvailabilityData(): UsernameAvailabilityData {
+  return { isAvailable: false };
+}
+
+export const UsernameAvailabilityData: MessageFns<UsernameAvailabilityData> = {
+  encode(message: UsernameAvailabilityData, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.isAvailable !== false) {
+      writer.uint32(8).bool(message.isAvailable);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): UsernameAvailabilityData {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseUsernameAvailabilityData();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 8) {
+            break;
+          }
+
+          message.isAvailable = reader.bool();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  create<I extends Exact<DeepPartial<UsernameAvailabilityData>, I>>(base?: I): UsernameAvailabilityData {
+    return UsernameAvailabilityData.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<UsernameAvailabilityData>, I>>(object: I): UsernameAvailabilityData {
+    const message = createBaseUsernameAvailabilityData();
+    message.isAvailable = object.isAvailable ?? false;
+    return message;
+  },
+};
+
+/**
+ * User / profile service (hosted in auth-service for now; extractable later)
+ * RPC success returns data messages only (no statusCode/message wrapper).
+ * New endpoint checklist:
+ * 1. Add rpc + messages here
+ * 2. npm run proto:generate
+ * 3. Implement in auth-service (profile.service.ts + user.grpc.implementation.ts)
+ * 4. Add passthrough in gateway UserClientService
+ * 5. Add thin HTTP route in gateway user.gateway.controller.ts (mapGrpcToHttp / mapGrpcEmptyToHttp)
+ */
+export type UserServiceDefinition = typeof UserServiceDefinition;
+export const UserServiceDefinition = {
+  name: "UserService",
+  fullName: "user.UserService",
+  methods: {
+    getProfile: {
+      name: "GetProfile",
+      requestType: GetProfileRequest as typeof GetProfileRequest,
+      requestStream: false,
+      responseType: ProfileData as typeof ProfileData,
+      responseStream: false,
+      options: {},
+    },
+    getProfileByUsername: {
+      name: "GetProfileByUsername",
+      requestType: GetProfileByUsernameRequest as typeof GetProfileByUsernameRequest,
+      requestStream: false,
+      responseType: ProfileData as typeof ProfileData,
+      responseStream: false,
+      options: {},
+    },
+    checkUsername: {
+      name: "CheckUsername",
+      requestType: CheckUsernameRequest as typeof CheckUsernameRequest,
+      requestStream: false,
+      responseType: UsernameAvailabilityData as typeof UsernameAvailabilityData,
+      responseStream: false,
+      options: {},
+    },
+    setUsername: {
+      name: "SetUsername",
+      requestType: SetUsernameRequest as typeof SetUsernameRequest,
+      requestStream: false,
+      responseType: AuthData as typeof AuthData,
+      responseStream: false,
+      options: {},
+    },
+    updateAvatar: {
+      name: "UpdateAvatar",
+      requestType: UpdateAvatarRequest as typeof UpdateAvatarRequest,
+      requestStream: false,
+      responseType: Empty as typeof Empty,
+      responseStream: false,
+      options: {},
+    },
+    updateProfile: {
+      name: "UpdateProfile",
+      requestType: UpdateProfileRequest as typeof UpdateProfileRequest,
+      requestStream: false,
+      responseType: Empty as typeof Empty,
+      responseStream: false,
+      options: {},
+    },
+  },
+} as const;
+
+export interface UserServiceImplementation<CallContextExt = {}> {
+  getProfile(request: GetProfileRequest, context: CallContext & CallContextExt): Promise<DeepPartial<ProfileData>>;
+  getProfileByUsername(
+    request: GetProfileByUsernameRequest,
+    context: CallContext & CallContextExt,
+  ): Promise<DeepPartial<ProfileData>>;
+  checkUsername(
+    request: CheckUsernameRequest,
+    context: CallContext & CallContextExt,
+  ): Promise<DeepPartial<UsernameAvailabilityData>>;
+  setUsername(request: SetUsernameRequest, context: CallContext & CallContextExt): Promise<DeepPartial<AuthData>>;
+  updateAvatar(request: UpdateAvatarRequest, context: CallContext & CallContextExt): Promise<DeepPartial<Empty>>;
+  updateProfile(request: UpdateProfileRequest, context: CallContext & CallContextExt): Promise<DeepPartial<Empty>>;
+}
+
+export interface UserServiceClient<CallOptionsExt = {}> {
+  getProfile(request: DeepPartial<GetProfileRequest>, options?: CallOptions & CallOptionsExt): Promise<ProfileData>;
+  getProfileByUsername(
+    request: DeepPartial<GetProfileByUsernameRequest>,
+    options?: CallOptions & CallOptionsExt,
+  ): Promise<ProfileData>;
+  checkUsername(
+    request: DeepPartial<CheckUsernameRequest>,
+    options?: CallOptions & CallOptionsExt,
+  ): Promise<UsernameAvailabilityData>;
+  setUsername(request: DeepPartial<SetUsernameRequest>, options?: CallOptions & CallOptionsExt): Promise<AuthData>;
+  updateAvatar(request: DeepPartial<UpdateAvatarRequest>, options?: CallOptions & CallOptionsExt): Promise<Empty>;
+  updateProfile(request: DeepPartial<UpdateProfileRequest>, options?: CallOptions & CallOptionsExt): Promise<Empty>;
+}
+
+type Builtin = Date | Function | Uint8Array | string | number | boolean | undefined;
+
+type DeepPartial<T> = T extends Builtin ? T
+  : T extends globalThis.Array<infer U> ? globalThis.Array<DeepPartial<U>>
+  : T extends ReadonlyArray<infer U> ? ReadonlyArray<DeepPartial<U>>
+  : T extends {} ? { [K in keyof T]?: DeepPartial<T[K]> }
+  : Partial<T>;
+
+type KeysOfUnion<T> = T extends T ? keyof T : never;
+type Exact<P, I extends P> = P extends Builtin ? P
+  : P & { [K in keyof P]: Exact<P[K], I[K]> } & { [K in Exclude<keyof I, KeysOfUnion<P>>]: never };
+
+interface MessageFns<T> {
+  encode(message: T, writer?: BinaryWriter): BinaryWriter;
+  decode(input: BinaryReader | Uint8Array, length?: number): T;
+  create<I extends Exact<DeepPartial<T>, I>>(base?: I): T;
+  fromPartial<I extends Exact<DeepPartial<T>, I>>(object: I): T;
 }

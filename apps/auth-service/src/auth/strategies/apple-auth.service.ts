@@ -34,8 +34,6 @@ export class AppleAuthService {
       provider: AuthProvider.APPLE,
       providerId: payload.sub ?? '',
       email: payload.email ?? '',
-      firstName: '',
-      lastName: '',
     };
   }
 

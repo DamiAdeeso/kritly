@@ -44,8 +44,7 @@ describe('GoogleAuthService', () => {
       provider: AuthProvider.GOOGLE,
       providerId: 'google-sub-1',
       email: 'user@gmail.com',
-      firstName: 'Jane',
-      lastName: 'Doe',
+      displayName: 'Jane Doe',
       avatar: 'https://cdn.example.com/avatar.jpg',
     });
     expect(verifyIdToken).toHaveBeenCalledWith({

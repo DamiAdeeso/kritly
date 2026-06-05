@@ -1,5 +1,6 @@
 import { IsEmail, IsEnum, IsOptional, IsString } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import type { SendOtpData, VerifyOtpData } from '../generated/verification';
 import { OtpChannel, OtpPurpose } from '../constants/verification.constants';
 import { ApiResponseDto } from './common.dto';
 
@@ -39,7 +40,7 @@ export class VerifyOtpDto {
   email?: string;
 }
 
-export class SendOtpDataDto {
+export class SendOtpDataDto implements SendOtpData {
   @ApiProperty({ description: 'Unix timestamp when the OTP expires' })
   expiresAt!: number;
 
@@ -47,7 +48,7 @@ export class SendOtpDataDto {
   expiresInSeconds!: number;
 }
 
-export class VerifyOtpDataDto {
+export class VerifyOtpDataDto implements VerifyOtpData {
   @ApiProperty({ description: 'Short-lived token proving OTP verification for a purpose' })
   @IsString()
   verificationToken!: string;
@@ -56,6 +57,12 @@ export class VerifyOtpDataDto {
   expiresAt!: number;
 }
 
-export class SendOtpResponseDto extends ApiResponseDto<SendOtpDataDto> {}
+export class SendOtpResponseDto extends ApiResponseDto<SendOtpDataDto> {
+  @ApiProperty({ type: () => SendOtpDataDto })
+  declare data: SendOtpDataDto;
+}
 
-export class VerifyOtpResponseDto extends ApiResponseDto<VerifyOtpDataDto> {}
+export class VerifyOtpResponseDto extends ApiResponseDto<VerifyOtpDataDto> {
+  @ApiProperty({ type: () => VerifyOtpDataDto })
+  declare data: VerifyOtpDataDto;
+}

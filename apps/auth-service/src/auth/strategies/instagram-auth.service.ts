@@ -22,8 +22,7 @@ export class InstagramAuthService {
         provider: AuthProvider.INSTAGRAM,
         providerId: data.id,
         email: `instagram_${data.id}@example.com`,
-        firstName: data.username || '',
-        lastName: '',
+        displayName: data.username || undefined,
         avatar: undefined,
       };
     } catch {

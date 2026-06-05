@@ -24,7 +24,7 @@ export class NotificationRouter {
     templateKey: NOTIFICATION_TEMPLATE_KEYS.AUTH_WELCOME,
     recipient: (payload) => payload.email,
     data: (payload) => ({
-      firstName: payload.firstName,
+      displayName: payload.displayName,
       email: payload.email,
     }),
   };

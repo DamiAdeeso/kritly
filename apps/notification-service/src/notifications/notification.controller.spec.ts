@@ -21,7 +21,7 @@ describe('NotificationController', () => {
     payload: {
       userId: 'user-1',
       email: 'user@example.com',
-      firstName: 'Jane',
+      displayName: 'Jane',
     },
     source: 'auth-service',
     correlationId: 'corr-1',
@@ -64,7 +64,7 @@ describe('NotificationController', () => {
       templateKey: 'auth.welcome',
       channel: 'email',
       recipient: 'user@example.com',
-      data: { firstName: 'Jane', email: 'user@example.com' },
+      data: { displayName: 'Jane', email: 'user@example.com' },
       idempotencyKey: 'register:user-1',
       correlationId: 'corr-1',
       source: 'auth-service',
@@ -83,7 +83,7 @@ describe('NotificationController', () => {
       templateKey: 'auth.welcome',
       channel: 'email',
       recipient: 'user@example.com',
-      data: { firstName: 'Jane', email: 'user@example.com' },
+      data: { displayName: 'Jane', email: 'user@example.com' },
     } as never);
     notificationService.process.mockRejectedValue(
       new NonRetryableNotificationError('Template not found'),
@@ -100,7 +100,7 @@ describe('NotificationController', () => {
       templateKey: 'auth.welcome',
       channel: 'email',
       recipient: 'user@example.com',
-      data: { firstName: 'Jane', email: 'user@example.com' },
+      data: { displayName: 'Jane', email: 'user@example.com' },
     } as never);
     notificationService.process.mockRejectedValue(new RetryableNotificationError('SMTP down'));
 

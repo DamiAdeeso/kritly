@@ -1,12 +1,5 @@
 /**
  * Thin HTTP routes for auth — edge layer only (no business logic).
- *
- * New endpoint template:
- * @Post('auth/foo')
- * @Throttle({ default: { limit: N, ttl: 60_000 } }) // if needed
- * async foo(@Body(ValidationPipe) dto: FooDto) {
- *   return this.authClient.foo(dto);
- * }
  */
 import {
   Controller,
@@ -16,8 +9,7 @@ import {
   HttpStatus,
   Get,
   Headers,
-  ValidationPipe,
-  UnauthorizedException,
+  UseGuards,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -29,50 +21,76 @@ import {
 } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
 import { AuthClientService } from '../services/auth-client.service';
-import { VerificationClientService } from '../services/verification-client.service';
 import {
   LoginDto,
   RegisterDto,
   SocialLoginDto,
   RefreshTokenDto,
   LogoutDto,
-  AuthResponse,
+  CheckEmailDto,
   AuthResponseDto,
-  UpdateProfileResponseDto,
-  PasswordResetRequestDto,
+  AuthWithProfileResponseDto,
+  EmptyDataDto,
+  LogoutResponseDto,
+  EmptySuccessResponseDto,
   ResetPasswordConfirmDto,
   ChangePasswordDto,
-  GrpcErrorResponse,
-  LogoutResponse,
-  UpdateProfileResponse,
-  ValidateTokenResponse,
-  OtpPurpose,
-  OtpChannel,
-  SendOtpResponse,
-  VerificationGrpcErrorResponse,
+  EmailAvailabilityResponseDto,
+  HttpClientErrorResponse,
+  ValidateTokenResponseDto,
+  ServiceResponse,
+  AuthData,
+  AuthWithProfileData,
+  EmailAvailabilityData,
+  ValidateTokenData,
+  mapGrpcToHttp,
+  mapGrpcEmptyToHttp,
+  mapAvailabilityToHttp,
+  httpFail,
+  ok,
+  ApiEnvelopeErrors,
 } from '@kritly/common';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { CurrentUser } from '../auth/current-user.decorator';
+import { JwtTokenService } from '../auth/jwt-token.service';
+import { JwtUser } from '../auth/jwt-user.interface';
 
 @ApiTags('Auth')
+@ApiEnvelopeErrors(400, 401, 403, 429, 500)
 @Controller('api/auth')
 export class AuthGatewayController {
   constructor(
     private readonly authClient: AuthClientService,
-    private readonly verificationClient: VerificationClientService,
+    private readonly jwtTokenService: JwtTokenService,
   ) {}
 
   @Throttle({ default: { limit: 5, ttl: 60_000 } })
   @Post('register')
+  @HttpCode(HttpStatus.CREATED)
   @ApiOperation({
     summary: 'Register a new user',
     description:
-      'Requires a verification token from POST /api/verification/verify with email_verify purpose.',
+      'Requires x-verification-token from POST /api/verification/verify with email_verify purpose.',
+  })
+  @ApiHeader({
+    name: 'x-verification-token',
+    required: true,
+    description: 'Short-lived token from POST /api/verification/verify',
   })
   @ApiBody({ type: RegisterDto })
   @ApiResponse({ status: 201, description: 'User registered successfully', type: AuthResponseDto })
-  @ApiResponse({ status: 400, description: 'Bad request' })
-  @ApiResponse({ status: 403, description: 'Invalid or missing verification token' })
-  async register(@Body(ValidationPipe) dto: RegisterDto): Promise<AuthResponse | GrpcErrorResponse> {
-    return this.authClient.register(dto);
+  async register(
+    @Headers('x-verification-token') verificationToken: string | undefined,
+    @Body() dto: RegisterDto,
+  ): Promise<ServiceResponse<AuthData> | HttpClientErrorResponse> {
+    return mapGrpcToHttp(
+      await this.authClient.register({
+        ...dto,
+        verificationToken: verificationToken ?? '',
+      }),
+      'User registered successfully',
+      201,
+    );
   }
 
   @Throttle({ default: { limit: 10, ttl: 60_000 } })
@@ -81,9 +99,26 @@ export class AuthGatewayController {
   @ApiOperation({ summary: 'Login with email and password' })
   @ApiBody({ type: LoginDto })
   @ApiResponse({ status: 200, description: 'Login successful', type: AuthResponseDto })
-  @ApiResponse({ status: 401, description: 'Unauthorized' })
-  async login(@Body(ValidationPipe) dto: LoginDto): Promise<AuthResponse | GrpcErrorResponse> {
-    return this.authClient.login(dto);
+  async login(
+    @Body() dto: LoginDto,
+  ): Promise<ServiceResponse<AuthData> | HttpClientErrorResponse> {
+    return mapGrpcToHttp(await this.authClient.login(dto), 'Login successful');
+  }
+
+  @Throttle({ default: { limit: 10, ttl: 60_000 } })
+  @Post('login/session')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Login with email and password (includes profile)',
+    description:
+      'Same credentials as POST /api/auth/login. Returns tokens and profile in one response (single auth-service DB read).',
+  })
+  @ApiBody({ type: LoginDto })
+  @ApiResponse({ status: 200, description: 'Login successful', type: AuthWithProfileResponseDto })
+  async loginSession(
+    @Body() dto: LoginDto,
+  ): Promise<ServiceResponse<AuthWithProfileData> | HttpClientErrorResponse> {
+    return mapGrpcToHttp(await this.authClient.loginSession(dto), 'Login successful');
   }
 
   @Throttle({ default: { limit: 10, ttl: 60_000 } })
@@ -96,9 +131,10 @@ export class AuthGatewayController {
   })
   @ApiBody({ type: SocialLoginDto })
   @ApiResponse({ status: 200, description: 'Social login successful', type: AuthResponseDto })
-  @ApiResponse({ status: 401, description: 'Unauthorized' })
-  async socialLogin(@Body(ValidationPipe) dto: SocialLoginDto): Promise<AuthResponse | GrpcErrorResponse> {
-    return this.authClient.socialLogin(dto);
+  async socialLogin(
+    @Body() dto: SocialLoginDto,
+  ): Promise<ServiceResponse<AuthData> | HttpClientErrorResponse> {
+    return mapGrpcToHttp(await this.authClient.socialLogin(dto), 'Social login successful');
   }
 
   @Throttle({ default: { limit: 20, ttl: 60_000 } })
@@ -107,68 +143,88 @@ export class AuthGatewayController {
   @ApiOperation({ summary: 'Refresh access token' })
   @ApiBody({ type: RefreshTokenDto })
   @ApiResponse({ status: 200, description: 'Token refreshed successfully', type: AuthResponseDto })
-  @ApiResponse({ status: 401, description: 'Unauthorized' })
-  async refreshToken(@Body(ValidationPipe) dto: RefreshTokenDto): Promise<AuthResponse | GrpcErrorResponse> {
-    return this.authClient.refreshToken(dto);
+  async refreshToken(
+    @Body() dto: RefreshTokenDto,
+  ): Promise<ServiceResponse<AuthData> | HttpClientErrorResponse> {
+    return mapGrpcToHttp(await this.authClient.refreshToken(dto), 'Token refreshed successfully');
   }
 
+  @Throttle({ default: { limit: 20, ttl: 60_000 } })
   @Post('logout')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Logout user' })
   @ApiBody({ type: LogoutDto })
-  @ApiResponse({ status: 200, description: 'Logout successful' })
-  async logout(@Body(ValidationPipe) dto: LogoutDto): Promise<LogoutResponse | GrpcErrorResponse> {
-    return this.authClient.logout(dto);
+  @ApiResponse({ status: 200, description: 'Logout successful', type: LogoutResponseDto })
+  async logout(
+    @Body() dto: LogoutDto,
+  ): Promise<ServiceResponse<EmptyDataDto> | HttpClientErrorResponse> {
+    return mapGrpcEmptyToHttp(await this.authClient.logout(dto), 'Logout successful');
   }
 
-  @Get('validate')
-  @ApiOperation({ summary: 'Validate access token' })
-  @ApiBearerAuth()
-  @ApiResponse({ status: 200, description: 'Token is valid' })
-  @ApiResponse({ status: 401, description: 'Invalid token' })
-  async validateToken(@Headers('authorization') authHeader?: string): Promise<ValidateTokenResponse | GrpcErrorResponse> {
-    const token = authHeader?.replace('Bearer ', '');
-    if (!token) {
-      throw new UnauthorizedException('No token provided');
-    }
-    return this.authClient.validateToken({ accessToken: token });
-  }
-
-  @Throttle({ default: { limit: 5, ttl: 60_000 } })
-  @Post('password-reset/request')
+  @Throttle({ default: { limit: 10, ttl: 60_000 } })
+  @Post('check-email')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Request a password reset OTP' })
-  @ApiBody({ type: PasswordResetRequestDto })
-  @ApiResponse({ status: 200, description: 'If the account exists, a verification code was sent' })
-  async requestPasswordReset(
-    @Body(ValidationPipe) dto: PasswordResetRequestDto,
-  ): Promise<SendOtpResponse | VerificationGrpcErrorResponse | GrpcErrorResponse> {
-    const email = dto.email.trim().toLowerCase();
+  @ApiOperation({ summary: 'Check whether an email is available for registration' })
+  @ApiBody({ type: CheckEmailDto })
+  @ApiResponse({ status: 200, description: 'Email availability checked', type: EmailAvailabilityResponseDto })
+  async checkEmail(
+    @Body() dto: CheckEmailDto,
+  ): Promise<ServiceResponse<EmailAvailabilityData> | HttpClientErrorResponse> {
+    return mapAvailabilityToHttp(
+      await this.authClient.checkEmailAvailability({ email: dto.email.trim().toLowerCase() }),
+      'Email is available',
+      'Email is already registered',
+    );
+  }
 
-    return this.verificationClient.sendOtp({
-      subject: email,
-      purpose: OtpPurpose.PASSWORD_RESET,
-      channel: OtpChannel.EMAIL,
+  @Throttle({ default: { limit: 30, ttl: 60_000 } })
+  @Get('validate')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Validate access token (local JWT at gateway)',
+    description: 'Does not call auth-service gRPC. Verifies the bearer JWT at the gateway edge.',
+  })
+  @ApiBearerAuth()
+  @ApiResponse({ status: 200, description: 'Token is valid', type: ValidateTokenResponseDto })
+  async validateToken(
+    @Headers('authorization') authHeader?: string,
+  ): Promise<ServiceResponse<ValidateTokenData> | HttpClientErrorResponse> {
+    const user = this.jwtTokenService.tryVerifyFromAuthHeader(authHeader);
+    if (!user) {
+      const token = this.jwtTokenService.extractBearerToken(authHeader);
+      const message = token ? 'Invalid token' : 'No token provided';
+      return httpFail(message, HttpStatus.UNAUTHORIZED);
+    }
+
+    return ok('Token validation successful', {
+      isValid: true,
+      userId: user.userId,
     });
   }
 
   @Throttle({ default: { limit: 5, ttl: 60_000 } })
   @Post('password-reset/confirm')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Confirm password reset with OTP verification token' })
+  @ApiOperation({
+    summary: 'Confirm password reset with OTP verification token',
+    description:
+      'Request an OTP via POST /api/verification/send (purpose: password_reset), verify via POST /api/verification/verify, then call this endpoint with the returned x-verification-token.',
+  })
   @ApiHeader({ name: 'x-verification-token', required: true, description: 'Short-lived token from POST /api/verification/verify' })
   @ApiBody({ type: ResetPasswordConfirmDto })
-  @ApiResponse({ status: 200, description: 'Password reset successfully', type: UpdateProfileResponseDto })
-  @ApiResponse({ status: 403, description: 'Verification token required or invalid' })
+  @ApiResponse({ status: 200, description: 'Password reset successfully', type: EmptySuccessResponseDto })
   async confirmPasswordReset(
     @Headers('x-verification-token') verificationToken: string | undefined,
-    @Body(ValidationPipe) dto: ResetPasswordConfirmDto,
-  ): Promise<UpdateProfileResponse | GrpcErrorResponse> {
-    return this.authClient.resetPassword({
-      email: dto.email.trim().toLowerCase(),
-      newPassword: dto.newPassword,
-      verificationToken: verificationToken ?? '',
-    });
+    @Body() dto: ResetPasswordConfirmDto,
+  ): Promise<ServiceResponse<EmptyDataDto> | HttpClientErrorResponse> {
+    return mapGrpcEmptyToHttp(
+      await this.authClient.resetPassword({
+        email: dto.email.trim().toLowerCase(),
+        newPassword: dto.newPassword,
+        verificationToken: verificationToken ?? '',
+      }),
+      'Password reset successfully',
+    );
   }
 
   @Throttle({ default: { limit: 5, ttl: 60_000 } })
@@ -178,35 +234,21 @@ export class AuthGatewayController {
   @ApiBearerAuth()
   @ApiHeader({ name: 'x-verification-token', required: true, description: 'Short-lived token from POST /api/verification/verify' })
   @ApiBody({ type: ChangePasswordDto })
-  @ApiResponse({ status: 200, description: 'Password changed successfully', type: UpdateProfileResponseDto })
-  @ApiResponse({ status: 401, description: 'Current password is incorrect' })
-  @ApiResponse({ status: 403, description: 'Verification token required or invalid' })
+  @ApiResponse({ status: 200, description: 'Password changed successfully', type: EmptySuccessResponseDto })
+  @UseGuards(JwtAuthGuard)
   async changePassword(
-    @Headers('authorization') authHeader: string | undefined,
+    @CurrentUser() user: JwtUser,
     @Headers('x-verification-token') verificationToken: string | undefined,
-    @Body(ValidationPipe) dto: ChangePasswordDto,
-  ): Promise<UpdateProfileResponse | GrpcErrorResponse> {
-    const userId = await this.requireUserId(authHeader);
-
-    return this.authClient.changePassword({
-      userId,
-      currentPassword: dto.currentPassword,
-      newPassword: dto.newPassword,
-      verificationToken: verificationToken ?? '',
-    });
-  }
-
-  private async requireUserId(authHeader: string | undefined): Promise<string> {
-    const token = authHeader?.replace('Bearer ', '');
-    if (!token) {
-      throw new UnauthorizedException('No token provided');
-    }
-
-    const validation = await this.authClient.validateToken({ accessToken: token });
-    if (validation.statusCode !== 200 || !validation.data?.isValid || !validation.data.userId) {
-      throw new UnauthorizedException('Invalid token');
-    }
-
-    return validation.data.userId;
+    @Body() dto: ChangePasswordDto,
+  ): Promise<ServiceResponse<EmptyDataDto> | HttpClientErrorResponse> {
+    return mapGrpcEmptyToHttp(
+      await this.authClient.changePassword({
+        userId: user.userId,
+        currentPassword: dto.currentPassword,
+        newPassword: dto.newPassword,
+        verificationToken: verificationToken ?? '',
+      }),
+      'Password changed successfully',
+    );
   }
 }

@@ -3,32 +3,20 @@ import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import {
   DOMAIN_EVENTS,
   EventPublisher,
+  hashSubject,
   OtpChannel,
   OTP_CHANNELS,
   OTP_PURPOSES,
   OtpPurpose,
   SendOtpRequest,
-  ServiceResponse,
+  SendOtpData,
   ConsumeVerificationTokenRequest,
   ValidateVerificationTokenRequest,
+  ValidateVerificationTokenData,
   VerifyOtpRequest,
-  ok,
+  VerifyOtpData,
 } from '@kritly/common';
 import { OtpService } from './otp.service';
-
-export type SendOtpServiceResponse = ServiceResponse<{
-  expiresAt: number;
-  expiresInSeconds: number;
-}>;
-
-export type VerifyOtpServiceResponse = ServiceResponse<{
-  verificationToken: string;
-  expiresAt: number;
-}>;
-
-export type ValidateVerificationTokenServiceResponse = ServiceResponse<{
-  isValid: boolean;
-}>;
 
 @Injectable()
 export class VerificationService {
@@ -38,7 +26,7 @@ export class VerificationService {
     private readonly eventPublisher: EventPublisher,
   ) {}
 
-  async sendOtp(request: SendOtpRequest): Promise<SendOtpServiceResponse> {
+  async sendOtp(request: SendOtpRequest): Promise<SendOtpData> {
     this.validatePurpose(request.purpose);
     this.validateChannel(request.channel);
 
@@ -47,7 +35,7 @@ export class VerificationService {
       {
         purpose: request.purpose,
         channel: request.channel,
-        subject,
+        subjectHash: hashSubject(subject),
         userId: request.userId ?? null,
       },
       'sendOtp',
@@ -70,21 +58,21 @@ export class VerificationService {
     }
 
     this.logger.info(
-      { purpose: request.purpose, subject, expiresInSeconds },
+      { purpose: request.purpose, subjectHash: hashSubject(subject), expiresInSeconds },
       'sendOtp queued for delivery',
     );
 
-    return ok('Verification code sent', {
+    return {
       expiresAt: Math.floor(Date.now() / 1000) + expiresInSeconds,
       expiresInSeconds,
-    });
+    };
   }
 
-  async verifyOtp(request: VerifyOtpRequest): Promise<VerifyOtpServiceResponse> {
+  async verifyOtp(request: VerifyOtpRequest): Promise<VerifyOtpData> {
     this.validatePurpose(request.purpose);
 
     const subject = this.otpService.normalizeSubject(request.subject);
-    this.logger.info({ purpose: request.purpose, subject }, 'verifyOtp');
+    this.logger.info({ purpose: request.purpose, subjectHash: hashSubject(subject) }, 'verifyOtp');
 
     const { userId } = await this.otpService.verifyCode(request.purpose, subject, request.code.trim());
 
@@ -97,19 +85,19 @@ export class VerificationService {
     this.logger.info(
       {
         purpose: request.purpose,
-        subject,
+        subjectHash: hashSubject(subject),
         userId: userId ?? null,
         expiresAt: token.expiresAt,
       },
       'verifyOtp issued token',
     );
 
-    return ok('Verification successful', token, 200);
+    return token;
   }
 
   async validateVerificationToken(
     request: ValidateVerificationTokenRequest,
-  ): Promise<ValidateVerificationTokenServiceResponse> {
+  ): Promise<ValidateVerificationTokenData> {
     const isValid = await this.otpService.validateVerificationToken({
       verificationToken: request.verificationToken,
       purpose: request.purpose,
@@ -117,20 +105,17 @@ export class VerificationService {
       email: request.email,
     });
 
-    return ok(
-      isValid ? 'Verification token is valid' : 'Verification token is invalid',
-      { isValid },
-    );
+    return { isValid };
   }
 
   async consumeVerificationToken(
     request: ConsumeVerificationTokenRequest,
-  ): Promise<ValidateVerificationTokenServiceResponse> {
+  ): Promise<ValidateVerificationTokenData> {
     this.logger.info(
       {
         purpose: request.purpose,
         userId: request.userId ?? null,
-        email: request.email ?? null,
+        emailHash: request.email ? hashSubject(request.email) : null,
       },
       'consumeVerificationToken',
     );
@@ -144,10 +129,7 @@ export class VerificationService {
 
     this.logger.info({ isValid }, 'consumeVerificationToken result');
 
-    return ok(
-      isValid ? 'Verification token consumed' : 'Verification token is invalid',
-      { isValid },
-    );
+    return { isValid };
   }
 
   private enqueueEmailOtp(

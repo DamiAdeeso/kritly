@@ -26,16 +26,16 @@ describe('UploadService', () => {
     service = module.get<UploadService>(UploadService);
   });
 
-  it('returns presigned upload envelope', async () => {
+  it('returns presigned upload data', async () => {
     const result = await service.createPresignedUpload({
       userId: 'user-1',
       purpose: 'avatar',
       contentType: 'image/jpeg',
       fileName: 'avatar.jpg',
+      fileSize: 102_400,
     });
 
-    expect(result.statusCode).toBe(201);
-    expect(result.data.publicUrl).toContain('avatar/user-1');
+    expect(result.publicUrl).toContain('avatar/user-1');
   });
 
   it('propagates storage failures', async () => {
@@ -59,6 +59,7 @@ describe('UploadService', () => {
         purpose: 'avatar',
         contentType: 'image/jpeg',
         fileName: 'avatar.jpg',
+        fileSize: 102_400,
       }),
     ).rejects.toThrow('storage unavailable');
   });

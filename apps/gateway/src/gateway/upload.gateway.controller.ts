@@ -4,9 +4,7 @@ import {
   Body,
   HttpCode,
   HttpStatus,
-  Headers,
-  ValidationPipe,
-  UnauthorizedException,
+  UseGuards,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -18,25 +16,28 @@ import {
 import { Throttle } from '@nestjs/throttler';
 import {
   CreatePresignedUploadDto,
-  CreatePresignedUploadResponse,
   CreatePresignedUploadResponseDto,
-  GrpcErrorResponse,
-  UploadGrpcErrorResponse,
+  HttpClientErrorResponse,
+  PresignedUploadData,
+  ServiceResponse,
+  mapGrpcToHttp,
+  ApiEnvelopeErrors,
 } from '@kritly/common';
-import { AuthClientService } from '../services/auth-client.service';
 import { UploadClientService } from '../services/upload-client.service';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { CurrentUser } from '../auth/current-user.decorator';
+import { JwtUser } from '../auth/jwt-user.interface';
 
 @ApiTags('Uploads')
+@ApiEnvelopeErrors(400, 401, 403, 429, 500)
 @Controller('api/uploads')
 export class UploadGatewayController {
-  constructor(
-    private readonly authClient: AuthClientService,
-    private readonly uploadClient: UploadClientService,
-  ) {}
+  constructor(private readonly uploadClient: UploadClientService) {}
 
   @Throttle({ default: { limit: 20, ttl: 60_000 } })
   @Post('presign')
   @HttpCode(HttpStatus.CREATED)
+  @UseGuards(JwtAuthGuard)
   @ApiOperation({ summary: 'Create a presigned upload URL for direct-to-storage upload' })
   @ApiBearerAuth()
   @ApiBody({ type: CreatePresignedUploadDto })
@@ -45,26 +46,20 @@ export class UploadGatewayController {
     description: 'Presigned upload URL created',
     type: CreatePresignedUploadResponseDto,
   })
-  @ApiResponse({ status: 401, description: 'Unauthorized' })
   async createPresignedUpload(
-    @Headers('authorization') authHeader: string | undefined,
-    @Body(ValidationPipe) dto: CreatePresignedUploadDto,
-  ): Promise<CreatePresignedUploadResponse | UploadGrpcErrorResponse | GrpcErrorResponse> {
-    const token = authHeader?.replace('Bearer ', '');
-    if (!token) {
-      throw new UnauthorizedException('No token provided');
-    }
-
-    const validation = await this.authClient.validateToken({ accessToken: token });
-    if (validation.statusCode !== 200 || !validation.data?.isValid || !validation.data.userId) {
-      throw new UnauthorizedException('Invalid token');
-    }
-
-    return this.uploadClient.createPresignedUpload({
-      userId: validation.data.userId,
-      purpose: dto.purpose,
-      contentType: dto.contentType,
-      fileName: dto.fileName,
-    });
+    @CurrentUser() user: JwtUser,
+    @Body() dto: CreatePresignedUploadDto,
+  ): Promise<ServiceResponse<PresignedUploadData> | HttpClientErrorResponse> {
+    return mapGrpcToHttp(
+      await this.uploadClient.createPresignedUpload({
+        userId: user.userId,
+        purpose: dto.purpose,
+        contentType: dto.contentType,
+        fileName: dto.fileName,
+        fileSize: dto.fileSize,
+      }),
+      'Presigned upload URL created',
+      201,
+    );
   }
 }

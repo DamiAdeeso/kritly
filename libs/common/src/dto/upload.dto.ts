@@ -1,5 +1,6 @@
-import { IsEnum, IsString } from 'class-validator';
+import { IsEnum, IsInt, IsString, Min } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
+import type { PresignedUploadData } from '../generated/upload';
 import { UploadPurpose } from '../constants/upload.constants';
 import { ApiResponseDto } from './common.dto';
 
@@ -19,9 +20,14 @@ export class CreatePresignedUploadDto {
   @ApiProperty({ description: 'Original file name', example: 'profile.jpg' })
   @IsString()
   fileName!: string;
+
+  @ApiProperty({ description: 'File size in bytes', example: 245_760 })
+  @IsInt()
+  @Min(1)
+  fileSize!: number;
 }
 
-export class PresignedUploadDataDto {
+export class PresignedUploadDataDto implements PresignedUploadData {
   @ApiProperty({ description: 'Presigned PUT URL for direct upload to storage' })
   @IsString()
   uploadUrl!: string;
@@ -38,4 +44,7 @@ export class PresignedUploadDataDto {
   expiresAt!: number;
 }
 
-export class CreatePresignedUploadResponseDto extends ApiResponseDto<PresignedUploadDataDto> {}
+export class CreatePresignedUploadResponseDto extends ApiResponseDto<PresignedUploadDataDto> {
+  @ApiProperty({ type: () => PresignedUploadDataDto })
+  declare data: PresignedUploadDataDto;
+}

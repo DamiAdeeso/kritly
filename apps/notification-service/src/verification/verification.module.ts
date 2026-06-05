@@ -1,11 +1,10 @@
 import { Module } from '@nestjs/common';
 import { OtpService } from './otp.service';
-import { VerificationGrpcController } from './verification.grpc.controller';
+import { VerificationGrpcImplementation } from './verification.grpc.implementation';
 import { VerificationService } from './verification.service';
 
 @Module({
-  controllers: [VerificationGrpcController],
-  providers: [VerificationService, OtpService],
-  exports: [VerificationService, OtpService],
+  providers: [VerificationService, VerificationGrpcImplementation, OtpService],
+  exports: [VerificationService, VerificationGrpcImplementation, OtpService],
 })
 export class VerificationModule {}

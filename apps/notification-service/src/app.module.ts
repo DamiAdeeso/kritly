@@ -1,9 +1,8 @@
 import { Module } from '@nestjs/common';
-import { APP_FILTER } from '@nestjs/core';
 import { ConfigModule } from '@nestjs/config';
 import {
   EventPublisherModule,
-  GrpcServiceResponseExceptionFilter,
+  HealthGrpcImplementation,
   RedisModule,
   AppLoggerModule,
   rootEnvConfig,
@@ -17,7 +16,7 @@ import { NotificationsModule } from './notifications/notifications.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { TemplatesModule } from './templates/templates.module';
 import { VerificationModule } from './verification/verification.module';
-import { HealthGrpcController } from './health/health.grpc.controller';
+import { NotificationGrpcServerService } from './grpc/notification-grpc-server.service';
 
 @Module({
   imports: [
@@ -36,12 +35,6 @@ import { HealthGrpcController } from './health/health.grpc.controller';
     NotificationsModule,
     VerificationModule,
   ],
-  controllers: [HealthGrpcController],
-  providers: [
-    {
-      provide: APP_FILTER,
-      useClass: GrpcServiceResponseExceptionFilter,
-    },
-  ],
+  providers: [NotificationGrpcServerService, HealthGrpcImplementation],
 })
 export class AppModule {}

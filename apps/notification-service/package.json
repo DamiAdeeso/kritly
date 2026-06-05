@@ -8,8 +8,6 @@
     "start:dev": "nx serve notification-service"
   },
   "dependencies": {
-    "@grpc/grpc-js": "^1.13.4",
-    "@grpc/proto-loader": "^0.8.0",
     "@kritly/common": "workspace:*",
     "@nestjs/common": "^11.1.6",
     "@nestjs/config": "^4.0.2",
@@ -18,7 +16,6 @@
     "@prisma/client": "6.15.0",
     "amqp-connection-manager": "^4.1.14",
     "amqplib": "^0.10.8",
-    "dotenv": "^16.4.7",
     "handlebars": "^4.7.8",
     "nodemailer": "^7.0.5",
     "reflect-metadata": "^0.2.2",

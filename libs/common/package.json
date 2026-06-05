@@ -4,13 +4,20 @@
   "description": "Common utilities and interfaces for Kritly microservices",
   "main": "dist/src/index.js",
   "types": "dist/src/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/src/index.d.ts",
+      "default": "./dist/src/index.js"
+    }
+  },
   "scripts": {
     "build": "nx build common",
     "dev": "nx build common --watch"
   },
   "dependencies": {
+    "@bufbuild/protobuf": "^2.11.8",
     "@grpc/grpc-js": "^1.13.4",
-    "@grpc/proto-loader": "^0.8.0",
+    "nice-grpc": "^2.1.14",
     "@nestjs/common": "^11.1.6",
     "@nestjs/config": "^4.0.2",
     "@nestjs/microservices": "^11.1.6",

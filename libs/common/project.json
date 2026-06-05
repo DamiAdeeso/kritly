@@ -13,7 +13,7 @@
       "inputs": ["{projectRoot}/src/proto/**/*.proto", "{projectRoot}/buf.gen.yaml", "{projectRoot}/buf.yaml"],
       "outputs": ["{projectRoot}/src/generated"]
     },
-    "build": {
+    "compile": {
       "executor": "@nx/js:tsc",
       "dependsOn": ["proto-generate"],
       "outputs": ["{options.outputPath}"],
@@ -21,7 +21,26 @@
         "outputPath": "libs/common/dist",
         "main": "libs/common/src/index.ts",
         "tsConfig": "libs/common/tsconfig.json",
-        "assets": ["libs/common/*.md"]
+        "assets": [
+          {
+            "input": "libs/common",
+            "glob": "package.json",
+            "output": "."
+          },
+          "libs/common/*.md"
+        ]
+      }
+    },
+    "build": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["proto-generate"],
+      "outputs": ["{workspaceRoot}/libs/common/dist"],
+      "options": {
+        "commands": [
+          "nx run common:compile",
+          "node libs/common/scripts/sync-dist-package.mjs"
+        ],
+        "parallel": false
       }
     },
     "lint": {

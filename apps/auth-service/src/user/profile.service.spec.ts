@@ -43,8 +43,7 @@ describe('ProfileService', () => {
       profileRepository.findProfileById.mockResolvedValue({
         userId: 'user-1',
         username: 'user123',
-        firstName: 'Test',
-        lastName: 'User',
+        displayName: 'Test User',
         bio: null,
         avatar: null,
         email: 'user@example.com',
@@ -52,8 +51,8 @@ describe('ProfileService', () => {
 
       const result = await service.getProfile('user-1');
 
-      expect(result.statusCode).toBe(200);
-      expect(result.data?.email).toBe('user@example.com');
+      expect(result.email).toBe('user@example.com');
+      expect(result.displayName).toBe('Test User');
     });
 
     it('throws when profile is missing', async () => {
@@ -70,8 +69,7 @@ describe('ProfileService', () => {
       profileRepository.findProfileByUsername.mockResolvedValue({
         userId: 'user-1',
         username: 'testuser',
-        firstName: 'Test',
-        lastName: 'User',
+        displayName: 'Test User',
         bio: null,
         avatar: null,
       });
@@ -94,7 +92,7 @@ describe('ProfileService', () => {
 
       const result = await service.checkUsername('available-user');
 
-      expect(result.data?.isAvailable).toBe(true);
+      expect(result.isAvailable).toBe(true);
     });
 
     it('returns unavailable for taken username', async () => {
@@ -102,7 +100,7 @@ describe('ProfileService', () => {
 
       const result = await service.checkUsername('taken-user');
 
-      expect(result.data?.isAvailable).toBe(false);
+      expect(result.isAvailable).toBe(false);
     });
   });
 
@@ -119,7 +117,7 @@ describe('ProfileService', () => {
 
       const result = await service.setUsername('user-1', '  NewName  ');
 
-      expect(result.statusCode).toBe(200);
+      expect(result.accessToken).toBe('access-token');
       expect(profileRepository.updateProfile).toHaveBeenCalledWith('user-1', {
         username: 'newname',
         usernameChangedAt: expect.any(Date),
@@ -182,31 +180,28 @@ describe('ProfileService', () => {
       profileRepository.findProfileById.mockResolvedValue({
         userId: 'user-1',
         username: 'user123',
-        firstName: null,
-        lastName: null,
+        displayName: null,
         bio: null,
         avatar: null,
       });
       profileRepository.updateProfile.mockResolvedValue({ id: 'user-1' } as never);
 
       const result = await service.updateProfile('user-1', {
-        firstName: 'Jane',
-        lastName: 'Doe',
+        displayName: 'Jane Doe',
         bio: 'Hello world',
       });
 
-      expect(result.statusCode).toBe(200);
+      expect(result).toEqual({});
       expect(profileRepository.updateProfile).toHaveBeenCalledWith('user-1', {
-        firstName: 'Jane',
-        lastName: 'Doe',
+        displayName: 'Jane Doe',
         bio: 'Hello world',
       });
     });
 
-    it('rejects empty first or last name', async () => {
+    it('rejects empty display name', async () => {
       await expect(
-        service.updateProfile('user-1', { firstName: ' ', lastName: 'Doe' }),
-      ).rejects.toThrow(new BadRequestException('First name and last name are required'));
+        service.updateProfile('user-1', { displayName: ' ' }),
+      ).rejects.toThrow(new BadRequestException('Display name is required'));
     });
   });
 
@@ -215,8 +210,7 @@ describe('ProfileService', () => {
       profileRepository.findProfileById.mockResolvedValue({
         userId: 'user-1',
         username: 'user123',
-        firstName: 'Test',
-        lastName: 'User',
+        displayName: null,
         bio: null,
         avatar: null,
       });
@@ -224,7 +218,7 @@ describe('ProfileService', () => {
 
       const result = await service.updateAvatar('user-1', 'https://cdn.example.com/avatar.jpg');
 
-      expect(result.statusCode).toBe(200);
+      expect(result).toEqual({});
     });
 
     it('rejects empty avatar url', async () => {

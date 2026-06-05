@@ -3,8 +3,9 @@ syntax = "proto3";
 package upload;
 
 // Upload Service — presigned direct-to-storage uploads
+// RPC success returns PresignedUploadData only (no statusCode/message wrapper).
 service UploadService {
-  rpc CreatePresignedUpload(CreatePresignedUploadRequest) returns (CreatePresignedUploadResponse);
+  rpc CreatePresignedUpload(CreatePresignedUploadRequest) returns (PresignedUploadData);
 }
 
 message CreatePresignedUploadRequest {
@@ -12,6 +13,7 @@ message CreatePresignedUploadRequest {
   string purpose = 2;
   string contentType = 3;
   string fileName = 4;
+  int64 fileSize = 5;
 }
 
 message PresignedUploadData {
@@ -19,10 +21,4 @@ message PresignedUploadData {
   string fileKey = 2;
   string publicUrl = 3;
   int64 expiresAt = 4;
-}
-
-message CreatePresignedUploadResponse {
-  int32 statusCode = 1;
-  string message = 2;
-  PresignedUploadData data = 3;
 }

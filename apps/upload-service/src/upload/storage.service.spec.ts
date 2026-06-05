@@ -44,6 +44,7 @@ describe('StorageService', () => {
         purpose: 'avatar',
         contentType: 'application/pdf',
         fileName: 'doc.pdf',
+        fileSize: 102_400,
       }),
     ).rejects.toBeInstanceOf(BadRequestException);
   });
@@ -54,12 +55,49 @@ describe('StorageService', () => {
       purpose: 'avatar',
       contentType: 'image/jpeg',
       fileName: 'avatar.jpg',
+      fileSize: 102_400,
     });
 
     expect(result.uploadUrl).toBe('https://storage.example.com/presigned');
     expect(result.publicUrl).toContain('https://cdn.kritly.com/avatar/user-1/');
     expect(result.fileKey).toContain('avatar/user-1/');
     expect(result.expiresAt).toBeGreaterThan(Math.floor(Date.now() / 1000));
+  });
+
+  it('rejects files exceeding the purpose size limit', async () => {
+    await expect(
+      service.createPresignedUpload({
+        userId: 'user-1',
+        purpose: 'avatar',
+        contentType: 'image/jpeg',
+        fileName: 'avatar.jpg',
+        fileSize: 6 * 1024 * 1024,
+      }),
+    ).rejects.toBeInstanceOf(BadRequestException);
+  });
+
+  it('rejects non-positive file sizes', async () => {
+    await expect(
+      service.createPresignedUpload({
+        userId: 'user-1',
+        purpose: 'avatar',
+        contentType: 'image/jpeg',
+        fileName: 'avatar.jpg',
+        fileSize: 0,
+      }),
+    ).rejects.toBeInstanceOf(BadRequestException);
+  });
+
+  it('accepts gRPC int64 file sizes sent as strings', async () => {
+    const result = await service.createPresignedUpload({
+      userId: 'user-1',
+      purpose: 'avatar',
+      contentType: 'image/jpeg',
+      fileName: 'avatar.jpg',
+      fileSize: '102400',
+    });
+
+    expect(result.uploadUrl).toBe('https://storage.example.com/presigned');
   });
 
   it('rejects invalid upload purpose', async () => {
@@ -69,6 +107,7 @@ describe('StorageService', () => {
         purpose: 'invalid' as 'avatar',
         contentType: 'image/jpeg',
         fileName: 'avatar.jpg',
+        fileSize: 102_400,
       }),
     ).rejects.toBeInstanceOf(BadRequestException);
   });

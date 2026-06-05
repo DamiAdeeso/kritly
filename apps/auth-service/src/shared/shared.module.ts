@@ -1,17 +1,17 @@
 import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { AUTH_CONSTANTS, resolveJwtSecret } from '@kritly/common';
+import { AUTH_CONSTANTS, GrpcClientConfigModule, resolveJwtSecret } from '@kritly/common';
 import { AccountRepository } from '../repositories/account.repository';
 import { ProfileRepository } from '../repositories/profile.repository';
 import { RefreshTokenRepository } from '../repositories/refresh-token.repository';
 import { TokenService } from './token.service';
 import { VerificationClientService } from './verification-client.service';
 import { VerificationEnforcementService } from './verification-enforcement.service';
-import { GrpcVerificationGuard } from '../guards/grpc-verification.guard';
 
 @Module({
   imports: [
+    GrpcClientConfigModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => ({
@@ -33,7 +33,6 @@ import { GrpcVerificationGuard } from '../guards/grpc-verification.guard';
     TokenService,
     VerificationClientService,
     VerificationEnforcementService,
-    GrpcVerificationGuard,
   ],
   exports: [
     AccountRepository,
@@ -41,7 +40,6 @@ import { GrpcVerificationGuard } from '../guards/grpc-verification.guard';
     RefreshTokenRepository,
     TokenService,
     VerificationEnforcementService,
-    GrpcVerificationGuard,
     JwtModule,
   ],
 })

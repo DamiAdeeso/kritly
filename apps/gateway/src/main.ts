@@ -27,8 +27,8 @@ async function bootstrap() {
   );
 
   const config = new DocumentBuilder()
-    .setTitle('Rev Gateway API')
-    .setDescription('API Gateway for Rev microservices platform')
+    .setTitle('Kritly Gateway API')
+    .setDescription('API Gateway for Kritly microservices platform')
     .setVersion('1.0')
     .addBearerAuth()
     .build();

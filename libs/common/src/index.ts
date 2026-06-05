@@ -8,77 +8,101 @@ export * from './constants/profile.constants';
 
 // DTOs
 export * from './dto/auth.dto';
+export * from './dto/auth-session.dto';
 export * from './dto/user.dto';
 export * from './dto/upload.dto';
 export * from './dto/verification.dto';
 export * from './dto/common.dto';
 
 // Interfaces
-export * from './interfaces/auth.interface';
+export * from './interfaces/social-profile.interface';
 export * from './interfaces/user.interface';
-export * from './interfaces/grpc.interface';
-export * from './interfaces/upload-grpc.interface';
-export * from './interfaces/user-grpc.interface';
-export * from './interfaces/verification-grpc.interface';
+export * from './interfaces/http-client.interface';
 export * from './interfaces/notification.interface';
 
 // Decorators
-export * from './decorators/requires-verification.decorator';
+export * from './decorators/api-envelope-errors.decorator';
 
 // Config
 export * from './config/env.validation';
 export * from './config/root-env';
+export * from './config/grpc-client.config';
+export * from './config/grpc-tls.config';
 
 // gRPC
-export * from './grpc/proto-loader.options';
-export * from './grpc/grpc-envelope.util';
-export * from './grpc/grpc-client.util';
+export * from './grpc/grpc-client.factory';
+export * from './grpc/grpc-credentials.util';
+export * from './grpc/grpc-client-config.service';
+export * from './grpc/grpc-client-config.module';
+export * from './grpc/grpc-server.util';
+export * from './grpc/grpc-status.util';
+export { ClientError, ServerError, Status } from 'nice-grpc';
+export * from './grpc/grpc-server.runner';
+export * from './grpc/grpc-logging.middleware';
+export * from './grpc/grpc-server-credentials.util';
+export * from './grpc/health-grpc.implementation';
 
-// Generated gRPC types (run: npm run proto:generate)
-export * from './generated/auth';
-export type {
-  CheckUsernameRequest,
-  GetProfileByUsernameRequest,
+// Generated gRPC types + clients (run: npm run proto:generate)
+export {
+  AuthServiceDefinition,
+  RegisterRequest,
+  LoginRequest,
+  SocialLoginRequest,
+  RefreshTokenRequest,
+  LogoutRequest,
+  ResetPasswordRequest,
+  ChangePasswordRequest,
+  CheckEmailRequest,
+} from './generated/auth';
+export type { AuthServiceClient, AuthServiceImplementation } from './generated/auth';
+export type { UserServiceImplementation } from './generated/user';
+export type { UploadServiceImplementation } from './generated/upload';
+export type { VerificationServiceImplementation } from './generated/verification';
+export type { HealthServiceImplementation } from './generated/health';
+export {
+  UserServiceDefinition,
   GetProfileRequest,
-  ProfileData,
-  ProfileResponse,
-  SetUsernameAuthData,
+  GetProfileByUsernameRequest,
+  CheckUsernameRequest,
   SetUsernameRequest,
-  SetUsernameResponse,
   UpdateAvatarRequest,
-  UpdateProfileResponse as UserUpdateProfileResponse,
-  UsernameAvailabilityData,
-  UsernameAvailabilityResponse,
+  UpdateProfileRequest,
 } from './generated/user';
-export type {
+export type { UserServiceClient } from './generated/user';
+export {
+  UploadServiceDefinition,
   CreatePresignedUploadRequest,
-  CreatePresignedUploadResponse,
-  PresignedUploadData,
 } from './generated/upload';
-export type {
+export type { UploadServiceClient } from './generated/upload';
+export {
+  VerificationServiceDefinition,
   SendOtpRequest,
-  SendOtpResponse,
-  SendOtpData,
   VerifyOtpRequest,
-  VerifyOtpResponse,
-  VerifyOtpData,
   ValidateVerificationTokenRequest,
-  ValidateVerificationTokenResponse,
-  ValidateVerificationTokenData,
   ConsumeVerificationTokenRequest,
 } from './generated/verification';
+export type { VerificationServiceClient } from './generated/verification';
+export { HealthDefinition } from './generated/health';
+export type { HealthClient } from './generated/health';
+
+export type { ProfileData } from './generated/profile';
+export type { UsernameAvailabilityData } from './generated/user';
+export type { PresignedUploadData } from './generated/upload';
 export type {
-  CheckEmailRequest,
-  EmailAvailabilityData,
-  EmailAvailabilityResponse,
-} from './generated/auth';
+  SendOtpData,
+  VerifyOtpData,
+  ValidateVerificationTokenData,
+} from './generated/verification';
+export type { AuthData, EmailAvailabilityData, LoginSessionData } from './generated/auth';
+export type { ValidateTokenData } from './dto/common.dto';
+export type { Empty } from './generated/google/protobuf/empty';
 
 // Utils
-export * from './utils/validation.util';
 export * from './utils/service-response.util';
-
-// Filters
-export * from './filters/grpc-service-response.exception-filter';
+export * from './utils/http-envelope.util';
+export * from './utils/http-exception-message.util';
+export * from './utils/display-name.util';
+export * from './utils/redact.util';
 
 // Logging
 export * from './logging/logger.constants';

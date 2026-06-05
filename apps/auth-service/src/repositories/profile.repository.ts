@@ -13,8 +13,7 @@ export type ProfileUsernameContext = {
 export type PublicProfileRecord = {
   userId: string;
   username: string | null;
-  firstName: string | null;
-  lastName: string | null;
+  displayName: string | null;
   bio: string | null;
   avatar: string | null;
   email?: string;
@@ -46,8 +45,7 @@ export class ProfileRepository {
       select: {
         id: true,
         username: true,
-        firstName: true,
-        lastName: true,
+        displayName: true,
         bio: true,
         avatar: true,
         ...(includeEmail ? { email: true } : {}),
@@ -58,15 +56,7 @@ export class ProfileRepository {
       return null;
     }
 
-    return {
-      userId: user.id,
-      username: user.username,
-      firstName: user.firstName,
-      lastName: user.lastName,
-      bio: user.bio,
-      avatar: user.avatar,
-      ...(includeEmail ? { email: user.email } : {}),
-    };
+    return this.toPublicProfileRecord(user, includeEmail);
   }
 
   async findProfileByUsername(username: string): Promise<PublicProfileRecord | null> {
@@ -75,8 +65,7 @@ export class ProfileRepository {
       select: {
         id: true,
         username: true,
-        firstName: true,
-        lastName: true,
+        displayName: true,
         bio: true,
         avatar: true,
       },
@@ -86,13 +75,27 @@ export class ProfileRepository {
       return null;
     }
 
+    return this.toPublicProfileRecord(user);
+  }
+
+  private toPublicProfileRecord(
+    user: {
+      id: string;
+      username: string | null;
+      displayName: string | null;
+      bio: string | null;
+      avatar: string | null;
+      email?: string;
+    },
+    includeEmail = false,
+  ): PublicProfileRecord {
     return {
       userId: user.id,
       username: user.username,
-      firstName: user.firstName,
-      lastName: user.lastName,
+      displayName: user.displayName,
       bio: user.bio,
       avatar: user.avatar,
+      ...(includeEmail && user.email !== undefined ? { email: user.email } : {}),
     };
   }
 
@@ -102,8 +105,7 @@ export class ProfileRepository {
       data: {
         username: data.username,
         usernameChangedAt: data.usernameChangedAt,
-        firstName: data.firstName,
-        lastName: data.lastName,
+        displayName: data.displayName,
         bio: data.bio,
         avatar: data.avatar,
       },

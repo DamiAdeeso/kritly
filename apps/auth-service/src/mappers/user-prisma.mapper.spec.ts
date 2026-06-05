@@ -46,7 +46,7 @@ describe('user-prisma.mapper', () => {
   });
 
   describe('toPrismaCreateUserInput', () => {
-    it('omits names and role/status for email signup', () => {
+    it('omits display name and role/status for email signup', () => {
       const input = toPrismaCreateUserInput({
         email: 'user@example.com',
         username: 'user123',
@@ -58,8 +58,7 @@ describe('user-prisma.mapper', () => {
         username: 'user123',
         password: 'hashed',
       });
-      expect(input).not.toHaveProperty('firstName');
-      expect(input).not.toHaveProperty('lastName');
+      expect(input).not.toHaveProperty('displayName');
       expect(input).not.toHaveProperty('role');
       expect(input).not.toHaveProperty('status');
     });
@@ -75,26 +74,22 @@ describe('user-prisma.mapper', () => {
       expect(input.status).toBe('PENDING');
     });
 
-    it('includes social profile names when present', () => {
+    it('includes social profile display name when present', () => {
       const input = toPrismaCreateUserInput({
         email: 'social@example.com',
-        firstName: 'Jane',
-        lastName: 'Doe',
+        displayName: 'Jane Doe',
       });
 
-      expect(input.firstName).toBe('Jane');
-      expect(input.lastName).toBe('Doe');
+      expect(input.displayName).toBe('Jane Doe');
     });
 
-    it('skips empty name strings', () => {
+    it('skips empty display name strings', () => {
       const input = toPrismaCreateUserInput({
         email: 'social@example.com',
-        firstName: '',
-        lastName: 'Doe',
+        displayName: '   ',
       });
 
-      expect(input).not.toHaveProperty('firstName');
-      expect(input.lastName).toBe('Doe');
+      expect(input).not.toHaveProperty('displayName');
     });
   });
 });

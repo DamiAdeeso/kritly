@@ -1,6 +1,6 @@
 import { createHmac, randomBytes, timingSafeEqual } from 'crypto';
 import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
-import { AuthProvider, SocialLoginRequest } from '@kritly/common';
+import { AuthData, AuthProvider, SocialLoginRequest } from '@kritly/common';
 
 export type OAuthWebProvider =
   | AuthProvider.GOOGLE
@@ -16,8 +16,19 @@ interface OAuthProviderConfig {
   scopes: string[];
 }
 
+interface OAuthExchangeEntry {
+  accessToken: string;
+  refreshToken: string;
+  userId: string;
+  email: string;
+  expiresAt: number;
+}
+
+const EXCHANGE_CODE_TTL_MS = 60_000;
+
 @Injectable()
 export class OAuthService {
+  private readonly exchangeCodes = new Map<string, OAuthExchangeEntry>();
   parseProvider(provider: string): OAuthWebProvider {
     const normalized = provider.trim().toLowerCase();
     switch (normalized) {
@@ -131,21 +142,55 @@ export class OAuthService {
     };
   }
 
+  /** Redirect with a one-time exchange code — tokens are not placed in the URL. */
   buildSuccessRedirect(accessToken: string, refreshToken: string, userId: string, email: string): string {
+    const code = this.createExchangeCode({ accessToken, refreshToken, userId, email });
     const base = process.env.OAUTH_SUCCESS_REDIRECT_URL ?? 'http://localhost:3000/auth/callback';
-    const fragment = new URLSearchParams({
-      accessToken,
-      refreshToken,
-      userId,
-      email,
-    }).toString();
-
-    return `${base.replace(/\/$/, '')}#${fragment}`;
+    return `${base.replace(/\/$/, '')}?code=${encodeURIComponent(code)}`;
   }
 
   buildFailureRedirect(message: string): string {
-    const base = process.env.OAUTH_SUCCESS_REDIRECT_URL ?? 'http://localhost:3000/auth/callback';
+    const base =
+      process.env.OAUTH_FAILURE_REDIRECT_URL ??
+      process.env.OAUTH_SUCCESS_REDIRECT_URL ??
+      'http://localhost:3000/auth/callback';
     return `${base.replace(/\/$/, '')}?error=${encodeURIComponent(message)}`;
+  }
+
+  /** Exchange a one-time OAuth code for session tokens (single use, short TTL). */
+  consumeExchangeCode(code: string): AuthData | null {
+    const entry = this.exchangeCodes.get(code);
+    if (!entry) {
+      return null;
+    }
+
+    this.exchangeCodes.delete(code);
+    if (entry.expiresAt < Date.now()) {
+      return null;
+    }
+
+    return {
+      accessToken: entry.accessToken,
+      refreshToken: entry.refreshToken,
+      userId: entry.userId,
+      email: entry.email,
+    };
+  }
+
+  private createExchangeCode(tokens: Omit<OAuthExchangeEntry, 'expiresAt'>): string {
+    this.pruneExpiredExchangeCodes();
+    const code = randomBytes(32).toString('hex');
+    this.exchangeCodes.set(code, { ...tokens, expiresAt: Date.now() + EXCHANGE_CODE_TTL_MS });
+    return code;
+  }
+
+  private pruneExpiredExchangeCodes(): void {
+    const now = Date.now();
+    for (const [code, entry] of this.exchangeCodes) {
+      if (entry.expiresAt < now) {
+        this.exchangeCodes.delete(code);
+      }
+    }
   }
 
   private async exchangeAuthorizationCode(
@@ -225,6 +270,10 @@ export class OAuthService {
           tokenUrl: 'https://graph.instagram.com/access_token',
           scopes: ['user_profile'],
         };
+      default: {
+        const _exhaustive: never = provider;
+        throw new BadRequestException(`Unsupported OAuth provider: ${String(_exhaustive)}`);
+      }
     }
   }
 

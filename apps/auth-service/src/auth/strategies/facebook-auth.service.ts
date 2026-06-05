@@ -1,5 +1,5 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { ISocialProfile, AuthProvider } from '@kritly/common';
+import { ISocialProfile, AuthProvider, formatDisplayName } from '@kritly/common';
 
 @Injectable()
 export class FacebookAuthService {
@@ -29,8 +29,7 @@ export class FacebookAuthService {
         provider: AuthProvider.FACEBOOK,
         providerId: data.id,
         email: data.email,
-        firstName: data.first_name || '',
-        lastName: data.last_name || '',
+        displayName: formatDisplayName(data.first_name, data.last_name),
         avatar: data.picture?.data?.url,
       };
     } catch {

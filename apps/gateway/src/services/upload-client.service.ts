@@ -1,53 +1,34 @@
 /**
- * Generated gRPC client wrapper for upload-service.
+ * nice-grpc client for upload-service.
  */
-import { Injectable, OnModuleInit } from '@nestjs/common';
-import { ClientGrpc, Client, Transport } from '@nestjs/microservices';
-import { join } from 'path';
+import { Injectable, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import {
   CreatePresignedUploadRequest,
-  CreatePresignedUploadResponse,
-  UPLOAD_SERVICE_NAME,
-  UploadGrpcClient,
-  UploadGrpcErrorResponse,
-  grpcClientCall,
-  GRPC_PROTO_LOADER_OPTIONS,
-  resolveGrpcMethod,
+  GrpcClientConfigService,
+  NiceGrpcConnection,
+  HttpClientErrorResponse,
+  PresignedUploadData,
+  UploadServiceClient,
+  UploadServiceDefinition,
 } from '@kritly/common';
-import { getGrpcCredentials } from '../config/grpc.config';
 
 @Injectable()
-export class UploadClientService implements OnModuleInit {
-  @Client({
-    transport: Transport.GRPC,
-    options: {
-      package: 'upload',
-      protoPath: join(process.cwd(), 'libs/common/src/proto/upload.proto'),
-      url: `${process.env.UPLOAD_SERVICE_HOST || 'localhost'}:${process.env.UPLOAD_SERVICE_PORT || 3002}`,
-      credentials: getGrpcCredentials(),
-      loader: GRPC_PROTO_LOADER_OPTIONS,
-    },
-  })
-  private client!: ClientGrpc;
+export class UploadClientService implements OnModuleInit, OnModuleDestroy {
+  private connection!: NiceGrpcConnection<UploadServiceClient>;
 
-  private uploadService!: UploadGrpcClient;
-  private createPresignedUploadRpc!: (
-    request: CreatePresignedUploadRequest,
-  ) => ReturnType<UploadGrpcClient['createPresignedUpload']>;
+  constructor(private readonly grpcClientConfig: GrpcClientConfigService) {}
 
   onModuleInit(): void {
-    this.uploadService = this.client.getService<UploadGrpcClient>(UPLOAD_SERVICE_NAME);
-    const stub = this.uploadService as unknown as Record<string, unknown>;
-    this.createPresignedUploadRpc = resolveGrpcMethod(
-      stub,
-      'createPresignedUpload',
-      'CreatePresignedUpload',
-    );
+    this.connection = this.grpcClientConfig.connect(UploadServiceDefinition, 'upload');
+  }
+
+  onModuleDestroy(): void {
+    this.connection.channel.close();
   }
 
   createPresignedUpload(
     data: CreatePresignedUploadRequest,
-  ): Promise<CreatePresignedUploadResponse | UploadGrpcErrorResponse> {
-    return grpcClientCall(this.createPresignedUploadRpc(data));
+  ): Promise<PresignedUploadData | HttpClientErrorResponse> {
+    return this.connection.client.createPresignedUpload(data);
   }
 }

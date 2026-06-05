@@ -11,8 +11,11 @@ import { UploadClientService } from '../services/upload-client.service';
 import { OAuthService } from '../services/oauth.service';
 import { VerificationClientService } from '../services/verification-client.service';
 import { HealthController } from '../health/health.controller';
+import { GatewayAuthModule } from '../auth/gateway-auth.module';
+import { GrpcClientConfigModule } from '@kritly/common';
 
 @Module({
+  imports: [GatewayAuthModule, GrpcClientConfigModule],
   controllers: [
     GatewayController,
     AuthGatewayController,

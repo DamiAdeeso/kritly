@@ -1,65 +1,105 @@
-import { IsString, IsEmail, IsOptional, IsEnum, IsDate } from 'class-validator';
-import { UserRole, UserStatus } from '../enums/auth.enum';
+import { IsOptional, IsString } from 'class-validator';
 
-export class UserDto {
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+
+import type { ProfileData } from '../generated/profile';
+import type { UpdateProfileRequest } from '../generated/user';
+
+import { ApiResponseDto } from './common.dto';
+
+
+
+export class UpdateProfileDto implements Pick<UpdateProfileRequest, 'displayName' | 'bio'> {
+
+  @ApiProperty({ description: 'Display name', example: 'John Doe' })
+
   @IsString()
-  id!: string;
 
-  @IsEmail()
-  email!: string;
+  displayName!: string;
 
-  @IsString()
-  firstName!: string;
 
-  @IsString()
-  lastName!: string;
+
+  @ApiProperty({ description: 'Profile bio', example: 'Building cool things.', required: false })
 
   @IsOptional()
+
   @IsString()
-  avatar?: string;
 
-  @IsEnum(UserRole)
-  role!: UserRole;
+  bio?: string;
 
-  @IsEnum(UserStatus)
-  status!: UserStatus;
-
-  @IsDate()
-  createdAt!: Date;
-
-  @IsDate()
-  updatedAt!: Date;
 }
 
-export class CreateUserDto {
-  @IsEmail()
-  email!: string;
+
+
+/** Profile payload (gRPC ProfileData; HTTP clients receive this inside ProfileResponseDto.data). */
+
+export class ProfileDataDto implements ProfileData {
+
+  @ApiProperty({ example: '123e4567-e89b-12d3-a456-426614174000' })
 
   @IsString()
-  firstName!: string;
 
-  @IsString()
-  lastName!: string;
+  userId!: string;
+
+
+
+  @ApiPropertyOptional({ example: 'johndoe123' })
 
   @IsOptional()
+
   @IsString()
+
+  username?: string;
+
+
+
+  @ApiPropertyOptional({ example: 'John Doe' })
+
+  @IsOptional()
+
+  @IsString()
+
+  displayName?: string;
+
+
+
+  @ApiPropertyOptional({ example: 'https://example.com/avatar.jpg' })
+
+  @IsOptional()
+
+  @IsString()
+
   avatar?: string;
 
+
+
+  @ApiPropertyOptional({ example: 'user@example.com' })
+
   @IsOptional()
+
   @IsString()
-  password?: string;
+
+  email?: string;
+
+
+
+  @ApiPropertyOptional({ example: 'Building cool things.' })
+
+  @IsOptional()
+
+  @IsString()
+
+  bio?: string;
+
 }
 
-export class UpdateUserDto {
-  @IsOptional()
-  @IsString()
-  firstName?: string;
 
-  @IsOptional()
-  @IsString()
-  lastName?: string;
 
-  @IsOptional()
-  @IsString()
-  avatar?: string;
+export class ProfileResponseDto extends ApiResponseDto<ProfileDataDto> {
+
+  @ApiProperty({ type: () => ProfileDataDto })
+
+  declare data: ProfileDataDto;
+
 }
+

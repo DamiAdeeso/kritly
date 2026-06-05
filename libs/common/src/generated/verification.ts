@@ -5,8 +5,8 @@
 // source: verification.proto
 
 /* eslint-disable */
-
-export const protobufPackage = "verification";
+import { BinaryReader, BinaryWriter } from "@bufbuild/protobuf/wire";
+import type { CallContext, CallOptions } from "nice-grpc-common";
 
 export interface SendOtpRequest {
   subject: string;
@@ -20,12 +20,6 @@ export interface SendOtpData {
   expiresInSeconds: number;
 }
 
-export interface SendOtpResponse {
-  statusCode: number;
-  message: string;
-  data?: SendOtpData | undefined;
-}
-
 export interface VerifyOtpRequest {
   subject: string;
   purpose: string;
@@ -35,12 +29,6 @@ export interface VerifyOtpRequest {
 export interface VerifyOtpData {
   verificationToken: string;
   expiresAt: number;
-}
-
-export interface VerifyOtpResponse {
-  statusCode: number;
-  message: string;
-  data?: VerifyOtpData | undefined;
 }
 
 export interface ValidateVerificationTokenRequest {
@@ -61,8 +49,585 @@ export interface ValidateVerificationTokenData {
   isValid: boolean;
 }
 
-export interface ValidateVerificationTokenResponse {
-  statusCode: number;
-  message: string;
-  data?: ValidateVerificationTokenData | undefined;
+function createBaseSendOtpRequest(): SendOtpRequest {
+  return { subject: "", purpose: "", channel: "", userId: undefined };
+}
+
+export const SendOtpRequest: MessageFns<SendOtpRequest> = {
+  encode(message: SendOtpRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.subject !== "") {
+      writer.uint32(10).string(message.subject);
+    }
+    if (message.purpose !== "") {
+      writer.uint32(18).string(message.purpose);
+    }
+    if (message.channel !== "") {
+      writer.uint32(26).string(message.channel);
+    }
+    if (message.userId !== undefined) {
+      writer.uint32(34).string(message.userId);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): SendOtpRequest {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseSendOtpRequest();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.subject = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.purpose = reader.string();
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.channel = reader.string();
+          continue;
+        }
+        case 4: {
+          if (tag !== 34) {
+            break;
+          }
+
+          message.userId = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  create<I extends Exact<DeepPartial<SendOtpRequest>, I>>(base?: I): SendOtpRequest {
+    return SendOtpRequest.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<SendOtpRequest>, I>>(object: I): SendOtpRequest {
+    const message = createBaseSendOtpRequest();
+    message.subject = object.subject ?? "";
+    message.purpose = object.purpose ?? "";
+    message.channel = object.channel ?? "";
+    message.userId = object.userId ?? undefined;
+    return message;
+  },
+};
+
+function createBaseSendOtpData(): SendOtpData {
+  return { expiresAt: 0, expiresInSeconds: 0 };
+}
+
+export const SendOtpData: MessageFns<SendOtpData> = {
+  encode(message: SendOtpData, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.expiresAt !== 0) {
+      writer.uint32(8).int64(message.expiresAt);
+    }
+    if (message.expiresInSeconds !== 0) {
+      writer.uint32(16).int32(message.expiresInSeconds);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): SendOtpData {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseSendOtpData();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 8) {
+            break;
+          }
+
+          message.expiresAt = longToNumber(reader.int64());
+          continue;
+        }
+        case 2: {
+          if (tag !== 16) {
+            break;
+          }
+
+          message.expiresInSeconds = reader.int32();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  create<I extends Exact<DeepPartial<SendOtpData>, I>>(base?: I): SendOtpData {
+    return SendOtpData.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<SendOtpData>, I>>(object: I): SendOtpData {
+    const message = createBaseSendOtpData();
+    message.expiresAt = object.expiresAt ?? 0;
+    message.expiresInSeconds = object.expiresInSeconds ?? 0;
+    return message;
+  },
+};
+
+function createBaseVerifyOtpRequest(): VerifyOtpRequest {
+  return { subject: "", purpose: "", code: "" };
+}
+
+export const VerifyOtpRequest: MessageFns<VerifyOtpRequest> = {
+  encode(message: VerifyOtpRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.subject !== "") {
+      writer.uint32(10).string(message.subject);
+    }
+    if (message.purpose !== "") {
+      writer.uint32(18).string(message.purpose);
+    }
+    if (message.code !== "") {
+      writer.uint32(26).string(message.code);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): VerifyOtpRequest {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseVerifyOtpRequest();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.subject = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.purpose = reader.string();
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.code = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  create<I extends Exact<DeepPartial<VerifyOtpRequest>, I>>(base?: I): VerifyOtpRequest {
+    return VerifyOtpRequest.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<VerifyOtpRequest>, I>>(object: I): VerifyOtpRequest {
+    const message = createBaseVerifyOtpRequest();
+    message.subject = object.subject ?? "";
+    message.purpose = object.purpose ?? "";
+    message.code = object.code ?? "";
+    return message;
+  },
+};
+
+function createBaseVerifyOtpData(): VerifyOtpData {
+  return { verificationToken: "", expiresAt: 0 };
+}
+
+export const VerifyOtpData: MessageFns<VerifyOtpData> = {
+  encode(message: VerifyOtpData, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.verificationToken !== "") {
+      writer.uint32(10).string(message.verificationToken);
+    }
+    if (message.expiresAt !== 0) {
+      writer.uint32(16).int64(message.expiresAt);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): VerifyOtpData {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseVerifyOtpData();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.verificationToken = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 16) {
+            break;
+          }
+
+          message.expiresAt = longToNumber(reader.int64());
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  create<I extends Exact<DeepPartial<VerifyOtpData>, I>>(base?: I): VerifyOtpData {
+    return VerifyOtpData.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<VerifyOtpData>, I>>(object: I): VerifyOtpData {
+    const message = createBaseVerifyOtpData();
+    message.verificationToken = object.verificationToken ?? "";
+    message.expiresAt = object.expiresAt ?? 0;
+    return message;
+  },
+};
+
+function createBaseValidateVerificationTokenRequest(): ValidateVerificationTokenRequest {
+  return { verificationToken: "", purpose: "", userId: undefined, email: undefined };
+}
+
+export const ValidateVerificationTokenRequest: MessageFns<ValidateVerificationTokenRequest> = {
+  encode(message: ValidateVerificationTokenRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.verificationToken !== "") {
+      writer.uint32(10).string(message.verificationToken);
+    }
+    if (message.purpose !== "") {
+      writer.uint32(18).string(message.purpose);
+    }
+    if (message.userId !== undefined) {
+      writer.uint32(26).string(message.userId);
+    }
+    if (message.email !== undefined) {
+      writer.uint32(34).string(message.email);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): ValidateVerificationTokenRequest {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseValidateVerificationTokenRequest();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.verificationToken = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.purpose = reader.string();
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.userId = reader.string();
+          continue;
+        }
+        case 4: {
+          if (tag !== 34) {
+            break;
+          }
+
+          message.email = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  create<I extends Exact<DeepPartial<ValidateVerificationTokenRequest>, I>>(
+    base?: I,
+  ): ValidateVerificationTokenRequest {
+    return ValidateVerificationTokenRequest.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<ValidateVerificationTokenRequest>, I>>(
+    object: I,
+  ): ValidateVerificationTokenRequest {
+    const message = createBaseValidateVerificationTokenRequest();
+    message.verificationToken = object.verificationToken ?? "";
+    message.purpose = object.purpose ?? "";
+    message.userId = object.userId ?? undefined;
+    message.email = object.email ?? undefined;
+    return message;
+  },
+};
+
+function createBaseConsumeVerificationTokenRequest(): ConsumeVerificationTokenRequest {
+  return { verificationToken: "", purpose: "", userId: undefined, email: undefined };
+}
+
+export const ConsumeVerificationTokenRequest: MessageFns<ConsumeVerificationTokenRequest> = {
+  encode(message: ConsumeVerificationTokenRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.verificationToken !== "") {
+      writer.uint32(10).string(message.verificationToken);
+    }
+    if (message.purpose !== "") {
+      writer.uint32(18).string(message.purpose);
+    }
+    if (message.userId !== undefined) {
+      writer.uint32(26).string(message.userId);
+    }
+    if (message.email !== undefined) {
+      writer.uint32(34).string(message.email);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): ConsumeVerificationTokenRequest {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseConsumeVerificationTokenRequest();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.verificationToken = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.purpose = reader.string();
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.userId = reader.string();
+          continue;
+        }
+        case 4: {
+          if (tag !== 34) {
+            break;
+          }
+
+          message.email = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  create<I extends Exact<DeepPartial<ConsumeVerificationTokenRequest>, I>>(base?: I): ConsumeVerificationTokenRequest {
+    return ConsumeVerificationTokenRequest.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<ConsumeVerificationTokenRequest>, I>>(
+    object: I,
+  ): ConsumeVerificationTokenRequest {
+    const message = createBaseConsumeVerificationTokenRequest();
+    message.verificationToken = object.verificationToken ?? "";
+    message.purpose = object.purpose ?? "";
+    message.userId = object.userId ?? undefined;
+    message.email = object.email ?? undefined;
+    return message;
+  },
+};
+
+function createBaseValidateVerificationTokenData(): ValidateVerificationTokenData {
+  return { isValid: false };
+}
+
+export const ValidateVerificationTokenData: MessageFns<ValidateVerificationTokenData> = {
+  encode(message: ValidateVerificationTokenData, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.isValid !== false) {
+      writer.uint32(8).bool(message.isValid);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): ValidateVerificationTokenData {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseValidateVerificationTokenData();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 8) {
+            break;
+          }
+
+          message.isValid = reader.bool();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  create<I extends Exact<DeepPartial<ValidateVerificationTokenData>, I>>(base?: I): ValidateVerificationTokenData {
+    return ValidateVerificationTokenData.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<ValidateVerificationTokenData>, I>>(
+    object: I,
+  ): ValidateVerificationTokenData {
+    const message = createBaseValidateVerificationTokenData();
+    message.isValid = object.isValid ?? false;
+    return message;
+  },
+};
+
+/** RPC success returns data messages only (no statusCode/message wrapper). */
+export type VerificationServiceDefinition = typeof VerificationServiceDefinition;
+export const VerificationServiceDefinition = {
+  name: "VerificationService",
+  fullName: "verification.VerificationService",
+  methods: {
+    sendOtp: {
+      name: "SendOtp",
+      requestType: SendOtpRequest as typeof SendOtpRequest,
+      requestStream: false,
+      responseType: SendOtpData as typeof SendOtpData,
+      responseStream: false,
+      options: {},
+    },
+    verifyOtp: {
+      name: "VerifyOtp",
+      requestType: VerifyOtpRequest as typeof VerifyOtpRequest,
+      requestStream: false,
+      responseType: VerifyOtpData as typeof VerifyOtpData,
+      responseStream: false,
+      options: {},
+    },
+    validateVerificationToken: {
+      name: "ValidateVerificationToken",
+      requestType: ValidateVerificationTokenRequest as typeof ValidateVerificationTokenRequest,
+      requestStream: false,
+      responseType: ValidateVerificationTokenData as typeof ValidateVerificationTokenData,
+      responseStream: false,
+      options: {},
+    },
+    consumeVerificationToken: {
+      name: "ConsumeVerificationToken",
+      requestType: ConsumeVerificationTokenRequest as typeof ConsumeVerificationTokenRequest,
+      requestStream: false,
+      responseType: ValidateVerificationTokenData as typeof ValidateVerificationTokenData,
+      responseStream: false,
+      options: {},
+    },
+  },
+} as const;
+
+export interface VerificationServiceImplementation<CallContextExt = {}> {
+  sendOtp(request: SendOtpRequest, context: CallContext & CallContextExt): Promise<DeepPartial<SendOtpData>>;
+  verifyOtp(request: VerifyOtpRequest, context: CallContext & CallContextExt): Promise<DeepPartial<VerifyOtpData>>;
+  validateVerificationToken(
+    request: ValidateVerificationTokenRequest,
+    context: CallContext & CallContextExt,
+  ): Promise<DeepPartial<ValidateVerificationTokenData>>;
+  consumeVerificationToken(
+    request: ConsumeVerificationTokenRequest,
+    context: CallContext & CallContextExt,
+  ): Promise<DeepPartial<ValidateVerificationTokenData>>;
+}
+
+export interface VerificationServiceClient<CallOptionsExt = {}> {
+  sendOtp(request: DeepPartial<SendOtpRequest>, options?: CallOptions & CallOptionsExt): Promise<SendOtpData>;
+  verifyOtp(request: DeepPartial<VerifyOtpRequest>, options?: CallOptions & CallOptionsExt): Promise<VerifyOtpData>;
+  validateVerificationToken(
+    request: DeepPartial<ValidateVerificationTokenRequest>,
+    options?: CallOptions & CallOptionsExt,
+  ): Promise<ValidateVerificationTokenData>;
+  consumeVerificationToken(
+    request: DeepPartial<ConsumeVerificationTokenRequest>,
+    options?: CallOptions & CallOptionsExt,
+  ): Promise<ValidateVerificationTokenData>;
+}
+
+type Builtin = Date | Function | Uint8Array | string | number | boolean | undefined;
+
+type DeepPartial<T> = T extends Builtin ? T
+  : T extends globalThis.Array<infer U> ? globalThis.Array<DeepPartial<U>>
+  : T extends ReadonlyArray<infer U> ? ReadonlyArray<DeepPartial<U>>
+  : T extends {} ? { [K in keyof T]?: DeepPartial<T[K]> }
+  : Partial<T>;
+
+type KeysOfUnion<T> = T extends T ? keyof T : never;
+type Exact<P, I extends P> = P extends Builtin ? P
+  : P & { [K in keyof P]: Exact<P[K], I[K]> } & { [K in Exclude<keyof I, KeysOfUnion<P>>]: never };
+
+function longToNumber(int64: { toString(): string }): number {
+  const num = globalThis.Number(int64.toString());
+  if (num > globalThis.Number.MAX_SAFE_INTEGER) {
+    throw new globalThis.Error("Value is larger than Number.MAX_SAFE_INTEGER");
+  }
+  if (num < globalThis.Number.MIN_SAFE_INTEGER) {
+    throw new globalThis.Error("Value is smaller than Number.MIN_SAFE_INTEGER");
+  }
+  return num;
+}
+
+interface MessageFns<T> {
+  encode(message: T, writer?: BinaryWriter): BinaryWriter;
+  decode(input: BinaryReader | Uint8Array, length?: number): T;
+  create<I extends Exact<DeepPartial<T>, I>>(base?: I): T;
+  fromPartial<I extends Exact<DeepPartial<T>, I>>(object: I): T;
 }

@@ -5,10 +5,11 @@
 // source: auth.proto
 
 /* eslint-disable */
+import { BinaryReader, BinaryWriter } from "@bufbuild/protobuf/wire";
+import type { CallContext, CallOptions } from "nice-grpc-common";
+import { Empty } from "./google/protobuf/empty";
+import { ProfileData } from "./profile";
 
-export const protobufPackage = "auth";
-
-/** Request/Response messages */
 export interface RegisterRequest {
   email: string;
   password: string;
@@ -46,10 +47,6 @@ export interface LogoutRequest {
   refreshToken: string;
 }
 
-export interface ValidateTokenRequest {
-  accessToken: string;
-}
-
 export interface ResetPasswordRequest {
   email: string;
   newPassword: string;
@@ -71,16 +68,6 @@ export interface EmailAvailabilityData {
   isAvailable: boolean;
 }
 
-export interface EmailAvailabilityResponse {
-  statusCode: number;
-  message: string;
-  data?: EmailAvailabilityData | undefined;
-}
-
-/** Shared response envelope: statusCode, message, data */
-export interface EmptyData {
-}
-
 export interface AuthData {
   accessToken: string;
   refreshToken: string;
@@ -88,32 +75,866 @@ export interface AuthData {
   email: string;
 }
 
-export interface AuthResponse {
-  statusCode: number;
-  message: string;
-  data?: AuthData | undefined;
+/** Login tokens plus profile from the same user row (no extra DB round trip). */
+export interface LoginSessionData {
+  accessToken: string;
+  refreshToken: string;
+  profile?: ProfileData | undefined;
 }
 
-export interface LogoutResponse {
-  statusCode: number;
-  message: string;
-  data?: EmptyData | undefined;
+function createBaseRegisterRequest(): RegisterRequest {
+  return { email: "", password: "", username: undefined, verificationToken: "", dateOfBirth: "" };
 }
 
-export interface ValidateTokenData {
-  isValid: boolean;
-  userId: string;
-  email: string;
+export const RegisterRequest: MessageFns<RegisterRequest> = {
+  encode(message: RegisterRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.email !== "") {
+      writer.uint32(10).string(message.email);
+    }
+    if (message.password !== "") {
+      writer.uint32(18).string(message.password);
+    }
+    if (message.username !== undefined) {
+      writer.uint32(26).string(message.username);
+    }
+    if (message.verificationToken !== "") {
+      writer.uint32(34).string(message.verificationToken);
+    }
+    if (message.dateOfBirth !== "") {
+      writer.uint32(42).string(message.dateOfBirth);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): RegisterRequest {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseRegisterRequest();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.email = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.password = reader.string();
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.username = reader.string();
+          continue;
+        }
+        case 4: {
+          if (tag !== 34) {
+            break;
+          }
+
+          message.verificationToken = reader.string();
+          continue;
+        }
+        case 5: {
+          if (tag !== 42) {
+            break;
+          }
+
+          message.dateOfBirth = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  create<I extends Exact<DeepPartial<RegisterRequest>, I>>(base?: I): RegisterRequest {
+    return RegisterRequest.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<RegisterRequest>, I>>(object: I): RegisterRequest {
+    const message = createBaseRegisterRequest();
+    message.email = object.email ?? "";
+    message.password = object.password ?? "";
+    message.username = object.username ?? undefined;
+    message.verificationToken = object.verificationToken ?? "";
+    message.dateOfBirth = object.dateOfBirth ?? "";
+    return message;
+  },
+};
+
+function createBaseLoginRequest(): LoginRequest {
+  return { email: "", password: "" };
 }
 
-export interface ValidateTokenResponse {
-  statusCode: number;
-  message: string;
-  data?: ValidateTokenData | undefined;
+export const LoginRequest: MessageFns<LoginRequest> = {
+  encode(message: LoginRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.email !== "") {
+      writer.uint32(10).string(message.email);
+    }
+    if (message.password !== "") {
+      writer.uint32(18).string(message.password);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): LoginRequest {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseLoginRequest();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.email = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.password = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  create<I extends Exact<DeepPartial<LoginRequest>, I>>(base?: I): LoginRequest {
+    return LoginRequest.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<LoginRequest>, I>>(object: I): LoginRequest {
+    const message = createBaseLoginRequest();
+    message.email = object.email ?? "";
+    message.password = object.password ?? "";
+    return message;
+  },
+};
+
+function createBaseSocialLoginRequest(): SocialLoginRequest {
+  return { provider: "", accessToken: undefined, idToken: undefined, authorizationCode: undefined };
 }
 
-export interface UpdateProfileResponse {
-  statusCode: number;
-  message: string;
-  data?: EmptyData | undefined;
+export const SocialLoginRequest: MessageFns<SocialLoginRequest> = {
+  encode(message: SocialLoginRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.provider !== "") {
+      writer.uint32(10).string(message.provider);
+    }
+    if (message.accessToken !== undefined) {
+      writer.uint32(18).string(message.accessToken);
+    }
+    if (message.idToken !== undefined) {
+      writer.uint32(58).string(message.idToken);
+    }
+    if (message.authorizationCode !== undefined) {
+      writer.uint32(66).string(message.authorizationCode);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): SocialLoginRequest {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseSocialLoginRequest();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.provider = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.accessToken = reader.string();
+          continue;
+        }
+        case 7: {
+          if (tag !== 58) {
+            break;
+          }
+
+          message.idToken = reader.string();
+          continue;
+        }
+        case 8: {
+          if (tag !== 66) {
+            break;
+          }
+
+          message.authorizationCode = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  create<I extends Exact<DeepPartial<SocialLoginRequest>, I>>(base?: I): SocialLoginRequest {
+    return SocialLoginRequest.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<SocialLoginRequest>, I>>(object: I): SocialLoginRequest {
+    const message = createBaseSocialLoginRequest();
+    message.provider = object.provider ?? "";
+    message.accessToken = object.accessToken ?? undefined;
+    message.idToken = object.idToken ?? undefined;
+    message.authorizationCode = object.authorizationCode ?? undefined;
+    return message;
+  },
+};
+
+function createBaseRefreshTokenRequest(): RefreshTokenRequest {
+  return { refreshToken: "" };
+}
+
+export const RefreshTokenRequest: MessageFns<RefreshTokenRequest> = {
+  encode(message: RefreshTokenRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.refreshToken !== "") {
+      writer.uint32(10).string(message.refreshToken);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): RefreshTokenRequest {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseRefreshTokenRequest();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.refreshToken = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  create<I extends Exact<DeepPartial<RefreshTokenRequest>, I>>(base?: I): RefreshTokenRequest {
+    return RefreshTokenRequest.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<RefreshTokenRequest>, I>>(object: I): RefreshTokenRequest {
+    const message = createBaseRefreshTokenRequest();
+    message.refreshToken = object.refreshToken ?? "";
+    return message;
+  },
+};
+
+function createBaseLogoutRequest(): LogoutRequest {
+  return { refreshToken: "" };
+}
+
+export const LogoutRequest: MessageFns<LogoutRequest> = {
+  encode(message: LogoutRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.refreshToken !== "") {
+      writer.uint32(10).string(message.refreshToken);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): LogoutRequest {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseLogoutRequest();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.refreshToken = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  create<I extends Exact<DeepPartial<LogoutRequest>, I>>(base?: I): LogoutRequest {
+    return LogoutRequest.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<LogoutRequest>, I>>(object: I): LogoutRequest {
+    const message = createBaseLogoutRequest();
+    message.refreshToken = object.refreshToken ?? "";
+    return message;
+  },
+};
+
+function createBaseResetPasswordRequest(): ResetPasswordRequest {
+  return { email: "", newPassword: "", verificationToken: "" };
+}
+
+export const ResetPasswordRequest: MessageFns<ResetPasswordRequest> = {
+  encode(message: ResetPasswordRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.email !== "") {
+      writer.uint32(10).string(message.email);
+    }
+    if (message.newPassword !== "") {
+      writer.uint32(18).string(message.newPassword);
+    }
+    if (message.verificationToken !== "") {
+      writer.uint32(26).string(message.verificationToken);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): ResetPasswordRequest {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseResetPasswordRequest();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.email = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.newPassword = reader.string();
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.verificationToken = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  create<I extends Exact<DeepPartial<ResetPasswordRequest>, I>>(base?: I): ResetPasswordRequest {
+    return ResetPasswordRequest.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<ResetPasswordRequest>, I>>(object: I): ResetPasswordRequest {
+    const message = createBaseResetPasswordRequest();
+    message.email = object.email ?? "";
+    message.newPassword = object.newPassword ?? "";
+    message.verificationToken = object.verificationToken ?? "";
+    return message;
+  },
+};
+
+function createBaseChangePasswordRequest(): ChangePasswordRequest {
+  return { userId: "", currentPassword: "", newPassword: "", verificationToken: "" };
+}
+
+export const ChangePasswordRequest: MessageFns<ChangePasswordRequest> = {
+  encode(message: ChangePasswordRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.userId !== "") {
+      writer.uint32(10).string(message.userId);
+    }
+    if (message.currentPassword !== "") {
+      writer.uint32(18).string(message.currentPassword);
+    }
+    if (message.newPassword !== "") {
+      writer.uint32(26).string(message.newPassword);
+    }
+    if (message.verificationToken !== "") {
+      writer.uint32(34).string(message.verificationToken);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): ChangePasswordRequest {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseChangePasswordRequest();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.userId = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.currentPassword = reader.string();
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.newPassword = reader.string();
+          continue;
+        }
+        case 4: {
+          if (tag !== 34) {
+            break;
+          }
+
+          message.verificationToken = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  create<I extends Exact<DeepPartial<ChangePasswordRequest>, I>>(base?: I): ChangePasswordRequest {
+    return ChangePasswordRequest.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<ChangePasswordRequest>, I>>(object: I): ChangePasswordRequest {
+    const message = createBaseChangePasswordRequest();
+    message.userId = object.userId ?? "";
+    message.currentPassword = object.currentPassword ?? "";
+    message.newPassword = object.newPassword ?? "";
+    message.verificationToken = object.verificationToken ?? "";
+    return message;
+  },
+};
+
+function createBaseCheckEmailRequest(): CheckEmailRequest {
+  return { email: "" };
+}
+
+export const CheckEmailRequest: MessageFns<CheckEmailRequest> = {
+  encode(message: CheckEmailRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.email !== "") {
+      writer.uint32(10).string(message.email);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): CheckEmailRequest {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseCheckEmailRequest();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.email = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  create<I extends Exact<DeepPartial<CheckEmailRequest>, I>>(base?: I): CheckEmailRequest {
+    return CheckEmailRequest.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<CheckEmailRequest>, I>>(object: I): CheckEmailRequest {
+    const message = createBaseCheckEmailRequest();
+    message.email = object.email ?? "";
+    return message;
+  },
+};
+
+function createBaseEmailAvailabilityData(): EmailAvailabilityData {
+  return { isAvailable: false };
+}
+
+export const EmailAvailabilityData: MessageFns<EmailAvailabilityData> = {
+  encode(message: EmailAvailabilityData, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.isAvailable !== false) {
+      writer.uint32(8).bool(message.isAvailable);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): EmailAvailabilityData {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseEmailAvailabilityData();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 8) {
+            break;
+          }
+
+          message.isAvailable = reader.bool();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  create<I extends Exact<DeepPartial<EmailAvailabilityData>, I>>(base?: I): EmailAvailabilityData {
+    return EmailAvailabilityData.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<EmailAvailabilityData>, I>>(object: I): EmailAvailabilityData {
+    const message = createBaseEmailAvailabilityData();
+    message.isAvailable = object.isAvailable ?? false;
+    return message;
+  },
+};
+
+function createBaseAuthData(): AuthData {
+  return { accessToken: "", refreshToken: "", userId: "", email: "" };
+}
+
+export const AuthData: MessageFns<AuthData> = {
+  encode(message: AuthData, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.accessToken !== "") {
+      writer.uint32(10).string(message.accessToken);
+    }
+    if (message.refreshToken !== "") {
+      writer.uint32(18).string(message.refreshToken);
+    }
+    if (message.userId !== "") {
+      writer.uint32(26).string(message.userId);
+    }
+    if (message.email !== "") {
+      writer.uint32(34).string(message.email);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): AuthData {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseAuthData();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.accessToken = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.refreshToken = reader.string();
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.userId = reader.string();
+          continue;
+        }
+        case 4: {
+          if (tag !== 34) {
+            break;
+          }
+
+          message.email = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  create<I extends Exact<DeepPartial<AuthData>, I>>(base?: I): AuthData {
+    return AuthData.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<AuthData>, I>>(object: I): AuthData {
+    const message = createBaseAuthData();
+    message.accessToken = object.accessToken ?? "";
+    message.refreshToken = object.refreshToken ?? "";
+    message.userId = object.userId ?? "";
+    message.email = object.email ?? "";
+    return message;
+  },
+};
+
+function createBaseLoginSessionData(): LoginSessionData {
+  return { accessToken: "", refreshToken: "", profile: undefined };
+}
+
+export const LoginSessionData: MessageFns<LoginSessionData> = {
+  encode(message: LoginSessionData, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.accessToken !== "") {
+      writer.uint32(10).string(message.accessToken);
+    }
+    if (message.refreshToken !== "") {
+      writer.uint32(18).string(message.refreshToken);
+    }
+    if (message.profile !== undefined) {
+      ProfileData.encode(message.profile, writer.uint32(26).fork()).join();
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): LoginSessionData {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseLoginSessionData();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.accessToken = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.refreshToken = reader.string();
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.profile = ProfileData.decode(reader, reader.uint32());
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  create<I extends Exact<DeepPartial<LoginSessionData>, I>>(base?: I): LoginSessionData {
+    return LoginSessionData.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<LoginSessionData>, I>>(object: I): LoginSessionData {
+    const message = createBaseLoginSessionData();
+    message.accessToken = object.accessToken ?? "";
+    message.refreshToken = object.refreshToken ?? "";
+    message.profile = (object.profile !== undefined && object.profile !== null)
+      ? ProfileData.fromPartial(object.profile)
+      : undefined;
+    return message;
+  },
+};
+
+/**
+ * Auth Service — credentials, sessions, tokens.
+ * Token validation: gateway GET /api/auth/validate (JWT at the edge, not an RPC).
+ */
+export type AuthServiceDefinition = typeof AuthServiceDefinition;
+export const AuthServiceDefinition = {
+  name: "AuthService",
+  fullName: "auth.AuthService",
+  methods: {
+    register: {
+      name: "Register",
+      requestType: RegisterRequest as typeof RegisterRequest,
+      requestStream: false,
+      responseType: AuthData as typeof AuthData,
+      responseStream: false,
+      options: {},
+    },
+    login: {
+      name: "Login",
+      requestType: LoginRequest as typeof LoginRequest,
+      requestStream: false,
+      responseType: AuthData as typeof AuthData,
+      responseStream: false,
+      options: {},
+    },
+    loginSession: {
+      name: "LoginSession",
+      requestType: LoginRequest as typeof LoginRequest,
+      requestStream: false,
+      responseType: LoginSessionData as typeof LoginSessionData,
+      responseStream: false,
+      options: {},
+    },
+    socialLogin: {
+      name: "SocialLogin",
+      requestType: SocialLoginRequest as typeof SocialLoginRequest,
+      requestStream: false,
+      responseType: AuthData as typeof AuthData,
+      responseStream: false,
+      options: {},
+    },
+    refreshToken: {
+      name: "RefreshToken",
+      requestType: RefreshTokenRequest as typeof RefreshTokenRequest,
+      requestStream: false,
+      responseType: AuthData as typeof AuthData,
+      responseStream: false,
+      options: {},
+    },
+    logout: {
+      name: "Logout",
+      requestType: LogoutRequest as typeof LogoutRequest,
+      requestStream: false,
+      responseType: Empty as typeof Empty,
+      responseStream: false,
+      options: {},
+    },
+    resetPassword: {
+      name: "ResetPassword",
+      requestType: ResetPasswordRequest as typeof ResetPasswordRequest,
+      requestStream: false,
+      responseType: Empty as typeof Empty,
+      responseStream: false,
+      options: {},
+    },
+    changePassword: {
+      name: "ChangePassword",
+      requestType: ChangePasswordRequest as typeof ChangePasswordRequest,
+      requestStream: false,
+      responseType: Empty as typeof Empty,
+      responseStream: false,
+      options: {},
+    },
+    checkEmailAvailability: {
+      name: "CheckEmailAvailability",
+      requestType: CheckEmailRequest as typeof CheckEmailRequest,
+      requestStream: false,
+      responseType: EmailAvailabilityData as typeof EmailAvailabilityData,
+      responseStream: false,
+      options: {},
+    },
+  },
+} as const;
+
+export interface AuthServiceImplementation<CallContextExt = {}> {
+  register(request: RegisterRequest, context: CallContext & CallContextExt): Promise<DeepPartial<AuthData>>;
+  login(request: LoginRequest, context: CallContext & CallContextExt): Promise<DeepPartial<AuthData>>;
+  loginSession(request: LoginRequest, context: CallContext & CallContextExt): Promise<DeepPartial<LoginSessionData>>;
+  socialLogin(request: SocialLoginRequest, context: CallContext & CallContextExt): Promise<DeepPartial<AuthData>>;
+  refreshToken(request: RefreshTokenRequest, context: CallContext & CallContextExt): Promise<DeepPartial<AuthData>>;
+  logout(request: LogoutRequest, context: CallContext & CallContextExt): Promise<DeepPartial<Empty>>;
+  resetPassword(request: ResetPasswordRequest, context: CallContext & CallContextExt): Promise<DeepPartial<Empty>>;
+  changePassword(request: ChangePasswordRequest, context: CallContext & CallContextExt): Promise<DeepPartial<Empty>>;
+  checkEmailAvailability(
+    request: CheckEmailRequest,
+    context: CallContext & CallContextExt,
+  ): Promise<DeepPartial<EmailAvailabilityData>>;
+}
+
+export interface AuthServiceClient<CallOptionsExt = {}> {
+  register(request: DeepPartial<RegisterRequest>, options?: CallOptions & CallOptionsExt): Promise<AuthData>;
+  login(request: DeepPartial<LoginRequest>, options?: CallOptions & CallOptionsExt): Promise<AuthData>;
+  loginSession(request: DeepPartial<LoginRequest>, options?: CallOptions & CallOptionsExt): Promise<LoginSessionData>;
+  socialLogin(request: DeepPartial<SocialLoginRequest>, options?: CallOptions & CallOptionsExt): Promise<AuthData>;
+  refreshToken(request: DeepPartial<RefreshTokenRequest>, options?: CallOptions & CallOptionsExt): Promise<AuthData>;
+  logout(request: DeepPartial<LogoutRequest>, options?: CallOptions & CallOptionsExt): Promise<Empty>;
+  resetPassword(request: DeepPartial<ResetPasswordRequest>, options?: CallOptions & CallOptionsExt): Promise<Empty>;
+  changePassword(request: DeepPartial<ChangePasswordRequest>, options?: CallOptions & CallOptionsExt): Promise<Empty>;
+  checkEmailAvailability(
+    request: DeepPartial<CheckEmailRequest>,
+    options?: CallOptions & CallOptionsExt,
+  ): Promise<EmailAvailabilityData>;
+}
+
+type Builtin = Date | Function | Uint8Array | string | number | boolean | undefined;
+
+type DeepPartial<T> = T extends Builtin ? T
+  : T extends globalThis.Array<infer U> ? globalThis.Array<DeepPartial<U>>
+  : T extends ReadonlyArray<infer U> ? ReadonlyArray<DeepPartial<U>>
+  : T extends {} ? { [K in keyof T]?: DeepPartial<T[K]> }
+  : Partial<T>;
+
+type KeysOfUnion<T> = T extends T ? keyof T : never;
+type Exact<P, I extends P> = P extends Builtin ? P
+  : P & { [K in keyof P]: Exact<P[K], I[K]> } & { [K in Exclude<keyof I, KeysOfUnion<P>>]: never };
+
+interface MessageFns<T> {
+  encode(message: T, writer?: BinaryWriter): BinaryWriter;
+  decode(input: BinaryReader | Uint8Array, length?: number): T;
+  create<I extends Exact<DeepPartial<T>, I>>(base?: I): T;
+  fromPartial<I extends Exact<DeepPartial<T>, I>>(object: I): T;
 }

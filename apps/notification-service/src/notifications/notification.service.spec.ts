@@ -22,7 +22,7 @@ describe('NotificationService', () => {
     templateKey: 'auth.welcome',
     channel: 'email' as const,
     recipient: 'user@example.com',
-    data: { firstName: 'Jane', email: 'user@example.com' },
+    data: { displayName: 'Jane', email: 'user@example.com' },
     idempotencyKey: 'register:user-1',
     correlationId: 'corr-1',
     source: 'auth-service',
@@ -42,10 +42,10 @@ describe('NotificationService', () => {
         id: 'template-1',
         key: 'auth.welcome',
         channel: 'email',
-        subject: 'Welcome {{firstName}}',
-        bodyText: 'Hi {{firstName}}',
+        subject: 'Welcome {{displayName}}',
+        bodyText: 'Hi {{displayName}}',
         bodyHtml: null,
-        fieldSchema: { required: ['firstName'] },
+        fieldSchema: { required: ['displayName'] },
       }),
     };
     templateEngineService = {

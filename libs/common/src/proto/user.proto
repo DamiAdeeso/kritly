@@ -2,14 +2,25 @@ syntax = "proto3";
 
 package user;
 
+import "auth.proto";
+import "profile.proto";
+import "google/protobuf/empty.proto";
+
 // User / profile service (hosted in auth-service for now; extractable later)
+// RPC success returns data messages only (no statusCode/message wrapper).
+// New endpoint checklist:
+// 1. Add rpc + messages here
+// 2. npm run proto:generate
+// 3. Implement in auth-service (profile.service.ts + user.grpc.implementation.ts)
+// 4. Add passthrough in gateway UserClientService
+// 5. Add thin HTTP route in gateway user.gateway.controller.ts (mapGrpcToHttp / mapGrpcEmptyToHttp)
 service UserService {
-  rpc GetProfile(GetProfileRequest) returns (ProfileResponse);
-  rpc GetProfileByUsername(GetProfileByUsernameRequest) returns (ProfileResponse);
-  rpc CheckUsername(CheckUsernameRequest) returns (UsernameAvailabilityResponse);
-  rpc SetUsername(SetUsernameRequest) returns (SetUsernameResponse);
-  rpc UpdateAvatar(UpdateAvatarRequest) returns (UpdateProfileResponse);
-  rpc UpdateProfile(UpdateProfileRequest) returns (UpdateProfileResponse);
+  rpc GetProfile(GetProfileRequest) returns (profile.ProfileData);
+  rpc GetProfileByUsername(GetProfileByUsernameRequest) returns (profile.ProfileData);
+  rpc CheckUsername(CheckUsernameRequest) returns (UsernameAvailabilityData);
+  rpc SetUsername(SetUsernameRequest) returns (auth.AuthData);
+  rpc UpdateAvatar(UpdateAvatarRequest) returns (google.protobuf.Empty);
+  rpc UpdateProfile(UpdateProfileRequest) returns (google.protobuf.Empty);
 }
 
 message GetProfileRequest {
@@ -27,7 +38,6 @@ message CheckUsernameRequest {
 message SetUsernameRequest {
   string userId = 1;
   string username = 2;
-  string verificationToken = 3;
 }
 
 message UpdateAvatarRequest {
@@ -37,54 +47,10 @@ message UpdateAvatarRequest {
 
 message UpdateProfileRequest {
   string userId = 1;
-  string firstName = 2;
-  string lastName = 3;
-  optional string bio = 4;
-}
-
-message ProfileData {
-  string userId = 1;
-  optional string username = 2;
-  string firstName = 3;
-  string lastName = 4;
-  optional string avatar = 5;
-  optional string email = 6;
-  optional string bio = 7;
-}
-
-message ProfileResponse {
-  int32 statusCode = 1;
-  string message = 2;
-  ProfileData data = 3;
+  string displayName = 2;
+  optional string bio = 3;
 }
 
 message UsernameAvailabilityData {
   bool isAvailable = 1;
-}
-
-message UsernameAvailabilityResponse {
-  int32 statusCode = 1;
-  string message = 2;
-  UsernameAvailabilityData data = 3;
-}
-
-message SetUsernameAuthData {
-  string accessToken = 1;
-  string refreshToken = 2;
-  string userId = 3;
-  string email = 4;
-}
-
-message SetUsernameResponse {
-  int32 statusCode = 1;
-  string message = 2;
-  SetUsernameAuthData data = 3;
-}
-
-message EmptyData {}
-
-message UpdateProfileResponse {
-  int32 statusCode = 1;
-  string message = 2;
-  EmptyData data = 3;
 }

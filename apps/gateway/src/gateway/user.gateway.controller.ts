@@ -6,10 +6,8 @@ import {
   HttpCode,
   HttpStatus,
   Get,
-  Headers,
-  ValidationPipe,
-  UnauthorizedException,
   Param,
+  UseGuards,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -17,11 +15,9 @@ import {
   ApiResponse,
   ApiBearerAuth,
   ApiBody,
-  ApiHeader,
   ApiParam,
 } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
-import { AuthClientService } from '../services/auth-client.service';
 import { UserClientService } from '../services/user-client.service';
 import {
   CheckUsernameDto,
@@ -30,129 +26,135 @@ import {
   SetUsernameResponseDto,
   UpdateAvatarDto,
   UpdateProfileDto,
-  UpdateProfileResponseDto,
-  GrpcErrorResponse,
-  UpdateProfileResponse,
-  UsernameAvailabilityResponse,
-  ProfileResponse,
-  SetUsernameResponse,
-  UserGrpcErrorResponse,
+  EmptyDataDto,
+  AuthData,
+  ProfileResponseDto,
+  EmptySuccessResponseDto,
+  HttpClientErrorResponse,
+  ServiceResponse,
+  ProfileData,
+  UsernameAvailabilityData,
+  mapGrpcToHttp,
+  mapGrpcEmptyToHttp,
+  mapAvailabilityToHttp,
+  ApiEnvelopeErrors,
+  PROFILE_CONSTANTS,
 } from '@kritly/common';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { CurrentUser } from '../auth/current-user.decorator';
+import { JwtUser } from '../auth/jwt-user.interface';
 
 @ApiTags('Users')
+@ApiEnvelopeErrors(400, 401, 403, 404, 429, 500)
 @Controller('api/users')
 export class UserGatewayController {
-  constructor(
-    private readonly authClient: AuthClientService,
-    private readonly userClient: UserClientService,
-  ) {}
+  constructor(private readonly userClient: UserClientService) {}
 
   @Get('me')
+  @UseGuards(JwtAuthGuard)
   @ApiOperation({ summary: 'Get the authenticated user profile' })
   @ApiBearerAuth()
-  @ApiResponse({ status: 200, description: 'Profile retrieved' })
+  @ApiResponse({ status: 200, description: 'Profile retrieved', type: ProfileResponseDto })
   async getMyProfile(
-    @Headers('authorization') authHeader: string | undefined,
-  ): Promise<ProfileResponse | UserGrpcErrorResponse | GrpcErrorResponse> {
-    const userId = await this.requireUserId(authHeader);
-    return this.userClient.getProfile({ userId });
+    @CurrentUser() user: JwtUser,
+  ): Promise<ServiceResponse<ProfileData> | HttpClientErrorResponse> {
+    return mapGrpcToHttp(
+      await this.userClient.getProfile({ userId: user.userId }),
+      'Profile retrieved successfully',
+    );
   }
 
+  @Throttle({ default: { limit: 30, ttl: 60_000 } })
   @Get('by-username/:username')
   @ApiOperation({ summary: 'Get a public profile by username' })
   @ApiParam({ name: 'username', example: 'johndoe123' })
-  @ApiResponse({ status: 200, description: 'Profile retrieved' })
+  @ApiResponse({ status: 200, description: 'Profile retrieved', type: ProfileResponseDto })
   async getProfileByUsername(
     @Param('username') username: string,
-  ): Promise<ProfileResponse | UserGrpcErrorResponse | GrpcErrorResponse> {
-    return this.userClient.getProfileByUsername({ username });
+  ): Promise<ServiceResponse<ProfileData> | HttpClientErrorResponse> {
+    return mapGrpcToHttp(
+      await this.userClient.getProfileByUsername({ username }),
+      'Profile retrieved successfully',
+    );
   }
 
+  @Throttle({ default: { limit: 10, ttl: 60_000 } })
   @Post('check-username')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Check username availability' })
   @ApiBody({ type: CheckUsernameDto })
   @ApiResponse({ status: 200, description: 'Username availability checked', type: UsernameAvailabilityResponseDto })
   async checkUsername(
-    @Body(ValidationPipe) dto: CheckUsernameDto,
-  ): Promise<UsernameAvailabilityResponse | UserGrpcErrorResponse | GrpcErrorResponse> {
-    return this.userClient.checkUsername(dto);
+    @Body() dto: CheckUsernameDto,
+  ): Promise<ServiceResponse<UsernameAvailabilityData> | HttpClientErrorResponse> {
+    return mapAvailabilityToHttp(
+      await this.userClient.checkUsername(dto),
+      'Username is available',
+      'Username is already taken',
+    );
   }
 
   @Throttle({ default: { limit: 5, ttl: 60_000 } })
   @Post('username')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Set or change username (requires OTP verification)' })
-  @ApiBearerAuth()
-  @ApiHeader({
-    name: 'x-verification-token',
-    required: true,
-    description: 'Short-lived token from POST /api/verification/verify',
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({
+    summary: `Set or change username (limited to once every ${PROFILE_CONSTANTS.USERNAME_CHANGE_COOLDOWN_DAYS} days)`,
   })
+  @ApiBearerAuth()
   @ApiBody({ type: SetUsernameDto })
   @ApiResponse({ status: 200, description: 'Username set successfully', type: SetUsernameResponseDto })
-  @ApiResponse({ status: 403, description: 'Verification token required or invalid' })
   async setUsername(
-    @Headers('authorization') authHeader: string | undefined,
-    @Headers('x-verification-token') verificationToken: string | undefined,
-    @Body(ValidationPipe) dto: SetUsernameDto,
-  ): Promise<SetUsernameResponse | UserGrpcErrorResponse | GrpcErrorResponse> {
-    const userId = await this.requireUserId(authHeader);
-
-    return this.userClient.setUsername({
-      userId,
-      username: dto.username,
-      verificationToken: verificationToken ?? '',
-    });
+    @CurrentUser() user: JwtUser,
+    @Body() dto: SetUsernameDto,
+  ): Promise<ServiceResponse<AuthData> | HttpClientErrorResponse> {
+    return mapGrpcToHttp(
+      await this.userClient.setUsername({
+        userId: user.userId,
+        username: dto.username,
+      }),
+      'Username set successfully',
+    );
   }
 
   @Post('avatar')
   @HttpCode(HttpStatus.OK)
+  @UseGuards(JwtAuthGuard)
   @ApiOperation({ summary: 'Update user avatar URL' })
   @ApiBearerAuth()
   @ApiBody({ type: UpdateAvatarDto })
-  @ApiResponse({ status: 200, description: 'Avatar updated successfully', type: UpdateProfileResponseDto })
+  @ApiResponse({ status: 200, description: 'Avatar updated successfully', type: EmptySuccessResponseDto })
   async updateAvatar(
-    @Headers('authorization') authHeader: string | undefined,
-    @Body(ValidationPipe) dto: UpdateAvatarDto,
-  ): Promise<UpdateProfileResponse | UserGrpcErrorResponse | GrpcErrorResponse> {
-    const userId = await this.requireUserId(authHeader);
-    return this.userClient.updateAvatar({
-      userId,
-      avatar: dto.avatar,
-    });
+    @CurrentUser() user: JwtUser,
+    @Body() dto: UpdateAvatarDto,
+  ): Promise<ServiceResponse<EmptyDataDto> | HttpClientErrorResponse> {
+    return mapGrpcEmptyToHttp(
+      await this.userClient.updateAvatar({
+        userId: user.userId,
+        avatar: dto.avatar,
+      }),
+      'Avatar updated successfully',
+    );
   }
 
   @Patch('profile')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Update profile (first name, last name, bio)' })
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({ summary: 'Update profile (display name, bio)' })
   @ApiBearerAuth()
   @ApiBody({ type: UpdateProfileDto })
-  @ApiResponse({ status: 200, description: 'Profile updated successfully', type: UpdateProfileResponseDto })
+  @ApiResponse({ status: 200, description: 'Profile updated successfully', type: EmptySuccessResponseDto })
   async updateProfile(
-    @Headers('authorization') authHeader: string | undefined,
-    @Body(ValidationPipe) dto: UpdateProfileDto,
-  ): Promise<UpdateProfileResponse | UserGrpcErrorResponse | GrpcErrorResponse> {
-    const userId = await this.requireUserId(authHeader);
-    return this.userClient.updateProfile({
-      userId,
-      firstName: dto.firstName,
-      lastName: dto.lastName,
-      bio: dto.bio,
-    });
-  }
-
-  private async requireUserId(authHeader: string | undefined): Promise<string> {
-    const token = authHeader?.replace('Bearer ', '');
-    if (!token) {
-      throw new UnauthorizedException('No token provided');
-    }
-
-    const validation = await this.authClient.validateToken({ accessToken: token });
-    if (validation.statusCode !== 200 || !validation.data?.isValid || !validation.data.userId) {
-      throw new UnauthorizedException('Invalid token');
-    }
-
-    return validation.data.userId;
+    @CurrentUser() user: JwtUser,
+    @Body() dto: UpdateProfileDto,
+  ): Promise<ServiceResponse<EmptyDataDto> | HttpClientErrorResponse> {
+    return mapGrpcEmptyToHttp(
+      await this.userClient.updateProfile({
+        userId: user.userId,
+        displayName: dto.displayName,
+        bio: dto.bio,
+      }),
+      'Profile updated successfully',
+    );
   }
 }

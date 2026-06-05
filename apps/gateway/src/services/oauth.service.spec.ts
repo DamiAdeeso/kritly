@@ -120,9 +120,22 @@ describe('OAuthService', () => {
   it('builds success and failure redirects', () => {
     const service = new OAuthService();
 
-    expect(service.buildSuccessRedirect('a', 'r', 'user-1', 'user@example.com')).toContain(
-      '#accessToken=a',
-    );
+    const successUrl = service.buildSuccessRedirect('a', 'r', 'user-1', 'user@example.com');
+    expect(successUrl).toContain('?code=');
+    expect(successUrl).not.toContain('accessToken');
+
+    const code = new URL(successUrl).searchParams.get('code');
+    expect(code).toBeTruthy();
+    expect(service.consumeExchangeCode(code!)).toEqual({
+      accessToken: 'a',
+      refreshToken: 'r',
+      userId: 'user-1',
+      email: 'user@example.com',
+    });
+    expect(service.consumeExchangeCode(code!)).toBeNull();
+
+    process.env.OAUTH_FAILURE_REDIRECT_URL = 'http://localhost:3000/auth/error';
     expect(service.buildFailureRedirect('OAuth failed')).toContain('error=OAuth%20failed');
+    expect(service.buildFailureRedirect('OAuth failed')).toContain('/auth/error');
   });
 });

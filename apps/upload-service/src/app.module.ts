@@ -1,10 +1,9 @@
 import { Module } from '@nestjs/common';
-import { APP_FILTER } from '@nestjs/core';
 import { ConfigModule } from '@nestjs/config';
-import { AppLoggerModule, GrpcServiceResponseExceptionFilter, rootEnvConfig } from '@kritly/common';
+import { AppLoggerModule, HealthGrpcImplementation, rootEnvConfig } from '@kritly/common';
 import storageConfig from './config/storage.config';
 import { UploadModule } from './upload/upload.module';
-import { HealthGrpcController } from './health/health.grpc.controller';
+import { UploadGrpcServerService } from './grpc/upload-grpc-server.service';
 
 @Module({
   imports: [
@@ -15,12 +14,6 @@ import { HealthGrpcController } from './health/health.grpc.controller';
     AppLoggerModule.register({ service: 'upload-service', enableHttpLogging: false }),
     UploadModule,
   ],
-  controllers: [HealthGrpcController],
-  providers: [
-    {
-      provide: APP_FILTER,
-      useClass: GrpcServiceResponseExceptionFilter,
-    },
-  ],
+  providers: [UploadGrpcServerService, HealthGrpcImplementation],
 })
 export class AppModule {}

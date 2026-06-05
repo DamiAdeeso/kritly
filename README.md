@@ -168,8 +168,8 @@ Content-Type: application/json
 {
   "email": "user@example.com",
   "password": "SecurePassword123",
-  "firstName": "John",
-  "lastName": "Doe"
+  "username": "johndoe",
+  "dateOfBirth": "1990-01-15"
 }
 ```
 
@@ -250,8 +250,7 @@ All endpoints return consistent response formats:
 CREATE TABLE users (
   id VARCHAR(255) PRIMARY KEY,
   email VARCHAR(255) UNIQUE NOT NULL,
-  first_name VARCHAR(255) NOT NULL,
-  last_name VARCHAR(255) NOT NULL,
+  display_name VARCHAR(255),
   avatar VARCHAR(500),
   password VARCHAR(255),
   role USER_ROLE DEFAULT 'USER',

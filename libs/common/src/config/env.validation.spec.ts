@@ -26,7 +26,20 @@ describe('env.validation', () => {
       validateEnv({
         NODE_ENV: 'production',
         JWT_SECRET: 'super-secret-key',
+        DATABASE_URL: 'postgresql://user:pass@localhost:5432/db',
+        REDIS_URL: 'redis://localhost:6379',
+        RABBITMQ_URL: 'amqp://localhost:5672',
       }),
     ).not.toThrow();
   });
+
+  it('rejects invalid gRPC port values', () => {
+    expect(() =>
+      validateEnv({
+        NODE_ENV: 'local',
+        AUTH_SERVICE_PORT: 'not-a-port',
+      }),
+    ).toThrow();
+  });
+
 });

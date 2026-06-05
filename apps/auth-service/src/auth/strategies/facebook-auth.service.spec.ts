@@ -30,8 +30,7 @@ describe('FacebookAuthService', () => {
       provider: AuthProvider.FACEBOOK,
       providerId: 'fb-1',
       email: 'user@facebook.com',
-      firstName: 'Jane',
-      lastName: 'Doe',
+      displayName: 'Jane Doe',
       avatar: 'https://cdn.example.com/fb.jpg',
     });
   });

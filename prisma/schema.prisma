@@ -14,8 +14,7 @@ model User {
   email       String   @unique
   username          String?   @unique
   usernameChangedAt DateTime?
-  firstName   String?
-  lastName    String?
+  displayName String?
   dateOfBirth DateTime?
   bio         String?
   avatar      String?

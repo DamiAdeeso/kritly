@@ -1,13 +1,11 @@
 import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
 import {
   PROFILE_CONSTANTS,
-  ProfileServiceResponse,
-  SetUsernameServiceResponse,
+  AuthData,
+  Empty,
+  ProfileData,
   UpdateProfileDto,
-  UsernameAvailabilityServiceResponse,
-  UpdateProfileServiceResponse,
-  ok,
-  okEmpty,
+  UsernameAvailabilityData,
 } from '@kritly/common';
 import { ProfileRepository } from '../repositories/profile.repository';
 import { TokenService } from '../shared/token.service';
@@ -19,46 +17,43 @@ export class ProfileService {
     private readonly tokenService: TokenService,
   ) {}
 
-  async getProfile(userId: string): Promise<ProfileServiceResponse> {
+  async getProfile(userId: string): Promise<ProfileData> {
     const profile = await this.profileRepository.findProfileById(userId, true);
     if (!profile) {
       throw new NotFoundException('Profile not found');
     }
 
-    return ok('Profile retrieved successfully', {
+    return {
       userId: profile.userId,
       username: profile.username ?? undefined,
-      firstName: profile.firstName ?? undefined,
-      lastName: profile.lastName ?? undefined,
+      displayName: profile.displayName ?? undefined,
       bio: profile.bio ?? undefined,
       avatar: profile.avatar ?? undefined,
       email: profile.email,
-    });
+    };
   }
 
-  async getProfileByUsername(username: string): Promise<ProfileServiceResponse> {
+  async getProfileByUsername(username: string): Promise<ProfileData> {
     const normalizedUsername = username.trim().toLowerCase();
     const profile = await this.profileRepository.findProfileByUsername(normalizedUsername);
     if (!profile) {
       throw new NotFoundException('Profile not found');
     }
 
-    return ok('Profile retrieved successfully', {
+    return {
       userId: profile.userId,
       username: profile.username ?? undefined,
-      firstName: profile.firstName ?? undefined,
-      lastName: profile.lastName ?? undefined,
+      displayName: profile.displayName ?? undefined,
       bio: profile.bio ?? undefined,
       avatar: profile.avatar ?? undefined,
-    });
+    };
   }
 
-  async updateProfile(userId: string, dto: UpdateProfileDto): Promise<UpdateProfileServiceResponse> {
-    const firstName = dto.firstName.trim();
-    const lastName = dto.lastName.trim();
+  async updateProfile(userId: string, dto: UpdateProfileDto): Promise<Empty> {
+    const displayName = dto.displayName.trim();
 
-    if (!firstName || !lastName) {
-      throw new BadRequestException('First name and last name are required');
+    if (!displayName) {
+      throw new BadRequestException('Display name is required');
     }
 
     const profile = await this.profileRepository.findProfileById(userId);
@@ -66,28 +61,25 @@ export class ProfileService {
       throw new BadRequestException('User not found');
     }
 
-    const update: { firstName: string; lastName: string; bio?: string | null } = {
-      firstName,
-      lastName,
-    };
+    const update: { displayName: string; bio?: string | null } = { displayName };
     if (dto.bio !== undefined) {
       update.bio = dto.bio.trim() || null;
     }
 
     await this.profileRepository.updateProfile(userId, update);
 
-    return okEmpty('Profile updated successfully');
+    return {};
   }
 
-  async checkUsername(username: string): Promise<UsernameAvailabilityServiceResponse> {
+  async checkUsername(username: string): Promise<UsernameAvailabilityData> {
     const normalizedUsername = username.trim().toLowerCase();
     const existingUser = await this.profileRepository.findByUsername(normalizedUsername);
     const isAvailable = !existingUser;
 
-    return ok(isAvailable ? 'Username is available' : 'Username is already taken', { isAvailable });
+    return { isAvailable };
   }
 
-  async setUsername(userId: string, username: string): Promise<SetUsernameServiceResponse> {
+  async setUsername(userId: string, username: string): Promise<AuthData> {
     const normalizedUsername = username.trim().toLowerCase();
     if (!normalizedUsername) {
       throw new BadRequestException('Username is required');
@@ -116,15 +108,15 @@ export class ProfileService {
 
     const tokens = await this.tokenService.issueTokensForUser(userId);
 
-    return ok('Username set successfully', {
+    return {
       accessToken: tokens.accessToken,
       refreshToken: tokens.refreshToken,
       userId: tokens.userId,
       email: tokens.email,
-    });
+    };
   }
 
-  async updateAvatar(userId: string, avatar: string): Promise<UpdateProfileServiceResponse> {
+  async updateAvatar(userId: string, avatar: string): Promise<Empty> {
     const trimmedAvatar = avatar.trim();
     if (!trimmedAvatar) {
       throw new BadRequestException('Avatar URL is required');
@@ -137,7 +129,7 @@ export class ProfileService {
 
     await this.profileRepository.updateProfile(userId, { avatar: trimmedAvatar });
 
-    return okEmpty('Avatar updated successfully');
+    return {};
   }
 
   private assertUsernameChangeAllowed(usernameChangedAt: Date | null | undefined): void {

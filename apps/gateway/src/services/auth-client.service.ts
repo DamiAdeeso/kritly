@@ -1,119 +1,76 @@
 /**
- * Generated gRPC client wrapper for auth-service.
+ * nice-grpc client for auth-service.
  */
-import { Injectable, OnModuleInit } from '@nestjs/common';
-import { ClientGrpc, Client, Transport } from '@nestjs/microservices';
-import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
-import { join } from 'path';
+import { Injectable, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import {
-  AUTH_SERVICE_NAME,
-  AuthGrpcClient,
-  AuthResponse,
+  AuthData,
+  AuthServiceClient,
+  AuthServiceDefinition,
+  ChangePasswordRequest,
   CheckEmailRequest,
-  EmailAvailabilityResponse,
-  grpcClientCall,
-  GrpcErrorResponse,
-  GRPC_PROTO_LOADER_OPTIONS,
+  GrpcClientConfigService,
+  NiceGrpcConnection,
+  EmailAvailabilityData,
+  HttpClientErrorResponse,
   LoginRequest,
+  LoginSessionData,
   LogoutRequest,
-  LogoutResponse,
+  Empty,
   RefreshTokenRequest,
   RegisterRequest,
   ResetPasswordRequest,
-  ChangePasswordRequest,
-  resolveGrpcMethod,
   SocialLoginRequest,
-  UpdateProfileResponse,
-  ValidateTokenRequest,
-  ValidateTokenResponse,
 } from '@kritly/common';
-import { getGrpcCredentials } from '../config/grpc.config';
 
 @Injectable()
-export class AuthClientService implements OnModuleInit {
-  @Client({
-    transport: Transport.GRPC,
-    options: {
-      package: 'auth',
-      protoPath: join(process.cwd(), 'libs/common/src/proto/auth.proto'),
-      url: `${process.env.AUTH_SERVICE_HOST || 'localhost'}:${process.env.AUTH_SERVICE_PORT || 3001}`,
-      credentials: getGrpcCredentials(),
-      loader: GRPC_PROTO_LOADER_OPTIONS,
-    },
-  })
-  private client!: ClientGrpc;
+export class AuthClientService implements OnModuleInit, OnModuleDestroy {
+  private connection!: NiceGrpcConnection<AuthServiceClient>;
 
-  private authService!: AuthGrpcClient;
-  private registerRpc!: (request: RegisterRequest) => ReturnType<AuthGrpcClient['register']>;
-  private loginRpc!: (request: LoginRequest) => ReturnType<AuthGrpcClient['login']>;
-  private socialLoginRpc!: (request: SocialLoginRequest) => ReturnType<AuthGrpcClient['socialLogin']>;
-  private refreshTokenRpc!: (request: RefreshTokenRequest) => ReturnType<AuthGrpcClient['refreshToken']>;
-  private logoutRpc!: (request: LogoutRequest) => ReturnType<AuthGrpcClient['logout']>;
-  private validateTokenRpc!: (request: ValidateTokenRequest) => ReturnType<AuthGrpcClient['validateToken']>;
-  private resetPasswordRpc!: (request: ResetPasswordRequest) => ReturnType<AuthGrpcClient['resetPassword']>;
-  private changePasswordRpc!: (request: ChangePasswordRequest) => ReturnType<AuthGrpcClient['changePassword']>;
-  private checkEmailAvailabilityRpc!: (
-    request: CheckEmailRequest,
-  ) => ReturnType<AuthGrpcClient['checkEmailAvailability']>;
-
-  constructor(@InjectPinoLogger(AuthClientService.name) private readonly logger: PinoLogger) {}
+  constructor(private readonly grpcClientConfig: GrpcClientConfigService) {}
 
   onModuleInit(): void {
-    this.authService = this.client.getService<AuthGrpcClient>(AUTH_SERVICE_NAME);
-    const stub = this.authService as unknown as Record<string, unknown>;
-    this.registerRpc = resolveGrpcMethod(stub, 'register', 'Register');
-    this.loginRpc = resolveGrpcMethod(stub, 'login', 'Login');
-    this.socialLoginRpc = resolveGrpcMethod(stub, 'socialLogin', 'SocialLogin');
-    this.refreshTokenRpc = resolveGrpcMethod(stub, 'refreshToken', 'RefreshToken');
-    this.logoutRpc = resolveGrpcMethod(stub, 'logout', 'Logout');
-    this.validateTokenRpc = resolveGrpcMethod(stub, 'validateToken', 'ValidateToken');
-    this.resetPasswordRpc = resolveGrpcMethod(stub, 'resetPassword', 'ResetPassword');
-    this.changePasswordRpc = resolveGrpcMethod(stub, 'changePassword', 'ChangePassword');
-    this.checkEmailAvailabilityRpc = resolveGrpcMethod(
-      stub,
-      'checkEmailAvailability',
-      'CheckEmailAvailability',
-    );
+    this.connection = this.grpcClientConfig.connect(AuthServiceDefinition, 'auth');
   }
 
-  register(data: RegisterRequest): Promise<AuthResponse | GrpcErrorResponse> {
-    return grpcClientCall(this.registerRpc(data));
+  onModuleDestroy(): void {
+    this.connection.channel.close();
   }
 
-  login(data: LoginRequest): Promise<AuthResponse | GrpcErrorResponse> {
-    return grpcClientCall(this.loginRpc(data));
+  register(data: RegisterRequest): Promise<AuthData | HttpClientErrorResponse> {
+    return this.connection.client.register(data);
   }
 
-  socialLogin(data: SocialLoginRequest): Promise<AuthResponse | GrpcErrorResponse> {
-    return grpcClientCall(this.socialLoginRpc(data));
+  login(data: LoginRequest): Promise<AuthData | HttpClientErrorResponse> {
+    return this.connection.client.login(data);
   }
 
-  refreshToken(data: RefreshTokenRequest): Promise<AuthResponse | GrpcErrorResponse> {
-    return grpcClientCall(this.refreshTokenRpc(data));
+  loginSession(data: LoginRequest): Promise<LoginSessionData | HttpClientErrorResponse> {
+    return this.connection.client.loginSession(data);
   }
 
-  logout(data: LogoutRequest): Promise<LogoutResponse | GrpcErrorResponse> {
-    return grpcClientCall(this.logoutRpc(data));
+  socialLogin(data: SocialLoginRequest): Promise<AuthData | HttpClientErrorResponse> {
+    return this.connection.client.socialLogin(data);
   }
 
-  validateToken(data: ValidateTokenRequest): Promise<ValidateTokenResponse | GrpcErrorResponse> {
-    return grpcClientCall(this.validateTokenRpc(data));
+  refreshToken(data: RefreshTokenRequest): Promise<AuthData | HttpClientErrorResponse> {
+    return this.connection.client.refreshToken(data);
   }
 
-  resetPassword(data: ResetPasswordRequest): Promise<UpdateProfileResponse | GrpcErrorResponse> {
-    return grpcClientCall(this.resetPasswordRpc(data));
+  logout(data: LogoutRequest): Promise<Empty | HttpClientErrorResponse> {
+    return this.connection.client.logout(data);
   }
 
-  changePassword(data: ChangePasswordRequest): Promise<UpdateProfileResponse | GrpcErrorResponse> {
-    return grpcClientCall(this.changePasswordRpc(data));
+  resetPassword(data: ResetPasswordRequest): Promise<Empty | HttpClientErrorResponse> {
+    return this.connection.client.resetPassword(data);
+  }
+
+  changePassword(data: ChangePasswordRequest): Promise<Empty | HttpClientErrorResponse> {
+    return this.connection.client.changePassword(data);
   }
 
   async checkEmailAvailability(
     data: CheckEmailRequest,
-  ): Promise<EmailAvailabilityResponse | GrpcErrorResponse> {
-    this.logger.info({ email: data.email }, 'checkEmailAvailability gRPC call');
-    const response = await grpcClientCall(this.checkEmailAvailabilityRpc(data));
-    this.logger.info({ email: data.email, response }, 'checkEmailAvailability gRPC response');
-    return response;
+  ): Promise<EmailAvailabilityData | HttpClientErrorResponse> {
+    return this.connection.client.checkEmailAvailability(data);
   }
 }

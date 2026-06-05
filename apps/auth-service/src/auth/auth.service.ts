@@ -1,25 +1,21 @@
 import { Injectable, UnauthorizedException, BadRequestException, HttpException, HttpStatus } from '@nestjs/common';
 import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import { AuthProvider as PrismaAuthProvider } from '@prisma/client';
-import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcryptjs';
 import {
-  LoginDto,
-  RegisterDto,
-  SocialLoginDto,
-  RefreshTokenDto,
   AuthProvider,
-  AuthServiceResponse,
-  LogoutServiceResponse,
-  ValidateTokenServiceResponse,
-  UpdateProfileServiceResponse,
-  EmailAvailabilityServiceResponse,
+  AuthData,
+  EmailAvailabilityData,
+  Empty,
   ISocialProfile,
+  LoginRequest,
+  LoginSessionData,
+  RefreshTokenRequest,
+  RegisterInput,
+  SocialLoginRequest,
   AUTH_CONSTANTS,
   DOMAIN_EVENTS,
   EventPublisher,
-  ok,
-  okEmpty,
   RedisService,
 } from '@kritly/common';
 import { AccountRepository } from '../repositories/account.repository';
@@ -31,6 +27,7 @@ import { FacebookAuthService } from './strategies/facebook-auth.service';
 import { AppleAuthService } from './strategies/apple-auth.service';
 import { InstagramAuthService } from './strategies/instagram-auth.service';
 import { toPrismaCreateUserInput } from '../mappers/user-prisma.mapper';
+import { toProfileDataFromUser } from '../mappers/user-profile.mapper';
 
 @Injectable()
 export class AuthService {
@@ -41,7 +38,6 @@ export class AuthService {
     private readonly socialAccountRepository: SocialAccountRepository,
     private readonly refreshTokenRepository: RefreshTokenRepository,
     private readonly tokenService: TokenService,
-    private readonly jwtService: JwtService,
     private readonly googleAuthService: GoogleAuthService,
     private readonly facebookAuthService: FacebookAuthService,
     private readonly appleAuthService: AppleAuthService,
@@ -50,43 +46,37 @@ export class AuthService {
     private readonly eventPublisher: EventPublisher,
   ) {}
 
-  async checkEmailAvailability(email: string): Promise<EmailAvailabilityServiceResponse> {
+  async checkEmailAvailability(email: string): Promise<EmailAvailabilityData> {
     const normalizedEmail = email.trim().toLowerCase();
     const existingUser = await this.accountRepository.findByEmail(normalizedEmail);
     const isAvailable = !existingUser;
 
-    this.logger.info(
-      {
-        email: normalizedEmail,
-        isAvailable,
-        existingUserId: existingUser?.id ?? null,
-      },
-      'checkEmailAvailability',
-    );
+    this.logger.debug({ isAvailable }, 'checkEmailAvailability');
 
-    return ok(isAvailable ? 'Email is available' : 'Email is already registered', { isAvailable });
+    return { isAvailable };
   }
 
-  async register(registerDto: RegisterDto): Promise<AuthServiceResponse> {
-    const normalizedEmail = registerDto.email.trim().toLowerCase();
+  async register(input: RegisterInput): Promise<AuthData> {
+    const normalizedEmail = input.email.trim().toLowerCase();
+    const username = input.username?.trim() || normalizedEmail.split('@')[0];
 
     const existingUser = await this.accountRepository.findByEmail(normalizedEmail);
     if (existingUser) {
       throw new BadRequestException('User already exists');
     }
 
-    const existingUsername = await this.profileRepository.findByUsername(registerDto.username);
+    const existingUsername = await this.profileRepository.findByUsername(username);
     if (existingUsername) {
       throw new BadRequestException('Username is already taken');
     }
 
-    const hashedPassword = await bcrypt.hash(registerDto.password, AUTH_CONSTANTS.SALT_ROUNDS);
-    const dateOfBirth = this.parseDateOfBirth(registerDto.dateOfBirth);
+    const hashedPassword = await bcrypt.hash(input.password, AUTH_CONSTANTS.SALT_ROUNDS);
+    const dateOfBirth = this.parseDateOfBirth(input.dateOfBirth);
 
     const user = await this.accountRepository.create(
       toPrismaCreateUserInput({
         email: normalizedEmail,
-        username: registerDto.username,
+        username,
         dateOfBirth,
         password: hashedPassword,
       }),
@@ -100,7 +90,7 @@ export class AuthService {
         {
           userId: user.id,
           email: user.email,
-          firstName: user.username ?? user.email.split('@')[0],
+          displayName: user.displayName ?? user.username ?? user.email.split('@')[0],
         },
         { idempotencyKey: `register:${user.id}` },
       );
@@ -108,116 +98,104 @@ export class AuthService {
       // Never block registration on notification failures
     }
 
-    return ok(
-      'User registered successfully',
-      {
-        accessToken: tokens.accessToken,
-        refreshToken: tokens.refreshToken,
-        userId: user.id,
-        email: user.email,
-      },
-      201,
-    );
-  }
-
-  async login(loginDto: LoginDto): Promise<AuthServiceResponse> {
-    await this.assertLoginNotLocked(loginDto.email);
-
-    const user = await this.accountRepository.findByEmail(loginDto.email);
-    if (!user) {
-      await this.recordLoginFailedAttempt(loginDto.email);
-      throw new UnauthorizedException('Invalid credentials');
-    }
-
-    const isPasswordValid = await bcrypt.compare(loginDto.password, user.password || '');
-    if (!isPasswordValid) {
-      await this.recordLoginFailedAttempt(loginDto.email);
-      throw new UnauthorizedException('Invalid credentials');
-    }
-
-    await this.clearLoginAttempts(loginDto.email);
-
-    const tokens = await this.tokenService.generateTokens(user.id, user.email, user.role);
-
-    return ok('Login successful', {
+    return {
       accessToken: tokens.accessToken,
       refreshToken: tokens.refreshToken,
       userId: user.id,
       email: user.email,
-    });
+    };
   }
 
-  async socialLogin(socialLoginDto: SocialLoginDto): Promise<AuthServiceResponse> {
-    const socialProfile = await this.verifySocialProfile(socialLoginDto);
+  async login(request: LoginRequest): Promise<AuthData> {
+    const user = await this.authenticateForLogin(request.email, request.password);
+    const tokens = await this.tokenService.generateTokens(user.id, user.email, user.role);
+
+    return {
+      accessToken: tokens.accessToken,
+      refreshToken: tokens.refreshToken,
+      userId: user.id,
+      email: user.email,
+    };
+  }
+
+  async loginSession(request: LoginRequest): Promise<LoginSessionData> {
+    const user = await this.authenticateForLogin(request.email, request.password);
+    const tokens = await this.tokenService.generateTokens(user.id, user.email, user.role);
+
+    return {
+      accessToken: tokens.accessToken,
+      refreshToken: tokens.refreshToken,
+      profile: toProfileDataFromUser(user),
+    };
+  }
+
+  async socialLogin(request: SocialLoginRequest): Promise<AuthData> {
+    const provider = this.resolveAuthProvider(request.provider);
+    const socialProfile = await this.verifySocialProfile(request, provider);
 
     let user = await this.accountRepository.findBySocialAccount(
-      socialLoginDto.provider as unknown as PrismaAuthProvider,
+      provider as unknown as PrismaAuthProvider,
       socialProfile.providerId,
     );
 
     if (user) {
       const tokens = await this.tokenService.generateTokens(user.id, user.email, user.role);
-      return ok('Social login successful', {
+      return {
         accessToken: tokens.accessToken,
         refreshToken: tokens.refreshToken,
         userId: user.id,
         email: user.email,
-      });
+      };
     }
 
     user = await this.accountRepository.findByEmail(socialProfile.email);
     if (user) {
       await this.socialAccountRepository.create({
-        provider: socialLoginDto.provider as unknown as PrismaAuthProvider,
+        provider: provider as unknown as PrismaAuthProvider,
         providerId: socialProfile.providerId,
         userId: user.id,
       });
 
       const tokens = await this.tokenService.generateTokens(user.id, user.email, user.role);
-      return ok('Social login successful', {
+      return {
         accessToken: tokens.accessToken,
         refreshToken: tokens.refreshToken,
         userId: user.id,
         email: user.email,
-      });
+      };
     }
 
     user = await this.accountRepository.create(
       toPrismaCreateUserInput({
         email: socialProfile.email,
-        firstName: socialProfile.firstName,
-        lastName: socialProfile.lastName,
+        displayName: socialProfile.displayName,
         avatar: socialProfile.avatar,
       }),
     );
 
     await this.socialAccountRepository.create({
-      provider: socialLoginDto.provider as unknown as PrismaAuthProvider,
+      provider: provider as unknown as PrismaAuthProvider,
       providerId: socialProfile.providerId,
       userId: user.id,
     });
 
     const tokens = await this.tokenService.generateTokens(user.id, user.email, user.role);
-    return ok(
-      'Social login successful',
-      {
-        accessToken: tokens.accessToken,
-        refreshToken: tokens.refreshToken,
-        userId: user.id,
-        email: user.email,
-      },
-      201,
-    );
+    return {
+      accessToken: tokens.accessToken,
+      refreshToken: tokens.refreshToken,
+      userId: user.id,
+      email: user.email,
+    };
   }
 
-  async refreshToken(refreshTokenDto: RefreshTokenDto): Promise<AuthServiceResponse> {
-    const refreshToken = await this.refreshTokenRepository.findByToken(refreshTokenDto.refreshToken);
+  async refreshToken(request: RefreshTokenRequest): Promise<AuthData> {
+    const refreshToken = await this.refreshTokenRepository.findByToken(request.refreshToken);
     if (!refreshToken) {
       throw new UnauthorizedException('Invalid refresh token');
     }
 
     if (refreshToken.expiresAt < new Date()) {
-      await this.refreshTokenRepository.delete(refreshTokenDto.refreshToken);
+      await this.refreshTokenRepository.delete(request.refreshToken);
       throw new UnauthorizedException('Refresh token expired');
     }
 
@@ -226,37 +204,24 @@ export class AuthService {
       throw new UnauthorizedException('User not found');
     }
 
-    await this.refreshTokenRepository.delete(refreshTokenDto.refreshToken);
+    await this.refreshTokenRepository.delete(request.refreshToken);
 
     const tokens = await this.tokenService.generateTokens(user.id, user.email, user.role);
 
-    return ok('Token refreshed successfully', {
+    return {
       accessToken: tokens.accessToken,
       refreshToken: tokens.refreshToken,
       userId: user.id,
       email: user.email,
-    });
+    };
   }
 
-  async logout(refreshToken: string): Promise<LogoutServiceResponse> {
+  async logout(refreshToken: string): Promise<Empty> {
     await this.refreshTokenRepository.delete(refreshToken);
-    return okEmpty('Logout successful');
+    return {};
   }
 
-  async validateToken(token: string): Promise<ValidateTokenServiceResponse> {
-    try {
-      const payload = this.jwtService.verify<Record<string, unknown>>(token);
-      return ok('Token validation successful', {
-        isValid: true,
-        userId: String(payload.sub ?? ''),
-        email: String(payload.email ?? ''),
-      });
-    } catch {
-      throw new UnauthorizedException('Invalid token');
-    }
-  }
-
-  async resetPassword(email: string, newPassword: string): Promise<UpdateProfileServiceResponse> {
+  async resetPassword(email: string, newPassword: string): Promise<Empty> {
     const normalizedEmail = email.trim().toLowerCase();
 
     const user = await this.accountRepository.findByEmail(normalizedEmail);
@@ -268,14 +233,14 @@ export class AuthService {
     await this.accountRepository.updatePassword(user.id, hashedPassword);
     await this.refreshTokenRepository.deleteByUserId(user.id);
 
-    return okEmpty('Password reset successfully');
+    return {};
   }
 
   async changePassword(
     userId: string,
     currentPassword: string,
     newPassword: string,
-  ): Promise<UpdateProfileServiceResponse> {
+  ): Promise<Empty> {
     if (currentPassword === newPassword) {
       throw new BadRequestException('New password must be different from your current password');
     }
@@ -298,25 +263,56 @@ export class AuthService {
     await this.accountRepository.updatePassword(userId, hashedPassword);
     await this.refreshTokenRepository.deleteByUserId(userId);
 
-    return okEmpty('Password changed successfully');
+    return {};
   }
 
-  private async verifySocialProfile(socialLoginDto: SocialLoginDto): Promise<ISocialProfile> {
-    switch (socialLoginDto.provider) {
+  private async authenticateForLogin(email: string, password: string) {
+    await this.assertLoginNotLocked(email);
+
+    const user = await this.accountRepository.findByEmail(email);
+    if (!user) {
+      await this.recordLoginFailedAttempt(email);
+      throw new UnauthorizedException('Invalid credentials');
+    }
+
+    const isPasswordValid = await bcrypt.compare(password, user.password || '');
+    if (!isPasswordValid) {
+      await this.recordLoginFailedAttempt(email);
+      throw new UnauthorizedException('Invalid credentials');
+    }
+
+    await this.clearLoginAttempts(email);
+
+    return user;
+  }
+
+  private resolveAuthProvider(provider: string): AuthProvider {
+    const normalized = provider.toLowerCase();
+    const match = Object.values(AuthProvider).find((value) => value === normalized);
+    if (!match || match === AuthProvider.EMAIL) {
+      throw new BadRequestException(`Unsupported social provider: ${provider}`);
+    }
+    return match;
+  }
+
+  private async verifySocialProfile(
+    request: SocialLoginRequest,
+    provider: AuthProvider,
+  ): Promise<ISocialProfile> {
+    switch (provider) {
       case AuthProvider.GOOGLE: {
-        const idToken = socialLoginDto.idToken ?? socialLoginDto.accessToken;
+        const idToken = request.idToken ?? request.accessToken;
         if (!idToken) {
           throw new BadRequestException('idToken is required for Google login');
         }
         return this.googleAuthService.verifyIdToken(idToken);
       }
       case AuthProvider.APPLE: {
-        if (socialLoginDto.idToken) {
-          return this.appleAuthService.verifyIdToken(socialLoginDto.idToken);
+        if (request.idToken) {
+          return this.appleAuthService.verifyIdToken(request.idToken);
         }
 
-        const authorizationCode =
-          socialLoginDto.authorizationCode ?? socialLoginDto.accessToken;
+        const authorizationCode = request.authorizationCode ?? request.accessToken;
         if (!authorizationCode) {
           throw new BadRequestException(
             'idToken or authorizationCode is required for Apple login',
@@ -326,16 +322,16 @@ export class AuthService {
         return this.appleAuthService.exchangeAuthorizationCode(authorizationCode);
       }
       case AuthProvider.FACEBOOK: {
-        if (!socialLoginDto.accessToken) {
+        if (!request.accessToken) {
           throw new BadRequestException('accessToken is required for Facebook login');
         }
-        return this.facebookAuthService.verifyAccessToken(socialLoginDto.accessToken);
+        return this.facebookAuthService.verifyAccessToken(request.accessToken);
       }
       case AuthProvider.INSTAGRAM: {
-        if (!socialLoginDto.accessToken) {
+        if (!request.accessToken) {
           throw new BadRequestException('accessToken is required for Instagram login');
         }
-        return this.instagramAuthService.verifyAccessToken(socialLoginDto.accessToken);
+        return this.instagramAuthService.verifyAccessToken(request.accessToken);
       }
       default:
         throw new BadRequestException('Unsupported social provider');

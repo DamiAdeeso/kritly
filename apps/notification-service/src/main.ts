@@ -1,16 +1,27 @@
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
-import { join } from 'path';
-import { GRPC_PROTO_LOADER_OPTIONS, useAppLogger } from '@kritly/common';
+import { useAppLogger } from '@kritly/common';
 import { AppModule } from './app.module';
+import rabbitmqConfig from './config/rabbitmq.config';
 
 async function bootstrap(): Promise<void> {
-  const rabbitUrl = process.env.RABBITMQ_URL || 'amqp://kritly:kritly@localhost:5672';
-  const queue = process.env.RABBITMQ_NOTIFICATION_QUEUE || 'notification-service.send';
-  const grpcPort = process.env.NOTIFICATION_SERVICE_GRPC_PORT || '3003';
+  const { url: rabbitUrl, queue } = rabbitmqConfig();
 
-  const app = await NestFactory.create(AppModule, { bufferLogs: true });
+  const app = await NestFactory.createMicroservice<MicroserviceOptions>(
+    AppModule,
+    {
+      bufferLogs: true,
+      transport: Transport.RMQ,
+      options: {
+        urls: [rabbitUrl],
+        queue,
+        queueOptions: { durable: true },
+        noAck: false,
+        prefetchCount: 10,
+      },
+    },
+  );
   const logger = useAppLogger(app);
 
   app.useGlobalPipes(
@@ -21,37 +32,22 @@ async function bootstrap(): Promise<void> {
     }),
   );
 
-  app.connectMicroservice<MicroserviceOptions>({
-    transport: Transport.RMQ,
-    options: {
-      urls: [rabbitUrl],
-      queue,
-      queueOptions: { durable: true },
-      noAck: false,
-      prefetchCount: 10,
-    },
-  });
-
-  app.connectMicroservice<MicroserviceOptions>({
-    transport: Transport.GRPC,
-    options: {
-      package: ['verification', 'grpc.health.v1'],
-      protoPath: [
-        join(process.cwd(), 'libs/common/src/proto/verification.proto'),
-        join(process.cwd(), 'libs/common/src/proto/health.proto'),
-      ],
-      url: `0.0.0.0:${grpcPort}`,
-      loader: GRPC_PROTO_LOADER_OPTIONS,
-    },
-  });
-
+  app.enableShutdownHooks();
   app.flushLogs();
 
-  await app.init();
-  await app.startAllMicroservices();
+  await app.listen();
 
+  const grpcPort =
+    process.env.NOTIFICATION_SERVICE_PORT ??
+    process.env.NOTIFICATION_SERVICE_GRPC_PORT ??
+    '3003';
   logger.log(`Notification service (RMQ) listening on queue "${queue}"`);
-  logger.log(`Verification service (gRPC) listening on 0.0.0.0:${grpcPort}`);
+  logger.log(`Notification service (gRPC) on port ${grpcPort}`);
 }
 
-bootstrap();
+bootstrap().catch((error: unknown) => {
+  const message = error instanceof Error ? error.message : 'unknown';
+  // eslint-disable-next-line no-console
+  console.error(`Notification service failed to start: ${message}`);
+  process.exit(1);
+});

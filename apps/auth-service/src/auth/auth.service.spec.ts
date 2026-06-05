@@ -4,7 +4,6 @@ jest.mock('bcryptjs', () => ({
 }));
 
 import { Test, TestingModule } from '@nestjs/testing';
-import { JwtService } from '@nestjs/jwt';
 import { BadRequestException, UnauthorizedException } from '@nestjs/common';
 import { getLoggerToken } from 'nestjs-pino';
 import * as bcrypt from 'bcryptjs';
@@ -25,7 +24,6 @@ describe('AuthService', () => {
   let socialAccountRepository: jest.Mocked<SocialAccountRepository>;
   let refreshTokenRepository: jest.Mocked<RefreshTokenRepository>;
   let tokenService: jest.Mocked<TokenService>;
-  let jwtService: jest.Mocked<JwtService>;
   let googleAuthService: jest.Mocked<GoogleAuthService>;
   let appleAuthService: jest.Mocked<AppleAuthService>;
   let facebookAuthService: jest.Mocked<FacebookAuthService>;
@@ -37,7 +35,6 @@ describe('AuthService', () => {
     password: 'Password123',
     username: 'user123',
     dateOfBirth: '1990-01-15',
-    verificationToken: 'verification-token',
   };
 
   const createdUser = {
@@ -45,8 +42,7 @@ describe('AuthService', () => {
     email: 'user@example.com',
     username: 'user123',
     usernameChangedAt: null,
-    firstName: 'Test',
-    lastName: 'User',
+    displayName: 'Test User',
     dateOfBirth: null,
     avatar: null,
     password: 'hashed-password',
@@ -92,11 +88,6 @@ describe('AuthService', () => {
       issueTokensForUser: jest.fn(),
     } as unknown as jest.Mocked<TokenService>;
 
-    jwtService = {
-      sign: jest.fn(),
-      verify: jest.fn(),
-    } as unknown as jest.Mocked<JwtService>;
-
     googleAuthService = {
       verifyIdToken: jest.fn(),
     } as unknown as jest.Mocked<GoogleAuthService>;
@@ -126,14 +117,13 @@ describe('AuthService', () => {
         AuthService,
         {
           provide: getLoggerToken(AuthService.name),
-          useValue: { info: jest.fn(), warn: jest.fn(), error: jest.fn() },
+          useValue: { info: jest.fn(), warn: jest.fn(), error: jest.fn(), debug: jest.fn() },
         },
         { provide: AccountRepository, useValue: accountRepository },
         { provide: ProfileRepository, useValue: profileRepository },
         { provide: SocialAccountRepository, useValue: socialAccountRepository },
         { provide: RefreshTokenRepository, useValue: refreshTokenRepository },
         { provide: TokenService, useValue: tokenService },
-        { provide: JwtService, useValue: jwtService },
         { provide: GoogleAuthService, useValue: googleAuthService },
         { provide: FacebookAuthService, useValue: facebookAuthService },
         { provide: AppleAuthService, useValue: appleAuthService },
@@ -162,14 +152,11 @@ describe('AuthService', () => {
       );
       expect(accountRepository.create).not.toHaveBeenCalledWith(
         expect.objectContaining({
-          firstName: expect.anything(),
-          lastName: expect.anything(),
           role: expect.anything(),
           status: expect.anything(),
         }),
       );
-      expect(result.statusCode).toBe(201);
-      expect(result.data.email).toBe('user@example.com');
+      expect(result.email).toBe('user@example.com');
       expect(eventPublisher.publish).toHaveBeenCalledWith(
         DOMAIN_EVENTS.USER_REGISTERED,
         expect.objectContaining({ userId: 'user-1' }),
@@ -187,7 +174,6 @@ describe('AuthService', () => {
 
       const result = await service.register(registerDto);
 
-      expect(result.statusCode).toBe(201);
     });
 
     it('rejects duplicate email', async () => {
@@ -207,6 +193,25 @@ describe('AuthService', () => {
       );
     });
 
+    it('defaults username from email when omitted', async () => {
+      accountRepository.findByEmail.mockResolvedValue(null);
+      profileRepository.findByUsername.mockResolvedValue(null);
+      accountRepository.create.mockResolvedValue(createdUser as never);
+
+      await service.register({
+        email: 'user@example.com',
+        password: 'Password123',
+        dateOfBirth: '1990-01-15',
+      });
+
+      expect(profileRepository.findByUsername).toHaveBeenCalledWith('user');
+      expect(accountRepository.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          username: 'user',
+        }),
+      );
+    });
+
   });
 
   describe('checkEmailAvailability', () => {
@@ -215,7 +220,7 @@ describe('AuthService', () => {
 
       const result = await service.checkEmailAvailability('user@example.com');
 
-      expect(result.data?.isAvailable).toBe(true);
+      expect(result.isAvailable).toBe(true);
     });
 
     it('returns unavailable when email is registered', async () => {
@@ -223,7 +228,7 @@ describe('AuthService', () => {
 
       const result = await service.checkEmailAvailability('user@example.com');
 
-      expect(result.data?.isAvailable).toBe(false);
+      expect(result.isAvailable).toBe(false);
     });
   });
 
@@ -242,7 +247,7 @@ describe('AuthService', () => {
         password: 'Password123',
       });
 
-      expect(result.statusCode).toBe(200);
+      expect(result.accessToken).toBeDefined();
       expect(redisService.delete).toHaveBeenCalledWith('login:attempts:user@example.com');
     });
 
@@ -289,13 +294,44 @@ describe('AuthService', () => {
     });
   });
 
+  describe('loginSession', () => {
+    it('returns tokens and profile from the authenticated user row', async () => {
+      (bcrypt.compare as jest.Mock).mockResolvedValue(true);
+      accountRepository.findByEmail.mockResolvedValue({
+        id: 'user-1',
+        email: 'user@example.com',
+        password: 'hashed-password',
+        role: 'USER',
+        username: 'user123',
+        displayName: 'Test User',
+        bio: 'Hello',
+        avatar: 'https://cdn.example.com/a.jpg',
+      } as never);
+
+      const result = await service.loginSession({
+        email: 'user@example.com',
+        password: 'Password123',
+      });
+
+      expect(result.accessToken).toBeDefined();
+      expect(result.profile).toEqual({
+        userId: 'user-1',
+        email: 'user@example.com',
+        username: 'user123',
+        displayName: 'Test User',
+        bio: 'Hello',
+        avatar: 'https://cdn.example.com/a.jpg',
+      });
+      expect(accountRepository.findByEmail).toHaveBeenCalledTimes(1);
+    });
+  });
+
   describe('socialLogin', () => {
     const socialProfile = {
       provider: AuthProvider.GOOGLE,
       providerId: 'google-sub-1',
       email: 'social@example.com',
-      firstName: 'Social',
-      lastName: 'User',
+      displayName: 'Social User',
       avatar: 'https://cdn.example.com/a.jpg',
     };
 
@@ -312,7 +348,7 @@ describe('AuthService', () => {
         idToken: 'google-id-token',
       });
 
-      expect(result.statusCode).toBe(200);
+      expect(result.accessToken).toBeDefined();
       expect(accountRepository.create).not.toHaveBeenCalled();
     });
 
@@ -350,7 +386,7 @@ describe('AuthService', () => {
         idToken: 'google-id-token',
       });
 
-      expect(result.statusCode).toBe(201);
+      expect(result.accessToken).toBeDefined();
       expect(socialAccountRepository.create).toHaveBeenCalled();
     });
 
@@ -402,7 +438,7 @@ describe('AuthService', () => {
 
       const result = await service.refreshToken({ refreshToken: 'refresh-token' });
 
-      expect(result.statusCode).toBe(200);
+      expect(result.accessToken).toBeDefined();
       expect(refreshTokenRepository.delete).toHaveBeenCalledWith('refresh-token');
     });
 
@@ -431,32 +467,8 @@ describe('AuthService', () => {
     it('deletes refresh token', async () => {
       const result = await service.logout('refresh-token');
 
-      expect(result.statusCode).toBe(200);
+      expect(result).toEqual({});
       expect(refreshTokenRepository.delete).toHaveBeenCalledWith('refresh-token');
-    });
-  });
-
-  describe('validateToken', () => {
-    it('returns payload for valid token', async () => {
-      jwtService.verify.mockReturnValue({
-        sub: 'user-1',
-        email: 'user@example.com',
-      });
-
-      const result = await service.validateToken('valid-token');
-
-      expect(result.data?.isValid).toBe(true);
-      expect(result.data?.userId).toBe('user-1');
-    });
-
-    it('rejects invalid token', async () => {
-      jwtService.verify.mockImplementation(() => {
-        throw new Error('invalid');
-      });
-
-      await expect(service.validateToken('invalid-token')).rejects.toThrow(
-        new UnauthorizedException('Invalid token'),
-      );
     });
   });
 
@@ -470,7 +482,7 @@ describe('AuthService', () => {
 
       const result = await service.resetPassword('User@Example.com', 'NewPassword123');
 
-      expect(result.statusCode).toBe(200);
+      expect(result).toEqual({});
       expect(accountRepository.findByEmail).toHaveBeenCalledWith('user@example.com');
       expect(refreshTokenRepository.deleteByUserId).toHaveBeenCalledWith('user-1');
     });
@@ -496,7 +508,7 @@ describe('AuthService', () => {
 
       const result = await service.changePassword('user-1', 'OldPassword123', 'NewPassword123');
 
-      expect(result.statusCode).toBe(200);
+      expect(result).toEqual({});
       expect(refreshTokenRepository.deleteByUserId).toHaveBeenCalledWith('user-1');
     });
 

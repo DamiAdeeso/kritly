@@ -1,13 +1,11 @@
 import {
-  BadRequestException,
   Body,
   Controller,
   Headers,
   HttpCode,
   HttpStatus,
   Post,
-  UnauthorizedException,
-  ValidationPipe,
+  UseGuards,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -19,29 +17,37 @@ import {
 import { Throttle } from '@nestjs/throttler';
 import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 import {
-  GrpcErrorResponse,
-  grpcData,
-  grpcIsAvailable,
-  grpcStatusCode,
+  hashSubject,
+  HttpClientErrorResponse,
   OtpChannel,
   OtpPurpose,
   SendOtpDto,
-  SendOtpResponse,
+  SendOtpData,
   SendOtpResponseDto,
-  VerificationGrpcErrorResponse,
   VerifyOtpDto,
-  VerifyOtpResponse,
+  VerifyOtpData,
   VerifyOtpResponseDto,
+  ServiceResponse,
+  httpFail,
+  isHttpClientError,
+  mapGrpcToHttp,
+  ApiEnvelopeErrors,
 } from '@kritly/common';
 import { AuthClientService } from '../services/auth-client.service';
 import { VerificationClientService } from '../services/verification-client.service';
+import { OptionalJwtAuthGuard } from '../auth/optional-jwt-auth.guard';
+import { OptionalCurrentUser } from '../auth/current-user.decorator';
+import { JwtTokenService } from '../auth/jwt-token.service';
+import { JwtUser } from '../auth/jwt-user.interface';
 
 @ApiTags('Verification')
+@ApiEnvelopeErrors(400, 401, 403, 429, 500)
 @Controller('api/verification')
 export class VerificationGatewayController {
   constructor(
     private readonly authClient: AuthClientService,
     private readonly verificationClient: VerificationClientService,
+    private readonly jwtTokenService: JwtTokenService,
     @InjectPinoLogger(VerificationGatewayController.name)
     private readonly logger: PinoLogger,
   ) {}
@@ -49,150 +55,119 @@ export class VerificationGatewayController {
   @Throttle({ default: { limit: 5, ttl: 60_000 } })
   @Post('send')
   @HttpCode(HttpStatus.OK)
+  @UseGuards(OptionalJwtAuthGuard)
   @ApiOperation({ summary: 'Send a verification OTP' })
   @ApiBearerAuth()
   @ApiBody({ type: SendOtpDto })
   @ApiResponse({ status: 200, description: 'Verification code sent', type: SendOtpResponseDto })
   async sendOtp(
     @Headers('authorization') authHeader: string | undefined,
-    @Body(ValidationPipe) dto: SendOtpDto,
-  ): Promise<SendOtpResponse | VerificationGrpcErrorResponse | GrpcErrorResponse> {
-    const token = authHeader?.replace('Bearer ', '');
+    @OptionalCurrentUser() user: JwtUser | undefined,
+    @Body() dto: SendOtpDto,
+  ): Promise<ServiceResponse<SendOtpData> | HttpClientErrorResponse> {
+    const bearerError = this.invalidBearerTokenResponse(authHeader, user);
+    if (bearerError) {
+      return bearerError;
+    }
 
-    this.logger.info(
-      {
-        purpose: dto.purpose,
-        channel: dto.channel,
-        authenticated: Boolean(token),
-        email: dto.email ?? null,
-      },
-      'sendOtp request',
-    );
-
-    if (token) {
-      const validation = await this.authClient.validateToken({ accessToken: token });
-      if (validation.statusCode !== 200 || !validation.data?.isValid || !validation.data.email) {
-        this.logger.warn(
-          {
-            statusCode: validation.statusCode,
-            isValid: validation.data?.isValid ?? false,
-          },
-          'sendOtp rejected invalid token',
-        );
-        throw new UnauthorizedException('Invalid token');
-      }
-
-      this.logger.info(
-        { userId: validation.data.userId, purpose: dto.purpose },
-        'sendOtp dispatching authenticated OTP',
+    if (user) {
+      return mapGrpcToHttp(
+        await this.verificationClient.sendOtp({
+          subject: user.email,
+          purpose: dto.purpose,
+          channel: dto.channel,
+          userId: user.userId,
+        }),
+        'Verification code sent',
       );
-
-      return this.verificationClient.sendOtp({
-        subject: validation.data.email,
-        purpose: dto.purpose,
-        channel: dto.channel,
-        userId: validation.data.userId,
-      });
     }
 
     if (dto.purpose === OtpPurpose.PASSWORD_RESET && dto.email) {
       const email = dto.email.trim().toLowerCase();
-      this.logger.info({ email }, 'sendOtp dispatching password-reset OTP');
 
-      return this.verificationClient.sendOtp({
-        subject: email,
-        purpose: dto.purpose,
-        channel: dto.channel,
-      });
+      return mapGrpcToHttp(
+        await this.verificationClient.sendOtp({
+          subject: email,
+          purpose: dto.purpose,
+          channel: dto.channel,
+        }),
+        'Verification code sent',
+      );
     }
 
     if (dto.purpose === OtpPurpose.EMAIL_VERIFY && dto.email) {
       const email = dto.email.trim().toLowerCase();
-      this.logger.info({ email }, 'sendOtp checking email availability');
+      const availability = await this.authClient.checkEmailAvailability({ email });
 
-      const availability = (await this.authClient.checkEmailAvailability({
-        email,
-      })) as unknown as Record<string, unknown>;
-      const statusCode = grpcStatusCode(availability);
-      const data = grpcData(availability);
-      const isAvailable = grpcIsAvailable(data);
-
-      this.logger.info(
-        { email, statusCode, message: availability['message'], isAvailable, data },
-        'sendOtp email availability response',
-      );
-
-      if (statusCode !== 200 || !isAvailable) {
-        this.logger.warn({ email, statusCode, isAvailable }, 'sendOtp rejected signup email verify');
-        throw new BadRequestException('Email is already registered');
+      if (isHttpClientError(availability)) {
+        return availability;
       }
 
-      this.logger.info({ email }, 'sendOtp dispatching signup email verify OTP');
+      if (!availability.isAvailable) {
+        this.logger.warn({ subjectHash: hashSubject(email) }, 'sendOtp rejected: email already registered');
+        return httpFail('Email is already registered', HttpStatus.BAD_REQUEST);
+      }
 
-      return this.verificationClient.sendOtp({
-        subject: email,
-        purpose: dto.purpose,
-        channel: dto.channel,
-      });
+      return mapGrpcToHttp(
+        await this.verificationClient.sendOtp({
+          subject: email,
+          purpose: dto.purpose,
+          channel: dto.channel,
+        }),
+        'Verification code sent',
+      );
     }
 
-    this.logger.warn(
-      { purpose: dto.purpose, email: dto.email ?? null },
-      'sendOtp rejected missing auth',
-    );
-    throw new UnauthorizedException('Authentication required for this verification purpose');
+    return httpFail('Authentication required for this verification purpose', HttpStatus.UNAUTHORIZED);
   }
 
   @Throttle({ default: { limit: 10, ttl: 60_000 } })
   @Post('verify')
   @HttpCode(HttpStatus.OK)
+  @UseGuards(OptionalJwtAuthGuard)
   @ApiOperation({ summary: 'Verify an OTP and receive a short-lived verification token' })
   @ApiBearerAuth()
   @ApiBody({ type: VerifyOtpDto })
   @ApiResponse({ status: 200, description: 'Verification successful', type: VerifyOtpResponseDto })
   async verifyOtp(
     @Headers('authorization') authHeader: string | undefined,
-    @Body(ValidationPipe) dto: VerifyOtpDto,
-  ): Promise<VerifyOtpResponse | VerificationGrpcErrorResponse | GrpcErrorResponse> {
-    const token = authHeader?.replace('Bearer ', '');
+    @OptionalCurrentUser() user: JwtUser | undefined,
+    @Body() dto: VerifyOtpDto,
+  ): Promise<ServiceResponse<VerifyOtpData> | HttpClientErrorResponse> {
+    const bearerError = this.invalidBearerTokenResponse(authHeader, user);
+    if (bearerError) {
+      return bearerError;
+    }
+
     let subject = dto.email?.trim().toLowerCase();
 
-    this.logger.info(
-      {
-        purpose: dto.purpose,
-        authenticated: Boolean(token),
-        email: dto.email ?? null,
-      },
-      'verifyOtp request',
-    );
-
-    if (token) {
-      const validation = await this.authClient.validateToken({ accessToken: token });
-      if (validation.statusCode !== 200 || !validation.data?.isValid || !validation.data.email) {
-        this.logger.warn(
-          {
-            statusCode: validation.statusCode,
-            isValid: validation.data?.isValid ?? false,
-          },
-          'verifyOtp rejected invalid token',
-        );
-        throw new UnauthorizedException('Invalid token');
-      }
-
-      subject = validation.data.email;
+    if (user) {
+      subject = user.email;
     }
 
     if (!subject) {
-      this.logger.warn({ purpose: dto.purpose }, 'verifyOtp rejected missing subject');
-      throw new BadRequestException('Email is required to verify this code');
+      return httpFail('Email is required to verify this code', HttpStatus.BAD_REQUEST);
     }
 
-    this.logger.info({ purpose: dto.purpose, subject }, 'verifyOtp dispatching');
+    return mapGrpcToHttp(
+      await this.verificationClient.verifyOtp({
+        subject,
+        purpose: dto.purpose,
+        code: dto.code,
+      }),
+      'Verification successful',
+    );
+  }
 
-    return this.verificationClient.verifyOtp({
-      subject,
-      purpose: dto.purpose,
-      code: dto.code,
-    });
+  /** When a bearer token is present but invalid, return the HTTP error envelope (do not throw). */
+  private invalidBearerTokenResponse(
+    authHeader: string | undefined,
+    user: JwtUser | undefined,
+  ): HttpClientErrorResponse | undefined {
+    const token = this.jwtTokenService.extractBearerToken(authHeader);
+    if (token && !user) {
+      return httpFail('Invalid token', HttpStatus.UNAUTHORIZED);
+    }
+    return undefined;
   }
 }

@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+package profile;
+
+message ProfileData {
+  string userId = 1;
+  optional string username = 2;
+  optional string displayName = 3;
+  optional string avatar = 4;
+  optional string email = 5;
+  optional string bio = 6;
+}

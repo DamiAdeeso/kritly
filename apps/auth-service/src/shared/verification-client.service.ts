@@ -1,50 +1,31 @@
-import { Injectable, OnModuleInit } from '@nestjs/common';
-import { Client, ClientGrpc, Transport } from '@nestjs/microservices';
-import { join } from 'path';
+import { Injectable, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import {
+  GrpcClientConfigService,
+  NiceGrpcConnection,
   ConsumeVerificationTokenRequest,
-  VERIFICATION_SERVICE_NAME,
-  ValidateVerificationTokenResponse,
-  VerificationGrpcClient,
-  VerificationGrpcErrorResponse,
-  grpcClientCall,
-  GRPC_PROTO_LOADER_OPTIONS,
-  resolveGrpcMethod,
+  HttpClientErrorResponse,
+  ValidateVerificationTokenData,
+  VerificationServiceClient,
+  VerificationServiceDefinition,
 } from '@kritly/common';
-import { getGrpcCredentials } from '../config/grpc.config';
 
 @Injectable()
-export class VerificationClientService implements OnModuleInit {
-  @Client({
-    transport: Transport.GRPC,
-    options: {
-      package: 'verification',
-      protoPath: join(process.cwd(), 'libs/common/src/proto/verification.proto'),
-      url: `${process.env.NOTIFICATION_SERVICE_HOST || 'localhost'}:${process.env.NOTIFICATION_SERVICE_GRPC_PORT || 3003}`,
-      credentials: getGrpcCredentials(),
-      loader: GRPC_PROTO_LOADER_OPTIONS,
-    },
-  })
-  private client!: ClientGrpc;
+export class VerificationClientService implements OnModuleInit, OnModuleDestroy {
+  private connection!: NiceGrpcConnection<VerificationServiceClient>;
 
-  private verificationService!: VerificationGrpcClient;
-  private consumeVerificationTokenRpc!: (
-    request: ConsumeVerificationTokenRequest,
-  ) => ReturnType<VerificationGrpcClient['consumeVerificationToken']>;
+  constructor(private readonly grpcClientConfig: GrpcClientConfigService) {}
 
   onModuleInit(): void {
-    this.verificationService = this.client.getService<VerificationGrpcClient>(VERIFICATION_SERVICE_NAME);
-    const stub = this.verificationService as unknown as Record<string, unknown>;
-    this.consumeVerificationTokenRpc = resolveGrpcMethod(
-      stub,
-      'consumeVerificationToken',
-      'ConsumeVerificationToken',
-    );
+    this.connection = this.grpcClientConfig.connect(VerificationServiceDefinition, 'notification');
+  }
+
+  onModuleDestroy(): void {
+    this.connection.channel.close();
   }
 
   consumeVerificationToken(
     data: ConsumeVerificationTokenRequest,
-  ): Promise<ValidateVerificationTokenResponse | VerificationGrpcErrorResponse> {
-    return grpcClientCall(this.consumeVerificationTokenRpc(data));
+  ): Promise<ValidateVerificationTokenData | HttpClientErrorResponse> {
+    return this.connection.client.consumeVerificationToken(data);
   }
 }

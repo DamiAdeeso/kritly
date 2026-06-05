@@ -54,7 +54,6 @@ describe('VerificationService', () => {
         channel: OtpChannel.EMAIL,
       });
 
-      expect(result.statusCode).toBe(200);
       expect(eventPublisher.publish).toHaveBeenCalledWith(
         DOMAIN_EVENTS.VERIFICATION_OTP_REQUESTED,
         expect.objectContaining({
@@ -66,7 +65,7 @@ describe('VerificationService', () => {
         }),
         expect.objectContaining({ idempotencyKey: expect.stringContaining('otp:') }),
       );
-      expect(result.data?.expiresInSeconds).toBe(600);
+      expect(result.expiresInSeconds).toBe(600);
     });
 
     it('rejects invalid purpose', async () => {
@@ -108,8 +107,7 @@ describe('VerificationService', () => {
         code: '123456',
       });
 
-      expect(result.statusCode).toBe(200);
-      expect(result.data?.verificationToken).toBe('verification-token');
+      expect(result.verificationToken).toBe('verification-token');
     });
   });
 
@@ -123,7 +121,7 @@ describe('VerificationService', () => {
         userId: 'user@example.com',
       });
 
-      expect(result.data?.isValid).toBe(true);
+      expect(result.isValid).toBe(true);
     });
 
     it('returns invalid result without throwing', async () => {
@@ -135,8 +133,7 @@ describe('VerificationService', () => {
         userId: 'user@example.com',
       });
 
-      expect(result.data?.isValid).toBe(false);
-      expect(result.statusCode).toBe(200);
+      expect(result.isValid).toBe(false);
     });
   });
 
@@ -150,7 +147,7 @@ describe('VerificationService', () => {
         email: 'user@example.com',
       });
 
-      expect(result.data?.isValid).toBe(true);
+      expect(result.isValid).toBe(true);
     });
 
     it('returns invalid result when token cannot be consumed', async () => {
@@ -162,7 +159,7 @@ describe('VerificationService', () => {
         email: 'user@example.com',
       });
 
-      expect(result.data?.isValid).toBe(false);
+      expect(result.isValid).toBe(false);
     });
   });
 });

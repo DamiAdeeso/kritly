@@ -2,27 +2,30 @@ syntax = "proto3";
 
 package auth;
 
+import "google/protobuf/empty.proto";
+import "profile.proto";
+
 // New endpoint checklist:
 // 1. Add rpc + messages here
 // 2. npm run proto:generate
-// 3. Implement in auth-service (auth.service.ts + auth.grpc.controller.ts)
+// 3. Implement in auth-service (auth.service.ts + auth.grpc.implementation.ts)
 // 4. Add passthrough in gateway AuthClientService
 // 5. Add thin HTTP route in gateway auth.gateway.controller.ts
 
-// Auth Service — credentials, sessions, tokens
+// Auth Service — credentials, sessions, tokens.
+// Token validation: gateway GET /api/auth/validate (JWT at the edge, not an RPC).
 service AuthService {
-  rpc Register(RegisterRequest) returns (AuthResponse);
-  rpc Login(LoginRequest) returns (AuthResponse);
-  rpc SocialLogin(SocialLoginRequest) returns (AuthResponse);
-  rpc RefreshToken(RefreshTokenRequest) returns (AuthResponse);
-  rpc Logout(LogoutRequest) returns (LogoutResponse);
-  rpc ValidateToken(ValidateTokenRequest) returns (ValidateTokenResponse);
-  rpc ResetPassword(ResetPasswordRequest) returns (UpdateProfileResponse);
-  rpc ChangePassword(ChangePasswordRequest) returns (UpdateProfileResponse);
-  rpc CheckEmailAvailability(CheckEmailRequest) returns (EmailAvailabilityResponse);
+  rpc Register(RegisterRequest) returns (AuthData);
+  rpc Login(LoginRequest) returns (AuthData);
+  rpc LoginSession(LoginRequest) returns (LoginSessionData);
+  rpc SocialLogin(SocialLoginRequest) returns (AuthData);
+  rpc RefreshToken(RefreshTokenRequest) returns (AuthData);
+  rpc Logout(LogoutRequest) returns (google.protobuf.Empty);
+  rpc ResetPassword(ResetPasswordRequest) returns (google.protobuf.Empty);
+  rpc ChangePassword(ChangePasswordRequest) returns (google.protobuf.Empty);
+  rpc CheckEmailAvailability(CheckEmailRequest) returns (EmailAvailabilityData);
 }
 
-// Request/Response messages
 message RegisterRequest {
   string email = 1;
   string password = 2;
@@ -39,6 +42,7 @@ message LoginRequest {
 message SocialLoginRequest {
   string provider = 1; // google, facebook, apple, instagram
   optional string accessToken = 2; // facebook, instagram — OAuth access token
+  reserved 3 to 6;
   optional string idToken = 7; // google, apple — OpenID ID token from client SDK
   optional string authorizationCode = 8; // apple web OAuth authorization code
 }
@@ -49,10 +53,6 @@ message RefreshTokenRequest {
 
 message LogoutRequest {
   string refreshToken = 1;
-}
-
-message ValidateTokenRequest {
-  string accessToken = 1;
 }
 
 message ResetPasswordRequest {
@@ -76,15 +76,6 @@ message EmailAvailabilityData {
   bool isAvailable = 1;
 }
 
-message EmailAvailabilityResponse {
-  int32 statusCode = 1;
-  string message = 2;
-  EmailAvailabilityData data = 3;
-}
-
-// Shared response envelope: statusCode, message, data
-message EmptyData {}
-
 message AuthData {
   string accessToken = 1;
   string refreshToken = 2;
@@ -92,32 +83,9 @@ message AuthData {
   string email = 4;
 }
 
-message AuthResponse {
-  int32 statusCode = 1;
-  string message = 2;
-  AuthData data = 3;
-}
-
-message LogoutResponse {
-  int32 statusCode = 1;
-  string message = 2;
-  EmptyData data = 3;
-}
-
-message ValidateTokenData {
-  bool isValid = 1;
-  string userId = 2;
-  string email = 3;
-}
-
-message ValidateTokenResponse {
-  int32 statusCode = 1;
-  string message = 2;
-  ValidateTokenData data = 3;
-}
-
-message UpdateProfileResponse {
-  int32 statusCode = 1;
-  string message = 2;
-  EmptyData data = 3;
+/** Login tokens plus profile from the same user row (no extra DB round trip). */
+message LoginSessionData {
+  string accessToken = 1;
+  string refreshToken = 2;
+  profile.ProfileData profile = 3;
 }

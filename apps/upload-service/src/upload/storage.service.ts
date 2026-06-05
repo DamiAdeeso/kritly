@@ -44,9 +44,12 @@ export class StorageService {
     purpose: string;
     contentType: string;
     fileName: string;
+    fileSize: number | string;
   }): Promise<PresignedUploadResult> {
     this.assertStorageConfigured();
-    this.validateUpload(input);
+
+    const fileSize = this.normalizePositiveInteger(input.fileSize, 'fileSize');
+    this.validateUpload({ ...input, fileSize });
 
     const bucket = this.configService.get<string>('storage.bucket')!;
     const ttl = this.configService.get<number>('storage.presignedUrlTtlSeconds') ?? 900;
@@ -57,6 +60,7 @@ export class StorageService {
       Bucket: bucket,
       Key: fileKey,
       ContentType: input.contentType,
+      ContentLength: fileSize,
     });
 
     const uploadUrl = await getSignedUrl(this.s3!, command, { expiresIn: ttl });
@@ -78,6 +82,7 @@ export class StorageService {
     purpose: string;
     contentType: string;
     fileName: string;
+    fileSize: number;
   }): void {
     if (!input.userId?.trim()) {
       throw new BadRequestException('userId is required');
@@ -105,6 +110,34 @@ export class StorageService {
     if (maxBytes <= 0) {
       throw new BadRequestException('Upload size limit misconfigured');
     }
+
+    if (!Number.isInteger(input.fileSize) || input.fileSize < 1) {
+      throw new BadRequestException('fileSize must be a positive integer');
+    }
+
+    if (input.fileSize > maxBytes) {
+      throw new BadRequestException(
+        `File size exceeds the ${purpose} limit of ${maxBytes} bytes`,
+      );
+    }
+  }
+
+  private normalizePositiveInteger(value: unknown, fieldName: string): number {
+    let parsed: number;
+
+    if (typeof value === 'number') {
+      parsed = value;
+    } else if (typeof value === 'string' && value.trim() !== '') {
+      parsed = Number(value);
+    } else {
+      parsed = Number.NaN;
+    }
+
+    if (!Number.isInteger(parsed) || parsed < 1) {
+      throw new BadRequestException(`${fieldName} must be a positive integer`);
+    }
+
+    return parsed;
   }
 
   buildObjectKey(userId: string, purpose: string, fileName: string): string {

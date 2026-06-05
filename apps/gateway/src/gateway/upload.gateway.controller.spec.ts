@@ -1,66 +1,48 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { UnauthorizedException } from '@nestjs/common';
 import { UploadPurpose } from '@kritly/common';
 import { UploadGatewayController } from './upload.gateway.controller';
-import { AuthClientService } from '../services/auth-client.service';
 import { UploadClientService } from '../services/upload-client.service';
+import { bypassJwtAuthGuard } from '../auth/test-auth.util';
 
 describe('UploadGatewayController', () => {
   let controller: UploadGatewayController;
-  let authClient: jest.Mocked<AuthClientService>;
   let uploadClient: jest.Mocked<UploadClientService>;
 
-  beforeEach(async () => {
-    authClient = {
-      validateToken: jest.fn(),
-    } as unknown as jest.Mocked<AuthClientService>;
+  const user = {
+    userId: 'user-1',
+    email: 'user@example.com',
+    role: 'USER',
+  };
 
+  beforeEach(async () => {
     uploadClient = {
       createPresignedUpload: jest.fn(),
+      onModuleInit: jest.fn(),
     } as unknown as jest.Mocked<UploadClientService>;
 
-    const module: TestingModule = await Test.createTestingModule({
-      controllers: [UploadGatewayController],
-      providers: [
-        { provide: AuthClientService, useValue: authClient },
-        { provide: UploadClientService, useValue: uploadClient },
-      ],
-    }).compile();
+    const module: TestingModule = await bypassJwtAuthGuard(
+      Test.createTestingModule({
+        controllers: [UploadGatewayController],
+        providers: [{ provide: UploadClientService, useValue: uploadClient }],
+      }),
+    ).compile();
 
     controller = module.get<UploadGatewayController>(UploadGatewayController);
   });
 
-  it('rejects requests without a bearer token', async () => {
-    await expect(
-      controller.createPresignedUpload(undefined, {
-        purpose: UploadPurpose.AVATAR,
-        contentType: 'image/jpeg',
-        fileName: 'avatar.jpg',
-      }),
-    ).rejects.toBeInstanceOf(UnauthorizedException);
-  });
-
-  it('creates a presigned upload for authenticated users', async () => {
-    authClient.validateToken.mockResolvedValue({
-      statusCode: 200,
-      message: 'Token validation successful',
-      data: { isValid: true, userId: 'user-1', email: 'user@example.com' },
-    });
+  it('delegates presigned upload with authenticated user id', async () => {
     uploadClient.createPresignedUpload.mockResolvedValue({
-      statusCode: 201,
-      message: 'Presigned upload URL created',
-      data: {
-        uploadUrl: 'https://storage.example.com/presigned',
-        fileKey: 'avatar/user-1/key-avatar.jpg',
-        publicUrl: 'https://cdn.kritly.com/avatar/user-1/key-avatar.jpg',
-        expiresAt: 1_700_000_000,
-      },
+      uploadUrl: 'https://s3.example.com/upload',
+      fileKey: 'uploads/user-1/avatar.jpg',
+      publicUrl: 'https://cdn.example.com/uploads/user-1/avatar.jpg',
+      expiresAt: 1_700_000_000,
     });
 
-    const result = await controller.createPresignedUpload('Bearer token', {
+    await controller.createPresignedUpload(user, {
       purpose: UploadPurpose.AVATAR,
       contentType: 'image/jpeg',
       fileName: 'avatar.jpg',
+      fileSize: 1024,
     });
 
     expect(uploadClient.createPresignedUpload).toHaveBeenCalledWith({
@@ -68,7 +50,7 @@ describe('UploadGatewayController', () => {
       purpose: UploadPurpose.AVATAR,
       contentType: 'image/jpeg',
       fileName: 'avatar.jpg',
+      fileSize: 1024,
     });
-    expect(result.statusCode).toBe(201);
   });
 });

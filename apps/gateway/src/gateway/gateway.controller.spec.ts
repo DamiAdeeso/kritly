@@ -12,10 +12,14 @@ describe('GatewayController', () => {
     controller = module.get<GatewayController>(GatewayController);
   });
 
-  it('returns gateway health status', () => {
+  it('returns gateway health status in REST envelope', () => {
     expect(controller.healthCheck()).toEqual({
-      status: 'ok',
-      timestamp: expect.any(String),
+      statusCode: 200,
+      message: 'Gateway is healthy',
+      data: {
+        status: 'ok',
+        timestamp: expect.any(String),
+      },
     });
   });
 });

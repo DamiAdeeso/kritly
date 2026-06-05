@@ -2,11 +2,12 @@ syntax = "proto3";
 
 package verification;
 
+// RPC success returns data messages only (no statusCode/message wrapper).
 service VerificationService {
-  rpc SendOtp(SendOtpRequest) returns (SendOtpResponse);
-  rpc VerifyOtp(VerifyOtpRequest) returns (VerifyOtpResponse);
-  rpc ValidateVerificationToken(ValidateVerificationTokenRequest) returns (ValidateVerificationTokenResponse);
-  rpc ConsumeVerificationToken(ConsumeVerificationTokenRequest) returns (ValidateVerificationTokenResponse);
+  rpc SendOtp(SendOtpRequest) returns (SendOtpData);
+  rpc VerifyOtp(VerifyOtpRequest) returns (VerifyOtpData);
+  rpc ValidateVerificationToken(ValidateVerificationTokenRequest) returns (ValidateVerificationTokenData);
+  rpc ConsumeVerificationToken(ConsumeVerificationTokenRequest) returns (ValidateVerificationTokenData);
 }
 
 message SendOtpRequest {
@@ -21,12 +22,6 @@ message SendOtpData {
   int32 expiresInSeconds = 2;
 }
 
-message SendOtpResponse {
-  int32 statusCode = 1;
-  string message = 2;
-  SendOtpData data = 3;
-}
-
 message VerifyOtpRequest {
   string subject = 1;
   string purpose = 2;
@@ -36,12 +31,6 @@ message VerifyOtpRequest {
 message VerifyOtpData {
   string verificationToken = 1;
   int64 expiresAt = 2;
-}
-
-message VerifyOtpResponse {
-  int32 statusCode = 1;
-  string message = 2;
-  VerifyOtpData data = 3;
 }
 
 message ValidateVerificationTokenRequest {
@@ -60,10 +49,4 @@ message ConsumeVerificationTokenRequest {
 
 message ValidateVerificationTokenData {
   bool isValid = 1;
-}
-
-message ValidateVerificationTokenResponse {
-  int32 statusCode = 1;
-  string message = 2;
-  ValidateVerificationTokenData data = 3;
 }

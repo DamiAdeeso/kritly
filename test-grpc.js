@@ -27,9 +27,8 @@ const testRegister = () => {
   const registerRequest = {
     email: 'test@example.com',
     password: 'password123',
-    firstName: 'John',
-    lastName: 'Doe',
-    avatar: 'https://example.com/avatar.jpg'
+    username: 'testuser',
+    dateOfBirth: '1990-01-15',
   };
 
   console.log('Testing gRPC Register method...');

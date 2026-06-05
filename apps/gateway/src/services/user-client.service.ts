@@ -1,102 +1,64 @@
 /**
- * gRPC client wrapper for user/profile RPCs (hosted on auth-service for now).
+ * nice-grpc client for user/profile (auth-service).
  */
-import { Injectable, OnModuleInit } from '@nestjs/common';
-import { ClientGrpc, Client, Transport } from '@nestjs/microservices';
-import { join } from 'path';
+import { Injectable, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import {
-  USER_SERVICE_NAME,
-  UserGrpcClient,
-  CheckUsernameRequest,
-  GetProfileByUsernameRequest,
+  GrpcClientConfigService,
+  NiceGrpcConnection,
+  HttpClientErrorResponse,
   GetProfileRequest,
-  GrpcErrorResponse,
-  ProfileResponse,
+  GetProfileByUsernameRequest,
+  CheckUsernameRequest,
   SetUsernameRequest,
-  SetUsernameResponse,
   UpdateAvatarRequest,
   UpdateProfileRequest,
-  UpdateProfileResponse as UserUpdateProfileResponse,
-  UsernameAvailabilityResponse,
-  UserGrpcErrorResponse,
-  grpcClientCall,
-  GRPC_PROTO_LOADER_OPTIONS,
-  resolveGrpcMethod,
+  ProfileData,
+  AuthData,
+  UsernameAvailabilityData,
+  Empty,
+  UserServiceClient,
+  UserServiceDefinition,
 } from '@kritly/common';
-import { getGrpcCredentials } from '../config/grpc.config';
 
 @Injectable()
-export class UserClientService implements OnModuleInit {
-  @Client({
-    transport: Transport.GRPC,
-    options: {
-      package: 'user',
-      protoPath: join(process.cwd(), 'libs/common/src/proto/user.proto'),
-      url: `${process.env.AUTH_SERVICE_HOST || 'localhost'}:${process.env.AUTH_SERVICE_PORT || 3001}`,
-      credentials: getGrpcCredentials(),
-      loader: GRPC_PROTO_LOADER_OPTIONS,
-    },
-  })
-  private client!: ClientGrpc;
+export class UserClientService implements OnModuleInit, OnModuleDestroy {
+  private connection!: NiceGrpcConnection<UserServiceClient>;
 
-  private userService!: UserGrpcClient;
-  private getProfileRpc!: (request: GetProfileRequest) => ReturnType<UserGrpcClient['getProfile']>;
-  private getProfileByUsernameRpc!: (
-    request: GetProfileByUsernameRequest,
-  ) => ReturnType<UserGrpcClient['getProfileByUsername']>;
-  private checkUsernameRpc!: (
-    request: CheckUsernameRequest,
-  ) => ReturnType<UserGrpcClient['checkUsername']>;
-  private setUsernameRpc!: (request: SetUsernameRequest) => ReturnType<UserGrpcClient['setUsername']>;
-  private updateAvatarRpc!: (request: UpdateAvatarRequest) => ReturnType<UserGrpcClient['updateAvatar']>;
-  private updateProfileRpc!: (request: UpdateProfileRequest) => ReturnType<UserGrpcClient['updateProfile']>;
+  constructor(private readonly grpcClientConfig: GrpcClientConfigService) {}
 
   onModuleInit(): void {
-    this.userService = this.client.getService<UserGrpcClient>(USER_SERVICE_NAME);
-    const stub = this.userService as unknown as Record<string, unknown>;
-    this.getProfileRpc = resolveGrpcMethod(stub, 'getProfile', 'GetProfile');
-    this.getProfileByUsernameRpc = resolveGrpcMethod(
-      stub,
-      'getProfileByUsername',
-      'GetProfileByUsername',
-    );
-    this.checkUsernameRpc = resolveGrpcMethod(stub, 'checkUsername', 'CheckUsername');
-    this.setUsernameRpc = resolveGrpcMethod(stub, 'setUsername', 'SetUsername');
-    this.updateAvatarRpc = resolveGrpcMethod(stub, 'updateAvatar', 'UpdateAvatar');
-    this.updateProfileRpc = resolveGrpcMethod(stub, 'updateProfile', 'UpdateProfile');
+    this.connection = this.grpcClientConfig.connect(UserServiceDefinition, 'auth');
   }
 
-  getProfile(data: GetProfileRequest): Promise<ProfileResponse | UserGrpcErrorResponse | GrpcErrorResponse> {
-    return grpcClientCall(this.getProfileRpc(data));
+  onModuleDestroy(): void {
+    this.connection.channel.close();
+  }
+
+  getProfile(data: GetProfileRequest): Promise<ProfileData | HttpClientErrorResponse> {
+    return this.connection.client.getProfile(data);
   }
 
   getProfileByUsername(
     data: GetProfileByUsernameRequest,
-  ): Promise<ProfileResponse | UserGrpcErrorResponse | GrpcErrorResponse> {
-    return grpcClientCall(this.getProfileByUsernameRpc(data));
+  ): Promise<ProfileData | HttpClientErrorResponse> {
+    return this.connection.client.getProfileByUsername(data);
   }
 
   checkUsername(
     data: CheckUsernameRequest,
-  ): Promise<UsernameAvailabilityResponse | UserGrpcErrorResponse | GrpcErrorResponse> {
-    return grpcClientCall(this.checkUsernameRpc(data));
+  ): Promise<UsernameAvailabilityData | HttpClientErrorResponse> {
+    return this.connection.client.checkUsername(data);
   }
 
-  setUsername(
-    data: SetUsernameRequest,
-  ): Promise<SetUsernameResponse | UserGrpcErrorResponse | GrpcErrorResponse> {
-    return grpcClientCall(this.setUsernameRpc(data));
+  setUsername(data: SetUsernameRequest): Promise<AuthData | HttpClientErrorResponse> {
+    return this.connection.client.setUsername(data);
   }
 
-  updateAvatar(
-    data: UpdateAvatarRequest,
-  ): Promise<UserUpdateProfileResponse | UserGrpcErrorResponse | GrpcErrorResponse> {
-    return grpcClientCall(this.updateAvatarRpc(data));
+  updateAvatar(data: UpdateAvatarRequest): Promise<Empty | HttpClientErrorResponse> {
+    return this.connection.client.updateAvatar(data);
   }
 
-  updateProfile(
-    data: UpdateProfileRequest,
-  ): Promise<UserUpdateProfileResponse | UserGrpcErrorResponse | GrpcErrorResponse> {
-    return grpcClientCall(this.updateProfileRpc(data));
+  updateProfile(data: UpdateProfileRequest): Promise<Empty | HttpClientErrorResponse> {
+    return this.connection.client.updateProfile(data);
   }
 }

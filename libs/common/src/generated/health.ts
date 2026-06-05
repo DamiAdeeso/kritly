@@ -5,8 +5,8 @@
 // source: health.proto
 
 /* eslint-disable */
-
-export const protobufPackage = "grpc.health.v1";
+import { BinaryReader, BinaryWriter } from "@bufbuild/protobuf/wire";
+import type { CallContext, CallOptions } from "nice-grpc-common";
 
 export interface HealthCheckRequest {
   service: string;
@@ -22,4 +22,139 @@ export enum HealthCheckResponse_ServingStatus {
   NOT_SERVING = 2,
   SERVICE_UNKNOWN = 3,
   UNRECOGNIZED = -1,
+}
+
+function createBaseHealthCheckRequest(): HealthCheckRequest {
+  return { service: "" };
+}
+
+export const HealthCheckRequest: MessageFns<HealthCheckRequest> = {
+  encode(message: HealthCheckRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.service !== "") {
+      writer.uint32(10).string(message.service);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): HealthCheckRequest {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseHealthCheckRequest();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.service = reader.string();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  create<I extends Exact<DeepPartial<HealthCheckRequest>, I>>(base?: I): HealthCheckRequest {
+    return HealthCheckRequest.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<HealthCheckRequest>, I>>(object: I): HealthCheckRequest {
+    const message = createBaseHealthCheckRequest();
+    message.service = object.service ?? "";
+    return message;
+  },
+};
+
+function createBaseHealthCheckResponse(): HealthCheckResponse {
+  return { status: 0 };
+}
+
+export const HealthCheckResponse: MessageFns<HealthCheckResponse> = {
+  encode(message: HealthCheckResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.status !== 0) {
+      writer.uint32(8).int32(message.status);
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): HealthCheckResponse {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseHealthCheckResponse();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 8) {
+            break;
+          }
+
+          message.status = reader.int32() as any;
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  create<I extends Exact<DeepPartial<HealthCheckResponse>, I>>(base?: I): HealthCheckResponse {
+    return HealthCheckResponse.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<HealthCheckResponse>, I>>(object: I): HealthCheckResponse {
+    const message = createBaseHealthCheckResponse();
+    message.status = object.status ?? 0;
+    return message;
+  },
+};
+
+export type HealthDefinition = typeof HealthDefinition;
+export const HealthDefinition = {
+  name: "Health",
+  fullName: "grpc.health.v1.Health",
+  methods: {
+    check: {
+      name: "Check",
+      requestType: HealthCheckRequest as typeof HealthCheckRequest,
+      requestStream: false,
+      responseType: HealthCheckResponse as typeof HealthCheckResponse,
+      responseStream: false,
+      options: {},
+    },
+  },
+} as const;
+
+export interface HealthServiceImplementation<CallContextExt = {}> {
+  check(request: HealthCheckRequest, context: CallContext & CallContextExt): Promise<DeepPartial<HealthCheckResponse>>;
+}
+
+export interface HealthClient<CallOptionsExt = {}> {
+  check(request: DeepPartial<HealthCheckRequest>, options?: CallOptions & CallOptionsExt): Promise<HealthCheckResponse>;
+}
+
+type Builtin = Date | Function | Uint8Array | string | number | boolean | undefined;
+
+type DeepPartial<T> = T extends Builtin ? T
+  : T extends globalThis.Array<infer U> ? globalThis.Array<DeepPartial<U>>
+  : T extends ReadonlyArray<infer U> ? ReadonlyArray<DeepPartial<U>>
+  : T extends {} ? { [K in keyof T]?: DeepPartial<T[K]> }
+  : Partial<T>;
+
+type KeysOfUnion<T> = T extends T ? keyof T : never;
+type Exact<P, I extends P> = P extends Builtin ? P
+  : P & { [K in keyof P]: Exact<P[K], I[K]> } & { [K in Exclude<keyof I, KeysOfUnion<P>>]: never };
+
+interface MessageFns<T> {
+  encode(message: T, writer?: BinaryWriter): BinaryWriter;
+  decode(input: BinaryReader | Uint8Array, length?: number): T;
+  create<I extends Exact<DeepPartial<T>, I>>(base?: I): T;
+  fromPartial<I extends Exact<DeepPartial<T>, I>>(object: I): T;
 }

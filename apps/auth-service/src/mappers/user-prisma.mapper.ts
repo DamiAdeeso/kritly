@@ -67,11 +67,8 @@ export function toPrismaCreateUserInput(data: IUserCreate): Prisma.UserUnchecked
   if (data.password !== undefined) {
     input.password = data.password;
   }
-  if (data.firstName) {
-    input.firstName = data.firstName;
-  }
-  if (data.lastName) {
-    input.lastName = data.lastName;
+  if (data.displayName?.trim()) {
+    input.displayName = data.displayName.trim();
   }
 
   const role = toPrismaUserRole(data.role);

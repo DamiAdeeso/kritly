@@ -1,4 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { getLoggerToken } from 'nestjs-pino';
 import { FastifyReply } from 'fastify';
 import { OAuthGatewayController } from './oauth.gateway.controller';
 import { OAuthService } from '../services/oauth.service';
@@ -31,6 +32,10 @@ describe('OAuthGatewayController', () => {
       providers: [
         { provide: OAuthService, useValue: oauthService },
         { provide: AuthClientService, useValue: authClient },
+        {
+          provide: getLoggerToken(OAuthGatewayController.name),
+          useValue: { warn: jest.fn(), info: jest.fn(), error: jest.fn() },
+        },
       ],
     }).compile();
 
@@ -59,14 +64,10 @@ describe('OAuthGatewayController', () => {
       idToken: 'google-id-token',
     });
     authClient.socialLogin.mockResolvedValue({
-      statusCode: 200,
-      message: 'Social login successful',
-      data: {
-        accessToken: 'access-token',
-        refreshToken: 'refresh-token',
-        userId: 'user-1',
-        email: 'user@example.com',
-      },
+      accessToken: 'access-token',
+      refreshToken: 'refresh-token',
+      userId: 'user-1',
+      email: 'user@example.com',
     });
     oauthService.buildSuccessRedirect.mockReturnValue('http://localhost:3000/auth/callback#accessToken=access-token');
 

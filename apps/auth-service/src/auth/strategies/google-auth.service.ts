@@ -1,7 +1,7 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { OAuth2Client } from 'google-auth-library';
-import { ISocialProfile, AuthProvider } from '@kritly/common';
+import { ISocialProfile, AuthProvider, formatDisplayName } from '@kritly/common';
 
 @Injectable()
 export class GoogleAuthService {
@@ -30,8 +30,7 @@ export class GoogleAuthService {
         provider: AuthProvider.GOOGLE,
         providerId: payload.sub,
         email: payload.email!,
-        firstName: payload.given_name || '',
-        lastName: payload.family_name || '',
+        displayName: formatDisplayName(payload.given_name, payload.family_name),
         avatar: payload.picture,
       };
     } catch {
