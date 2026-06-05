@@ -43,18 +43,34 @@ export class VerificationService {
 
     await this.otpService.assertCanSend(request.purpose, subject);
 
-    const code = this.otpService.generateCode();
-    const expiresInSeconds = await this.otpService.storeCode(
-      request.purpose,
-      subject,
-      code,
-      request.userId,
-    );
+    const bypassActive = this.otpService.isBypassActive();
+    let expiresInSeconds: number;
 
-    if (request.channel === OtpChannel.EMAIL) {
-      this.enqueueEmailOtp(subject, request.purpose, code, expiresInSeconds);
+    if (bypassActive) {
+      expiresInSeconds = this.otpService.getTtlSeconds();
+      this.logger.warn(
+        {
+          purpose: request.purpose,
+          channel: request.channel,
+          subjectHash: hashSubject(subject),
+          userId: request.userId ?? null,
+        },
+        'OTP bypass enabled; email delivery skipped',
+      );
     } else {
-      throw new BadRequestException('SMS verification is not enabled yet');
+      const code = this.otpService.generateCode();
+      expiresInSeconds = await this.otpService.storeCode(
+        request.purpose,
+        subject,
+        code,
+        request.userId,
+      );
+
+      if (request.channel === OtpChannel.EMAIL) {
+        this.enqueueEmailOtp(subject, request.purpose, code, expiresInSeconds);
+      } else {
+        throw new BadRequestException('SMS verification is not enabled yet');
+      }
     }
 
     this.logger.info(

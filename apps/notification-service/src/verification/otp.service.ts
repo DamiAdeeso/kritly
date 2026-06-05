@@ -13,6 +13,8 @@ import {
   OtpPurpose,
   VERIFICATION_TOKEN_TTL_SECONDS,
   RedisService,
+  isOtpBypassCode,
+  resolveOtpBypassCode,
 } from '@kritly/common';
 
 interface StoredOtp {
@@ -68,6 +70,14 @@ export class OtpService {
     return randomInt(0, max).toString().padStart(length, '0');
   }
 
+  getTtlSeconds(): number {
+    return this.configService.get<number>('verification.ttlSeconds') ?? 600;
+  }
+
+  isBypassActive(): boolean {
+    return !!this.getBypassCode();
+  }
+
   async storeCode(
     purpose: string,
     subject: string,
@@ -85,7 +95,16 @@ export class OtpService {
     return ttl;
   }
 
-  async verifyCode(purpose: string, subject: string, code: string): Promise<{ userId: string }> {
+  async verifyCode(
+    purpose: string,
+    subject: string,
+    code: string,
+    context?: { userId?: string },
+  ): Promise<{ userId: string }> {
+    if (this.matchesBypassCode(code)) {
+      return { userId: context?.userId ?? subject };
+    }
+
     this.assertRedisAvailable();
 
     const key = this.otpKey(purpose, subject);
@@ -200,6 +219,21 @@ export class OtpService {
 
   private hashCode(purpose: string, subject: string, code: string): string {
     return createHash('sha256').update(`${purpose}:${subject}:${code}`).digest('hex');
+  }
+
+  private getBypassCode(): string | undefined {
+    return resolveOtpBypassCode(
+      this.configService.get<string>('verification.bypassCode'),
+      process.env.NODE_ENV,
+    );
+  }
+
+  private matchesBypassCode(code: string): boolean {
+    return isOtpBypassCode(
+      code,
+      this.configService.get<string>('verification.bypassCode'),
+      process.env.NODE_ENV,
+    );
   }
 
   private otpKey(purpose: string, subject: string): string {

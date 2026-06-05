@@ -103,6 +103,7 @@ export * from './utils/http-envelope.util';
 export * from './utils/http-exception-message.util';
 export * from './utils/display-name.util';
 export * from './utils/redact.util';
+export * from './utils/otp-bypass.util';
 
 // Logging
 export * from './logging/logger.constants';

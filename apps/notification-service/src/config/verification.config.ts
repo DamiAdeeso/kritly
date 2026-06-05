@@ -19,4 +19,5 @@ export default registerAs('verification', () => ({
   verificationTokenTtlSeconds: Number(
     process.env.VERIFICATION_TOKEN_TTL_SECONDS || VERIFICATION_TOKEN_TTL_SECONDS,
   ),
+  bypassCode: process.env.OTP_BYPASS_CODE,
 }));

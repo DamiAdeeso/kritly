@@ -16,6 +16,8 @@ describe('VerificationService', () => {
       assertCanSend: jest.fn().mockResolvedValue(undefined),
       generateCode: jest.fn().mockReturnValue('123456'),
       storeCode: jest.fn().mockResolvedValue(600),
+      getTtlSeconds: jest.fn().mockReturnValue(600),
+      isBypassActive: jest.fn().mockReturnValue(false),
       verifyCode: jest.fn().mockResolvedValue({ userId: 'user@example.com' }),
       issueVerificationToken: jest.fn().mockResolvedValue({
         verificationToken: 'verification-token',
@@ -96,6 +98,21 @@ describe('VerificationService', () => {
           channel: OtpChannel.SMS,
         }),
       ).rejects.toThrow(new BadRequestException('SMS verification is not enabled yet'));
+    });
+
+    it('skips email delivery when OTP bypass is active', async () => {
+      otpService.isBypassActive.mockReturnValue(true);
+
+      const result = await service.sendOtp({
+        subject: 'user@example.com',
+        purpose: OtpPurpose.PASSWORD_RESET,
+        channel: OtpChannel.EMAIL,
+      });
+
+      expect(eventPublisher.publish).not.toHaveBeenCalled();
+      expect(otpService.generateCode).not.toHaveBeenCalled();
+      expect(otpService.storeCode).not.toHaveBeenCalled();
+      expect(result.expiresInSeconds).toBe(600);
     });
   });
 

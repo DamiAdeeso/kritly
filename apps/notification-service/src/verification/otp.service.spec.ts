@@ -7,12 +7,13 @@ describe('OtpService', () => {
   let service: OtpService;
   let redisStore: Map<string, string>;
   let redisAvailable: boolean;
+  let configService: ConfigService;
 
   beforeEach(() => {
     redisStore = new Map();
     redisAvailable = true;
 
-    const configService = {
+    configService = {
       get: jest.fn((key: string) => {
         const values: Record<string, unknown> = {
           'verification.codeLength': 6,
@@ -21,6 +22,7 @@ describe('OtpService', () => {
           'verification.sendRateLimit': 3,
           'verification.sendRateWindowSeconds': 900,
           'verification.verificationTokenTtlSeconds': 600,
+          'verification.bypassCode': undefined,
         };
         return values[key];
       }),
@@ -158,5 +160,45 @@ describe('OtpService', () => {
     await expect(
       service.verifyCode(OtpPurpose.EMAIL_VERIFY, 'user@example.com', '123456'),
     ).rejects.toBeInstanceOf(HttpException);
+  });
+
+  describe('bypass OTP', () => {
+    beforeEach(() => {
+      (configService.get as jest.Mock).mockImplementation((key: string) => {
+        const values: Record<string, unknown> = {
+          'verification.codeLength': 6,
+          'verification.ttlSeconds': 600,
+          'verification.maxVerifyAttempts': 5,
+          'verification.sendRateLimit': 3,
+          'verification.sendRateWindowSeconds': 900,
+          'verification.verificationTokenTtlSeconds': 600,
+          'verification.bypassCode': '000000',
+        };
+        return values[key];
+      });
+    });
+
+    it('accepts bypass code without redis or stored OTP', async () => {
+      redisAvailable = false;
+
+      await expect(
+        service.verifyCode(OtpPurpose.EMAIL_VERIFY, 'user@example.com', '000000', {
+          userId: 'user-1',
+        }),
+      ).resolves.toEqual({ userId: 'user-1' });
+    });
+
+    it('rejects bypass code in production', async () => {
+      const previousNodeEnv = process.env.NODE_ENV;
+      process.env.NODE_ENV = 'production';
+
+      try {
+        await expect(
+          service.verifyCode(OtpPurpose.EMAIL_VERIFY, 'user@example.com', '000000'),
+        ).rejects.toBeInstanceOf(HttpException);
+      } finally {
+        process.env.NODE_ENV = previousNodeEnv;
+      }
+    });
   });
 });
