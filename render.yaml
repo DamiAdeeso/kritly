@@ -25,7 +25,7 @@ services:
       pnpm exec nx run-many -t build
       --projects=gateway,auth-service,upload-service,notification-service
       --configuration=production &&
-      pnpm run db:migrate:deploy
+      pnpm run db:deploy
     startCommand: sh scripts/render-start-all.sh
     healthCheckPath: /health
     envVars:

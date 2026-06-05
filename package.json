@@ -40,6 +40,7 @@
     "db:migrate:deploy": "nx run database:prisma:migrate:deploy",
     "db:studio": "nx run database:prisma:studio",
     "db:seed": "nx run database:prisma:seed",
+    "db:deploy": "pnpm run db:migrate:deploy && pnpm run db:seed",
     "affected:build": "nx affected:build",
     "affected:test": "nx affected:test",
     "affected:lint": "nx affected:lint",
