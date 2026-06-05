@@ -1,16 +1,16 @@
 import { Injectable, NotImplementedException } from '@nestjs/common';
 import { NotificationChannel } from '@kritly/common';
-import { EmailSmtpChannel } from './email-smtp.channel';
+import { EmailChannel } from './email.channel';
 import { NotificationChannelAdapter } from './notification-channel.interface';
 
 @Injectable()
 export class ChannelRegistry {
-  constructor(private readonly emailSmtpChannel: EmailSmtpChannel) {}
+  constructor(private readonly emailChannel: EmailChannel) {}
 
   get(channel: NotificationChannel): NotificationChannelAdapter {
     switch (channel) {
       case 'email':
-        return this.emailSmtpChannel;
+        return this.emailChannel;
       case 'sms':
       case 'push':
         throw new NotImplementedException(`Channel "${channel}" is not implemented yet`);

@@ -8,6 +8,7 @@
     "start:dev": "nx serve notification-service"
   },
   "dependencies": {
+    "@aws-sdk/client-ses": "^3.888.0",
     "@kritly/common": "workspace:*",
     "@nestjs/common": "^11.1.6",
     "@nestjs/config": "^4.0.2",

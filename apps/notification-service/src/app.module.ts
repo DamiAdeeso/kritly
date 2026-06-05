@@ -10,7 +10,7 @@ import {
 import notificationConfig from './config/notification.config';
 import rabbitmqConfig from './config/rabbitmq.config';
 import redisConfig from './config/redis.config';
-import smtpConfig from './config/smtp.config';
+import emailConfig from './config/email.config';
 import verificationConfig from './config/verification.config';
 import { NotificationsModule } from './notifications/notifications.module';
 import { PrismaModule } from './prisma/prisma.module';
@@ -22,7 +22,7 @@ import { NotificationGrpcServerService } from './grpc/notification-grpc-server.s
   imports: [
     ConfigModule.forRoot({
       ...rootEnvConfig(),
-      load: [smtpConfig, rabbitmqConfig, redisConfig, notificationConfig, verificationConfig],
+      load: [emailConfig, rabbitmqConfig, redisConfig, notificationConfig, verificationConfig],
     }),
     AppLoggerModule.register({ service: 'notification-service', enableHttpLogging: false }),
     EventPublisherModule.register({ source: 'notification-service' }),

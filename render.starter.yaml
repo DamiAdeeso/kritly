@@ -180,6 +180,20 @@ services:
         value: notification-service.send
       - key: GRPC_USE_TLS
         value: "false"
+      - key: EMAIL_PROVIDER
+        value: mailtrap
+      - key: EMAIL_FROM
+        sync: false
+      - key: MAILTRAP_API_TOKEN
+        sync: false
+      - key: MAILTRAP_API_URL
+        value: https://send.api.mailtrap.io/api/send
+      - key: SES_REGION
+        sync: false
+      - key: SES_ACCESS_KEY_ID
+        sync: false
+      - key: SES_SECRET_ACCESS_KEY
+        sync: false
       - key: SMTP_HOST
         sync: false
       - key: SMTP_PORT
@@ -187,8 +201,6 @@ services:
       - key: SMTP_USER
         sync: false
       - key: SMTP_PASS
-        sync: false
-      - key: SMTP_FROM
         sync: false
       - key: SMTP_SECURE
         value: "false"
